@@ -1,0 +1,12 @@
+---
+description: Project Development Guidelines
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# rh-mod-skills Development Guidelines
+
+See `AGENTS.md` at the repository root. That file is the canonical agent context.
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->

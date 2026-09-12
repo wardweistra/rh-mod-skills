@@ -1,0 +1,37 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.tmp
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+dist/
+.coverage
+uv.lock
+
+# Test output
+tests/output/
+
+# Tracking lock (advisory)
+*.lock
+
+# Shell script temp files
+*.bak
+
+# Consumer-project locations (not part of this repo)
+/models
+/maps

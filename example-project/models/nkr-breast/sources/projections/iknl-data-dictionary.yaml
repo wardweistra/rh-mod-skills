@@ -1,0 +1,475 @@
+source: IKNL_Data_dictionary.xlsx
+type: excel
+sheets:
+- name: Variabelen
+  columns:
+  - variabele_name
+  - variabele_categorie
+  - variabele_label
+  rows:
+  - - gebdat
+    - Patiëntgegevens
+    - Geboortedatum
+  - - gesl
+    - Patiëntgegevens
+    - Geslacht
+  - - iacr
+    - Patiëntgegevens
+    - Telt volgens IACR regels mee in de incidentie
+  - - incdat
+    - Patiëntgegevens
+    - Incidentiedatum
+  - - incjr
+    - Patiëntgegevens
+    - Incidentiejaar
+  - - ink_ses
+    - Patiëntgegevens
+    - Mediaan inkomen in postcodegebied als proxy voor sociaaleconomische status
+      (SES)
+  - - leeft
+    - Patiëntgegevens
+    - Leeftijd op incidentiedatum
+  - - mal
+    - Patiëntgegevens
+    - Eerdere of latere maligniteiten
+  - - mal_incdat
+    - Patiëntgegevens
+    - Incidentiedatum van de eerdere of latere maligniteit
+  - - mal_int
+    - Patiëntgegevens
+    - Interval incidentiedatum en datum van de eerdere of latere maligniteit
+  - - mal_tumsoort
+    - Patiëntgegevens
+    - Tumorsoort van de eerdere of latere maligniteit
+  - - meno_stat
+    - Patiëntgegevens
+    - Menopauzale status bij diagnose
+  - - ovldat
+    - Patiëntgegevens
+    - Overlijdensdatum
+  - - post_cijf
+    - Patiëntgegevens
+    - Het cijferdeel van de postcode van de patiënt ten tijde van incidentie
+  - - rook_stat
+    - Patiëntgegevens
+    - Roken status
+  - - vit_stat_dat
+    - Patiëntgegevens
+    - Datum van vitale status
+  - - vit_stat_int
+    - Patiëntgegevens
+    - Interval incidentiedatum en datum vitale status (dagen)
+  - - vit_stat
+    - Patiëntgegevens
+    - Vitale status
+  - - topo
+    - Tumorgegevens
+    - Topografie exclusief sublokalisatie
+  - - topo_sublok
+    - Tumorgegevens
+    - Topografie inclusief sublokalisatie
+  - - later
+    - Tumorgegevens
+    - Lateralisatie
+  - - morf
+    - Tumorgegevens
+    - Morfologie
+  - - gedrag
+    - Tumorgegevens
+    - Gedrag
+  - - diffgrad
+    - Tumorgegevens
+    - (Differentiatie)graad
+  - - ct
+    - Tumorgegevens
+    - cT (TNM)
+  - - cn
+    - Tumorgegevens
+    - cN (TNM)
+  - - cm
+    - Tumorgegevens
+    - cM (TNM)
+  - - pt
+    - Tumorgegevens
+    - pT (TNM)
+  - - pn
+    - Tumorgegevens
+    - pN (TNM)
+  - - pm
+    - Tumorgegevens
+    - pM (TNM)
+  - - cstadium
+    - Tumorgegevens
+    - Klinisch TNM-stadium
+  - - pstadium
+    - Tumorgegevens
+    - Pathologisch TNM-stadium
+  - - stadium
+    - Tumorgegevens
+    - TNM-stadium
+  - - ceod
+    - Tumorgegevens
+    - Klinische tumoruitbreiding (EoD)
+  - - peod
+    - Tumorgegevens
+    - Pathologische tumoruitbreiding (EoD)
+  - - ond_lymf
+    - Tumorgegevens
+    - Aantal onderzochte regionale lymfeklieren
+  - - pos_lymf
+    - Tumorgegevens
+    - Aantal positieve regionale lymfeklieren
+  - - diag_basis
+    - Tumorgegevens
+    - Basis voor diagnose
+  - - birads
+    - Tumorgegevens
+    - BI-RADS classificatie
+  - - dcis_comp
+    - Tumorgegevens
+    - Aanwezigheid van DCIS component naast de invasieve tumor
+  - - er_stat
+    - Tumorgegevens
+    - Oestrogeenreceptor status
+  - - er_waarde
+    - Tumorgegevens
+    - Oestrogeenreceptor waarde
+  - - her2_stat
+    - Tumorgegevens
+    - Her2Neu-receptor status
+  - - her2_tech
+    - Tumorgegevens
+    - Techniek gebruikt voor Her2Neu-receptor bepaling
+  - - mammaprint_uitslag
+    - Tumorgegevens
+    - Uitslag van mammaprint
+  - - meta_incdat
+    - Tumorgegevens
+    - Incidentiedatum van metastase
+  - - meta_int
+    - Tumorgegevens
+    - Interval incidentiedatum en datum van metastase (dagen)
+  - - meta_topo_sublok
+    - Tumorgegevens
+    - Topografie inclusief sublokalisatie van metastase
+  - - meta_topo
+    - Tumorgegevens
+    - Topografie exclusief sublokalisatie van metastase
+  - - multifoc
+    - Tumorgegevens
+    - Multifocaliteit tumor
+  - - oncotype_uitslag
+    - Tumorgegevens
+    - Uitslag van oncotype DX
+  - - palpabel
+    - Tumorgegevens
+    - Palpabiliteit tumor
+  - - pr_stat
+    - Tumorgegevens
+    - Progesteronreceptor status
+  - - pr_waarde
+    - Tumorgegevens
+    - Progesteronreceptor waarde
+  - - tum_afm
+    - Tumorgegevens
+    - Pathologische afmeting van de tumor (mm)
+  - - bvo_detec
+    - Procesgegevens
+    - Tumor gedetecteerd na verwijzing door bevolkingsonderzoek
+  - - contact_zkh1
+    - Procesgegevens
+    - Ziekenhuis van eerste contact i.v.m. maligniteit
+  - - diag_reden
+    - Procesgegevens
+    - Reden voor diagnostiek
+  - - genmut_ond_dat
+    - Procesgegevens
+    - Datum van genmutatie onderzoek
+  - - genmut_ond_int
+    - Procesgegevens
+    - Interval incidentiedatum en datum van genmutatie onderzoek (dagen)
+  - - genmut_ond
+    - Procesgegevens
+    - Genmutatie onderzoek uitgevoerd
+  - - lokalproc
+    - Procesgegevens
+    - Lokalisatieprocedure van de tumor
+  - - mari
+    - Procesgegevens
+    - MARI-procedure uitgevoerd
+  - - mari_dat
+    - Procesgegevens
+    - Datum van MARI-procedure
+  - - mari_int
+    - Procesgegevens
+    - Interval incidentiedatum en datum van MARI-procedure (dagen)
+  - - mari_uitslag
+    - Procesgegevens
+    - Uitslag van MARI-procedure
+  - - mari_zkh
+    - Procesgegevens
+    - Ziekenhuis van MARI-procedure
+  - - mri
+    - Procesgegevens
+    - MRI-scan uitgevoerd
+  - - mri_dat
+    - Procesgegevens
+    - Datum van MRI-scan
+  - - mri_int
+    - Procesgegevens
+    - Interval incidentiedatum en datum van MRI-scan (dagen)
+  - - oksel_echo_dat
+    - Procesgegevens
+    - Datum waarop echogeleide punctie en/of biopsie in oksel is uitgevoerd
+  - - oksel_echo
+    - Procesgegevens
+    - Echogeleide punctie en/of biopsie in de oksel uitgevoerd
+  - - oksel_echo_int
+    - Procesgegevens
+    - Interval incidentiedatum en datum echogeleide punctie en/of biopsie in 
+      oksel
+  - - oksel_echo_uitslag
+    - Procesgegevens
+    - Uitslag van de echogeleide punctie en/of biopsie in de oksel
+  - - oksel_echo_zkh
+    - Procesgegevens
+    - Ziekenhuis waar echogeleide punctie en/of biopsie in oksel is uitgevoerd
+  - - plast_chir_consult_dat
+    - Procesgegevens
+    - Datum van eerste consult bij plastisch chirurg bij ablatio
+  - - plast_chir_consult_int
+    - Procesgegevens
+    - Interval incidentiedatum en datum eerste consult plastisch chirurg bij 
+      ablatio
+  - - rt_consult_dat
+    - Procesgegevens
+    - Datum van eerste consult bij radiotherapeut bij prechirurgische therapie
+  - - rt_consult_int
+    - Procesgegevens
+    - Interval incidentiedatum en consult radiotherapeut bij prechirurgische 
+      therapie
+  - - swk
+    - Procesgegevens
+    - Schildwachtklierprocedure uitgevoerd
+  - - swk_dat
+    - Procesgegevens
+    - Datum van schildwachtklierprocedure
+  - - swk_int
+    - Procesgegevens
+    - Interval incidentiedatum en datum van schildwachtklierprocedure (dagen)
+  - - swk_uitslag
+    - Procesgegevens
+    - Uitslag van schildwachtklierprocedure
+  - - swk_zkh
+    - Procesgegevens
+    - Ziekenhuis van schildwachtklierprocedure
+  - - zkh_patnum
+    - Procesgegevens
+    - Patiëntnummer in zkh
+  - - zkh_consult_dat
+    - Procesgegevens
+    - Datum eerste bezoek aan ziekenhuis gerelateerd aan de maligniteit
+  - - zkh2_consult_dat
+    - Procesgegevens
+    - Datum van eerste consult bij behandelaar van tweede ziekenhuis
+  - - zkh2_consult_int
+    - Procesgegevens
+    - Interval incidentiedatum en datum eerste consult behandelaar tweede 
+      ziekenhuis
+  - - chir_voor
+    - Risicofactoren
+    - Voorgeschiedenis van chirurgie aan de borst
+  - - gewicht
+    - Risicofactoren
+    - Gewicht patiënt (kg)
+  - - lengte
+    - Risicofactoren
+    - Lengte patiënt (cm)
+  - - perf_stat
+    - Risicofactoren
+    - WHO performance status voor start therapie
+  - - zwanger
+    - Risicofactoren
+    - Zwangerschap bij diagnose
+  - - basaal_okd_dat
+    - Behandelgegevens
+    - Datum van basale okselklierdissectie
+  - - basaal_okd_int
+    - Behandelgegevens
+    - Interval incidentiedatum en datum basale okselklierdissectie (dagen)
+  - - basaal_okd
+    - Behandelgegevens
+    - Basale okselklierdissectie uitgevoerd
+  - - basaal_okd_zkh
+    - Behandelgegevens
+    - Ziekenhuis van basale okselklierdissectie
+  - - chemo
+    - Behandelgegevens
+    - Systemische chemotherapie naar pre- en postchirurgisch ingedeeld
+  - - chemo_code[1-n]
+    - Behandelgegevens
+    - Code van systemische chemotherapie[1-n]
+  - - chemo_compl
+    - Behandelgegevens
+    - Complicaties tijdens of na de systemische chemotherapie
+  - - chemo_start_int[1-n]
+    - Behandelgegevens
+    - Interval incidentiedatum en startdatum van systemische chemotherapie 
+      (dagen)[1-n]
+  - - chemo_stop_int[1-n]
+    - Behandelgegevens
+    - Interval incidentiedatum en stopdatum van systemische chemotherapie 
+      (dagen)[1-n]
+  - - chemo_startdat[1-n]
+    - Behandelgegevens
+    - Startdatum van systemische chemotherapie[1-n]
+  - - chemo_stopdat[1-n]
+    - Behandelgegevens
+    - Stopdatum van systemische chemotherapie[1-n]
+  - - chemo_zkh[1-n]
+    - Behandelgegevens
+    - Ziekenhuis van systemische chemotherapie[1-n]
+  - - chir
+    - Behandelgegevens
+    - Chirurgie uitgevoerd
+  - - chir_compl
+    - Behandelgegevens
+    - Complicatie tijdens of na de chirurgie
+  - - chir_dat[1-2]
+    - Behandelgegevens
+    - Datum van chirurgie[1-2]
+  - - chir_int[1-2]
+    - Behandelgegevens
+    - Interval incidentiedatum en datum van chirurgie (dagen)[1-2]
+  - - chir_opnameduur[1-2]
+    - Behandelgegevens
+    - Opnameduur na chirurgie (dagen)[1-2]
+  - - chir_toeval
+    - Behandelgegevens
+    - De tumor is een toevalsbevinding bij chirurgie voor andere indicatie
+  - - chir_type[1-2]
+    - Behandelgegevens
+    - Type van chirurgie[1-2]
+  - - chir_zkh[1-2]
+    - Behandelgegevens
+    - Ziekenhuis van chirurgie[1-2]
+  - - dcis_rad_laatste
+    - Behandelgegevens
+    - Radicaliteit van DCIS component bij laatste chirurgie
+  - - dcis_rad1
+    - Behandelgegevens
+    - Radicaliteit van DCIS component bij eerste chirurgie
+  - - dir_reconstr_dat
+    - Behandelgegevens
+    - Datum van directe reconstructie
+  - - dir_reconstr_int
+    - Behandelgegevens
+    - Interval incidentiedatum en datum van directe reconstructie (dagen)
+  - - dir_reconstr
+    - Behandelgegevens
+    - Directe reconstructie uitgevoerd
+  - - dir_reconstr_tech
+    - Behandelgegevens
+    - Techniek van directe reconstructie
+  - - dir_reconstr_zkh
+    - Behandelgegevens
+    - Ziekenhuis waar directe reconstructie is uitgevoerd
+  - - geen_rt_reden
+    - Behandelgegevens
+    - Reden van geen radiotherapie na borstsparende chirurgie
+  - - horm
+    - Behandelgegevens
+    - Systemische hormonale therapie naar pre- en postchirurgisch ingedeeld
+  - - horm_code[1-n]
+    - Behandelgegevens
+    - Code van systemische hormonale therapie[1-n]
+  - - horm_start_int[1-n]
+    - Behandelgegevens
+    - Interval incidentiedatum en startdatum systemische hormonale therapie[1-n]
+  - - horm_startdat[1-n]
+    - Behandelgegevens
+    - Startdatum van systemische hormonale therapie[1-n]
+  - - horm_zkh[1-n]
+    - Behandelgegevens
+    - Ziekenhuis van systemische hormonale therapie[1-n]
+  - - inv_rad_laatste
+    - Behandelgegevens
+    - Radicaliteit van invasief component bij laatste chirurgie
+  - - inv_rad1
+    - Behandelgegevens
+    - Radicaliteit van invasief component bij eerste chirurgie
+  - - meta_chir
+    - Behandelgegevens
+    - Chirurgie gericht op metastasen uitgevoerd
+  - - meta_rt
+    - Behandelgegevens
+    - Radiotherapie gericht op metastasen uitgevoerd
+  - - okd
+    - Behandelgegevens
+    - Okselklierdissectie uitgevoerd
+  - - okd_dat
+    - Behandelgegevens
+    - Datum van okselklierdissectie
+  - - okd_int
+    - Behandelgegevens
+    - Interval incidentiedatum en datum van okselklierdissectie (dagen)
+  - - okd_zkh
+    - Behandelgegevens
+    - Ziekenhuis van okselklierdissectie
+  - - residu
+    - Behandelgegevens
+    - Tumorresidu na alle chirurgische therapieën
+  - - rt
+    - Behandelgegevens
+    - Radiotherapie naar pre- en postchirurgisch ingedeeld
+  - - rt_start_int
+    - Behandelgegevens
+    - Interval incidentiedatum en startdatum van radiotherapie (dagen)
+  - - rt_stop_int
+    - Behandelgegevens
+    - Interval incidentiedatum en stopdatum van radiotherapie (dagen)
+  - - rt_startdat
+    - Behandelgegevens
+    - Startdatum van radiotherapie
+  - - rt_stopdat
+    - Behandelgegevens
+    - Stopdatum van radiotherapie
+  - - rt_type
+    - Behandelgegevens
+    - Type van uitwendige radiotherapie
+  - - rt_zkh
+    - Behandelgegevens
+    - Ziekenhuis van radiotherapie
+  - - target
+    - Behandelgegevens
+    - Systemische targeted therapie naar pre- en postchirurgisch ingedeeld
+  - - target_code[1-n]
+    - Behandelgegevens
+    - Code van systemische targeted therapie[1-n]
+  - - target_start_int[1-n]
+    - Behandelgegevens
+    - Interval incidentiedatum en startdatum systemische targeted therapie[1-n]
+  - - target_stop_int[1-n]
+    - Behandelgegevens
+    - Interval incidentiedatum en stopdatum systemische targeted therapie[1-n]
+  - - target_startdat [1-n]
+    - Behandelgegevens
+    - Startdatum van systemische targeted therapie[1-n]
+  - - target_stopdat[1-n]
+    - Behandelgegevens
+    - Stopdatum van systemische targeted therapie[1-n]
+  - - target_zkh[1-n]
+    - Behandelgegevens
+    - Ziekenhuis van systemische targeted therapie[1-n]
+  - - uitgebr_chir_dat
+    - Behandelgegevens
+    - Datum van meest uitgebreide chirurgie
+  - - uitgebr_chir_int
+    - Behandelgegevens
+    - Interval incidentiedatum en datum van meest uitgebreide chirurgie (dagen)
+  - - uitgebr_chir_type
+    - Behandelgegevens
+    - Type van meest uitgebreide chirurgie
+  - - uitgebr_chir_zkh
+    - Behandelgegevens
+    - Ziekenhuis van meest uitgebreide chirurgie

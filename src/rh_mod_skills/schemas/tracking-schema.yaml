@@ -1,0 +1,52 @@
+# Tracking Artifact Schema
+# Single consumer-project file: <consumer-root>/tracking.yaml
+# Maintained by rh-mod-skills CLI commands; not manually edited
+schema_version: "1.0"
+
+# ── Directory layout ──────────────────────────────────────────────────────────
+# <consumer-root>/
+#   tracking.yaml
+#   models/
+#     <model-id>/
+#       MODEL.md
+#       sources/                 # L1 originals (002)
+#       structured/              # L2 YAML
+#       computable/              # L3 FHIR JSON
+#       process/plans/
+
+structure:
+  schema_version: string          # always "1.0"
+  models:
+    - name: string                # kebab-case
+      title: string
+      description: string
+      author: string
+      created_at: string          # UTC ISO-8601
+      sources: list               # empty after init
+      structured: list
+      computable: list
+      events:
+        - timestamp: string
+          type: string
+          description: string
+  events:
+    - timestamp: string
+      type: string
+      description: string
+
+event_types:
+  root_events:
+    - model_created
+  model_events:
+    - created
+    - source_added                # reserved (002)
+    - extract_planned
+    - inventory_derived
+    - annotate_planned
+    - element_bound
+    - model_specified
+    - model_formalized
+    - validated
+
+forbidden_keys:
+  - topics

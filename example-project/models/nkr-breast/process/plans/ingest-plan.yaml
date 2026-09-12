@@ -1,0 +1,9 @@
+model: nkr-breast
+status: approved
+sources:
+- path: 
+    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/nkr-breast/IKNL_Data_dictionary.xlsx
+  name: iknl-data-dictionary
+  type: excel
+  projection: tables
+  origin_url: https://iknl.nl/nkr/cijfers-op-maat/over-datacatalogus

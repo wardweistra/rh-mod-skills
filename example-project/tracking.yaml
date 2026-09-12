@@ -1,0 +1,378 @@
+schema_version: '1.0'
+models:
+- name: nkr-breast
+  title: NKR breast cancer data dictionary
+  description: IKNL NKR variables for breast cancer
+  author: Ward Weistra
+  created_at: '2026-09-11T23:08:30Z'
+  sources:
+  - name: iknl-data-dictionary
+    file: models/nkr-breast/sources/raw/IKNL_Data_dictionary.xlsx
+    type: excel
+    checksum: 9234b578b20ed47c61d31c25004b787e92f4e6e76d870ea5c283615747e1e650
+    ingested_at: '2026-09-11T23:11:55Z'
+    origin_url: https://iknl.nl/nkr/cijfers-op-maat/over-datacatalogus
+    projection: tables
+    projection_file: 
+      models/nkr-breast/sources/projections/iknl-data-dictionary.yaml
+  structured: []
+  computable: []
+  events:
+  - timestamp: '2026-09-11T23:08:30Z'
+    type: created
+    description: Model scaffolded with rh-mod-skills init
+  - timestamp: '2026-09-11T23:11:56Z'
+    type: source_added
+    description: 'Source registered: iknl-data-dictionary'
+- name: encr-standard-dataset
+  title: ENCR standard dataset
+  description: European Network of Cancer Registries minimum dataset (2023)
+  author: Ward Weistra
+  created_at: '2026-09-11T23:08:31Z'
+  sources:
+  - name: encr-data-quality-checks-ecis-v1.1-2026-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Data-quality-checks-ECIS_v1.1_2026_EN.pdf
+    type: pdf
+    checksum: 25dbe805aa662dc9e3418f6faad9eb5ea373be048bdaee92538837ff55797cc8
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-guidelines-confidentiality-ethics-2012-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Guidelines-confidentiality-ethics_2012_EN.pdf
+    type: pdf
+    checksum: 0ba53a6c36d0e1e6fc34a5c5599d16b221ed4e053c8109706157ee8a4cd241af
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-position-paper-eu-data-protection-2012-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Position-paper-EU-data-protection_2012_EN.pdf
+    type: pdf
+    checksum: c9ed0e8aed50cd7c35efc4f1e03d7da38c0d47429f2ca1bc6525bb489234b3d0
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-position-paper-haematological-coding-2015
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Position-paper-haematological-coding_2015.pdf
+    type: pdf
+    checksum: d8dc4595b128bc34ef5be0faafa9629b0bddbef484c324b817215d289ac01581
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-position-paper-survival-in-ecis-2025-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Position-paper-survival-in-ECIS_2025_EN.pdf
+    type: pdf
+    checksum: d9dc7390319fc4495e9fadfb7974a37cca2d91c85e8692804b57fd493632a3ea
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-basis-of-diagnosis-oct2022-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-basis-of-diagnosis_Oct2022_EN.pdf
+    type: pdf
+    checksum: cda7c5a8aa2d31541df0b494e140f3c07b397a424df8a6510af2d7d9834d5aaf
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-bladder-tumours-1995-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-bladder-tumours_1995_EN.pdf
+    type: pdf
+    checksum: f56d063c5ab44a2b253bfbb981c908e25b327ddafd29e08ae92434bb1327c513
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-brain-cns-1998-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-brain-cns_1998_EN.pdf
+    type: pdf
+    checksum: bf10b233a3625c8fff8b920b1c052e7de5cfe28c256761d7079584112069ba13
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-cns-dec2024-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-cns_Dec2024_EN.pdf
+    type: pdf
+    checksum: 199ac5bc9bb9285764ae3df8c9857d24f5eb06acf183b4b7f2e46722f957da34
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-condensed-tnm-2002-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-condensed-tnm_2002_EN.pdf
+    type: pdf
+    checksum: 1f774879bce8ef562db70e33e7ba7c43eda6128e0bcec04dd7f9f63022f6fe97
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-confidentiality-2002-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-confidentiality_2002_EN.pdf
+    type: pdf
+    checksum: 945993ce9a26054aeb5cf0be3e9f074d329bd99c554b8758dce11dd575ea0059
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-haematological-malignancies-feb2014-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-haematological-malignancies_Feb2014_EN.pdf
+    type: pdf
+    checksum: d9d9602a5b66b03528674c84101719e4a7ffd2753a7250ccaa569044f3c18f26
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-incidence-date-mar2022-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-incidence-date_Mar2022_EN.pdf
+    type: pdf
+    checksum: b2239dbc73620fa863d3477327a996a797402b14731c467705bf16c971963c79
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-method-of-detection-2001-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-method-of-detection_2001_EN.pdf
+    type: pdf
+    checksum: 5e6a5ecba0a8d82a0a7dff8e2a71bdec3d27b7d182e81494c798ce11a1f943e6
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-migrants-jun2022-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-migrants_Jun2022_EN.pdf
+    type: pdf
+    checksum: d6fd08f862acdf96831a52388c38ba961ca90387c53f8dd455917b203631dd8a
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-multiple-primaries-jul2004-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-multiple-primaries_Jul2004_EN.pdf
+    type: pdf
+    checksum: befd1a639247a022ec72cc157aa7bb07588f09175529730a52327e79ccaf3877
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-non-melanoma-skin-2000-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-non-melanoma-skin_2000_EN.pdf
+    type: pdf
+    checksum: 125ea1489da9f12ae3f45866606ce5baff09adeb4c33006dae759a62fbb10786
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-recurrence-progression-transformation-feb2025-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-recurrence-progression-transformation_Feb2025_EN.pdf
+    type: pdf
+    checksum: dbc55de3ab4ae2c5cbaa47a6dd8b211408e6f2305f10daaaaa8ab896e9843d24
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-standard-dataset-mar2023
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-standard-dataset_Mar2023.pdf
+    type: pdf
+    checksum: cdc4410fe69ed3658a1c5c2afc437760138ef559997f4ba894703efc9d32f914
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-treatment-jan2025-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-treatment_Jan2025_EN.pdf
+    type: pdf
+    checksum: 640e4844d4c3021122b8f0757a57923496b8943fb2ecb40b9ade0b53005c02a0
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-recommendation-urothelial-tumours-jun2022-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-urothelial-tumours_Jun2022_EN.pdf
+    type: pdf
+    checksum: 752c98df94de902444777d10e97376bf463d87114342ea023e649a38fb76f0b2
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  - name: encr-structured-registry-review-en
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Structured-registry-review_EN.pdf
+    type: pdf
+    checksum: d471e01ab374253afbc74cea72b6042036fa144bef3f616cec2c360eba3ea0da
+    ingested_at: '2026-09-11T23:11:57Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: skipped
+    skip_reason: pdf
+  structured: []
+  computable: []
+  events:
+  - timestamp: '2026-09-11T23:08:31Z'
+    type: created
+    description: Model scaffolded with rh-mod-skills init
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-data-quality-checks-ecis-v1.1-2026-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-guidelines-confidentiality-ethics-2012-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-position-paper-eu-data-protection-2012-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-position-paper-haematological-coding-2015'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-position-paper-survival-in-ecis-2025-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-basis-of-diagnosis-oct2022-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-bladder-tumours-1995-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-brain-cns-1998-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-cns-dec2024-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-condensed-tnm-2002-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-confidentiality-2002-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-haematological-malignancies-feb2014-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-incidence-date-mar2022-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-method-of-detection-2001-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-migrants-jun2022-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-multiple-primaries-jul2004-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-non-melanoma-skin-2000-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-recurrence-progression-transformation-feb2025-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-standard-dataset-mar2023'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-treatment-jan2025-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-urothelial-tumours-jun2022-en'
+  - timestamp: '2026-09-11T23:11:57Z'
+    type: source_added
+    description: 'Source registered: encr-structured-registry-review-en'
+events:
+- timestamp: '2026-09-11T23:08:30Z'
+  type: model_created
+  description: Model scaffolded with rh-mod-skills init
+- timestamp: '2026-09-11T23:08:31Z'
+  type: model_created
+  description: Model scaffolded with rh-mod-skills init
+- timestamp: '2026-09-11T23:11:56Z'
+  type: source_added
+  description: 'nkr-breast: iknl-data-dictionary'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-data-quality-checks-ecis-v1.1-2026-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-guidelines-confidentiality-ethics-2012-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-position-paper-eu-data-protection-2012-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-position-paper-haematological-coding-2015'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-position-paper-survival-in-ecis-2025-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-basis-of-diagnosis-oct2022-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-bladder-tumours-1995-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-brain-cns-1998-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-cns-dec2024-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-condensed-tnm-2002-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-confidentiality-2002-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-haematological-malignancies-feb2014-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-incidence-date-mar2022-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-method-of-detection-2001-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-migrants-jun2022-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-multiple-primaries-jul2004-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-non-melanoma-skin-2000-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-recurrence-progression-transformation-feb2025-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-standard-dataset-mar2023'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-treatment-jan2025-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-urothelial-tumours-jun2022-en'
+- timestamp: '2026-09-11T23:11:57Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-structured-registry-review-en'
