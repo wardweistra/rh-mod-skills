@@ -1,0 +1,34 @@
+model: nkr-breast
+status: approved
+systems:
+- snomed
+elements:
+- id: gesl
+  path: patientgegevens.gesl
+  display: Geslacht
+  query: gender
+  decision: accept
+  strength: example
+  reason: ''
+  chosen:
+    system:
+    code:
+    display:
+  candidates:
+  - system: http://snomed.info/sct
+    code: '734000001'
+    display: Biological sex
+    distance: 0.20005562950313338
+    rank: 1
+  - system: http://snomed.info/sct
+    code: '263495000'
+    display: Gender
+    distance: 0.0
+    rank: 2
+  - system: http://snomed.info/sct
+    code: '33821000087103'
+    display: Gender identity
+    distance: 0.17611807587607198
+    rank: 3
+  lookup_notes: Plan query Geslacht returned phonetic non-matches 
+    (Giesbergeria). Search gender/sex; kept active concepts only.

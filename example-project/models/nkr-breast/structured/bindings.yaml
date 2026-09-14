@@ -1,0 +1,12 @@
+model: nkr-breast
+bindings:
+- path: patientgegevens.gesl
+  id: gesl
+  display: Geslacht
+  status: bound
+  decision: accept
+  strength: example
+  system: http://snomed.info/sct
+  code: '734000001'
+  display_term: Biological sex
+  reason: ''

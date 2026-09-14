@@ -12,7 +12,9 @@
 
 ## 2. Default entities from category column
 
-**Decision**: Prefer identifier/category/label headers in this order: IKNL names (`variabele_name`, `variabele_categorie`, `variabele_label`), then synonyms (`name`/`id`/`code`, `category`/`group`/`entity`, `label`/`description`/`title`). No category column → one entity per sheet. Unrecognized layout → one entity per sheet, one element per row, leftover columns in `notes`.
+**Decision**: Prefer identifier/category/label headers in this order: IKNL Dutch (`variabele_name`, `variabele_categorie`, `variabele_label`), IKNL English (`variable_name`, `variable_category`, `variable_label`), NBCA (`variabele`, `dataset`, `omschrijving variabele` / `omschrijving`), then generic synonyms (`name`/`id`/`code`, `category`/`group`/`entity`, `label`/`description`/`title`). Empty identifier cells are skipped when an id column is present (PDF legend rows). No category column → one entity per sheet. Unrecognized layout → one entity per sheet, one element per row, leftover columns in `notes`.
+
+**Superseded in part by [006](../006-extract-column-roles/)**: those names are a first-pass **hint**. The extract contract is per-column `role` on the plan. Reviewer remaps roles instead of extending this list as the primary fix.
 
 **Rationale**: Spec assumptions. Fail-open on layout so a CSV with different headers still extracts.
 

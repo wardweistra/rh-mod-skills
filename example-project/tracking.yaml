@@ -17,6 +17,7 @@ models:
       models/nkr-breast/sources/projections/iknl-data-dictionary.yaml
   structured:
   - inventory.yaml
+  - bindings.yaml
   computable: []
   events:
   - timestamp: '2026-09-11T23:08:30Z'
@@ -31,6 +32,12 @@ models:
   - timestamp: '2026-09-13T21:40:50Z'
     type: inventory_derived
     description: 'Inventory written: 5 entities, 153 elements'
+  - timestamp: '2026-09-14T14:13:44Z'
+    type: annotate_planned
+    description: 'Annotate plan drafted: 1 element(s)'
+  - timestamp: '2026-09-14T14:14:58Z'
+    type: element_bound
+    description: 'Bindings: patientgegevens.gesl (accept)'
 - name: encr-standard-dataset
   title: ENCR standard dataset
   description: European Network of Cancer Registries minimum dataset (2023)
@@ -409,3 +416,9 @@ events:
 - timestamp: '2026-09-14T06:48:22Z'
   type: inventory_derived
   description: 'encr-standard-dataset: inventory derived'
+- timestamp: '2026-09-14T14:13:44Z'
+  type: annotate_planned
+  description: 'nkr-breast: annotate plan drafted'
+- timestamp: '2026-09-14T14:14:58Z'
+  type: element_bound
+  description: 'nkr-breast: Bindings: patientgegevens.gesl (accept)'

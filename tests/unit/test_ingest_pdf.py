@@ -13,6 +13,7 @@ from pdf_fixtures import write_empty_pdf, write_text_pdf
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "l1"
 ENCR = FIXTURES / "encr-standard-dataset" / "ENCR-Recommendation-standard-dataset_Mar2023.pdf"
 IKNL = FIXTURES / "nkr-breast" / "IKNL_Data_dictionary.xlsx"
+NBCA = FIXTURES / "nbca" / "IKNL-NBCA-2026-Variabelen-datadictionary-1-0-3-Raster.pdf"
 
 
 def load_yaml(path):
@@ -69,6 +70,45 @@ def test_encr_plan_lists_table_1_and_2(tmp_consumer):
     assert by_name["Table 2"]["columns"][0] == "Type of cancer"
     assert by_name["Table 2"]["row_count"] == 5
     assert 4 in by_name["Table 2"]["pages"]
+
+
+def test_nbca_plan_merges_continued_table(tmp_consumer):
+    _init("nbca")
+    result = CliRunner().invoke(ingest, ["plan", "nbca", "--source", str(NBCA)])
+    assert result.exit_code == 0, result.output
+    plan = load_yaml(
+        tmp_consumer / "models" / "nbca" / "process" / "plans" / "ingest-plan.yaml"
+    )
+    src = plan["sources"][0]
+    assert src["type"] == "pdf"
+    assert src["projection"] == "tables"
+    assert len(src["tables"]) == 1
+    table = src["tables"][0]
+    assert table["pages"] == [1, 2]
+    assert "continued-header" in table["warnings"]
+    assert table["columns"][:3] == ["DATASET", "VARIABELE", "omschrijving variabele"]
+    assert table["row_count"] == 124
+    assert table["decision"] == "include"
+
+
+def test_nbca_implement_projects_merged_rows(tmp_consumer):
+    _init("nbca")
+    runner = CliRunner()
+    runner.invoke(ingest, ["plan", "nbca", "--source", str(NBCA)])
+    runner.invoke(ingest, ["approve", "nbca"])
+    result = runner.invoke(ingest, ["implement", "nbca"])
+    assert result.exit_code == 0, result.output
+    proj = tmp_consumer / "models" / "nbca" / "sources" / "projections"
+    sheets = {}
+    for path in proj.glob("*.yaml"):
+        data = load_yaml(path)
+        for sheet in data.get("sheets") or []:
+            sheets[sheet["name"]] = sheet
+    assert len(sheets) == 1
+    sheet = next(iter(sheets.values()))
+    assert sheet["columns"][:3] == ["DATASET", "VARIABELE", "omschrijving variabele"]
+    assert len(sheet["rows"]) == 124
+    assert sheet["rows"][2][:3] == ["patient", "id", "Zorginstelling"]
 
 
 def test_implement_fails_without_approval_no_projection(tmp_consumer):
