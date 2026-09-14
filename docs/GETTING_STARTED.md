@@ -1,6 +1,6 @@
 # Getting Started
 
-This repo has a working workspace skeleton, L1 ingest (Excel/CSV), and L2 extract from table projections. Curated skills are not implemented yet.
+This repo has a working workspace skeleton, L1 ingest (Excel/CSV/PDF tables), and L2 extract from table projections. Curated skills are not implemented yet.
 
 ## 1. Open the right workspace
 
@@ -22,13 +22,13 @@ cd example-project
 uv run --project .. rh-mod-skills status
 ```
 
-`nkr-breast` is extracted (IKNL, 153 elements, 5 entities, next=`annotate`). `encr-standard-dataset` has the ENCR PDFs registered (projection skipped until [004](../specs/004-rh-mod-ingest-pdf/)). Extract on that model fails closed until a table projection exists.
+`nkr-breast` is extracted (IKNL, 153 elements, 5 entities, next=`annotate`). `encr-standard-dataset` is extracted from ENCR Table 1 (20 variables) + Table 2 (5 rows); companion PDFs remain skipped. Both next=`annotate`.
 
-Re-run from scratch with [001 quickstart](../specs/001-rh-mod-framework/quickstart.md), [002 quickstart](../specs/002-rh-mod-ingest/quickstart.md), then [003 extract](../specs/003-rh-mod-extract/quickstart.md). Use `--project ..`, not `--directory ..`.
+Re-run from scratch with [001 quickstart](../specs/001-rh-mod-framework/quickstart.md), [002 quickstart](../specs/002-rh-mod-ingest/quickstart.md), [003 extract](../specs/003-rh-mod-extract/quickstart.md), then [004 PDF tables](../specs/004-rh-mod-ingest-pdf/quickstart.md). Use `--project ..`, not `--directory ..`.
 
 ## 4. Next specification work
 
-Implement PDF table ingest ([004](../specs/004-rh-mod-ingest-pdf/)), then annotate, specify, formalize. Do not author `skills/.curated/rh-mod-*` until the matching CLI commands exist.
+Implement annotate, specify, formalize. Do not author `skills/.curated/rh-mod-*` until the matching CLI commands exist.
 
 ## 5. What this product will not do
 

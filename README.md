@@ -57,7 +57,7 @@ tracking.yaml
 
 ## Status
 
-`init`, `status`, `ingest` (Excel/CSV table projection; PDF register-only until 004), and `extract` (IKNL inventory from table projections) work. PDF table projection is specified as 004. Curated skills and annotate/specify/formalize are not built yet.
+`init`, `status`, `ingest` (Excel/CSV/PDF table projections), and `extract` work. Curated skills and annotate/specify/formalize are not built yet.
 
 Try the proving consumer:
 
@@ -68,7 +68,7 @@ uv run --project .. rh-mod-skills status
 
 1. Read [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
 2. Read [`specs/001-rh-mod-framework/spec.md`](specs/001-rh-mod-framework/spec.md)
-3. Next product spec to implement: PDF table ingest (`004-rh-mod-ingest-pdf`)
+3. Next product spec: annotate (`rh-mod-annotate`)
 
 ## Prerequisites
 

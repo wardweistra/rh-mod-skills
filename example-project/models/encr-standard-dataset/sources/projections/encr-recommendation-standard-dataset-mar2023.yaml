@@ -1,0 +1,88 @@
+source: ENCR-Recommendation-standard-dataset_Mar2023.pdf
+type: pdf
+sheets:
+- name: Table 1
+  columns:
+  - Variable
+  - Comment
+  rows:
+  - - Personal identification
+    - Preferably a unique ID number, otherwise full name
+  - - Date of birth (dd/mm/yyyy)
+    - ''
+  - - Sex at birth
+    - Male/female/undetermined
+  - - Postal code, zip code
+    - Needed for identification and for geographical based studies
+  - - Hospital(s) of diagnosis
+    - ''
+  - - Incidence date
+    - According to ENCR recommendations
+  - - Basis of the diagnosis
+    - According to ENCR recommendations
+  - - Topography (primary site)
+    - According to the latest version of ICD-O*
+  - - Laterality (left, right, bilateral)
+    - Laterality should be recorded for all solid cancers in paired organs 
+      (salivary gland, nasal cavity, paranasal sinuses, lung, pleura, breast, 
+      ovary/fallopian tube, testis, kidney, renal pelvis, ureter, eye and 
+      adrenal gland) Bilateral cases in paired organs should be registered 
+      separately, except for bilateral cancers of the ovary/fallopian tube, 
+      nephroblastoma and neuroblastoma Laterality is optional for sarcomas and 
+      skin cancers of the extremities
+  - - Morphology, including behaviour code
+    - According to the latest version of ICD-O*
+  - - Grade (differentiation grade, WHO grade, Gleason grade group)
+    - According to the latest version of ICD-O* and/or WHO
+  - - Immunophenotype (T-cell, B-cell, NK-cell)
+    - For lymphoid haematological malignancies
+  - - Stage
+    - See table 2 for the recommended stage variables
+  - - Prognostic (tumour) factors, such as ER/PR and Her2 (breast cancer), 
+      Breslow thickness (melanoma), HPV-status (oral cavity, cervix, vulva), 
+      cytogenetic aberrations (CNS, sarcoma, haematological malignancies), etc.
+    - According to ENCR recommendations
+  - - Primary treatment
+    - According to ENCR recommendations
+  - - Hospital(s) of treatment
+    - ''
+  - - Date and site(s) of recurrence/progression
+    - According to ENCR recommendations
+  - - Vital status
+    - Needed for the study of survival
+  - - Date of death or date of last follow-up (dd/mm/yyyy)
+    - ''
+  - - Cause of death
+    - According to the standard of the cause of death registration in the 
+      registration area
+- name: Table 2
+  columns:
+  - Type of cancer
+  - Recommended stage variables
+  - Remarks
+  rows:
+  - - Solid cancers in adults
+    - TNM classification of malignant tumours (UICC)
+    - This includes (y)cTNM and (y)pTNM (if applicable) Essential TNM may be an 
+      alternative for poorly resourced registries FIGO stage for gynaecological 
+      tumours is optional A registry should keep record which edition of the TNM
+      classification was used for which incidence year
+  - - Solid cancers in adults for which TNM is not applicable (excluding tumours
+      of the central nervous system)
+    - Extent of disease
+    - 'Extent of disease should be classified as follows: Localized disease Locally
+      advanced disease (invasion of neighbouring organs) Regional disease (spread
+      of the tumour to regional lymph nodes) Metastatic disease'
+  - - Paediatric tumours
+    - Tier 2 of the Toronto consensus principles and guidelines
+    - Tier 1 may be an alternative for poorly resourced registries
+  - - Lymphoma
+    - Lugano classification
+    - The Lugano classification is an updated version of the Ann Arbor 
+      classification
+  - - Haematological malignancies
+    - International prognostic scoring systems
+    - The scoring system is different for each haematological malignancy. For 
+      example, the IPI-score for diffuse large B-cell lymphoma requires 
+      information on age, Ann Arbor stage, performance status, serum LDH and 
+      extranodal involvement.

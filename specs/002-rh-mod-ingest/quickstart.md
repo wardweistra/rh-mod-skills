@@ -23,4 +23,4 @@ uv run --project .. rh-mod-skills ingest verify encr-standard-dataset
 uv run --project .. rh-mod-skills status encr-standard-dataset
 ```
 
-Expect: NKR next=extract, 153 projected rows; ENCR projection skipped (pdf), next=extract.
+Expect: NKR next=extract, 153 projected rows; ENCR PDFs registered. Table projection of the 2023 standard dataset is [004](../004-rh-mod-ingest-pdf/).

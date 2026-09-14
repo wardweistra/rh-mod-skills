@@ -23,6 +23,11 @@ from rh_mod_skills.common import (
     sha256_file,
     tracking_file,
 )
+from rh_mod_skills.pdf_tables import (
+    SKIP_NONE_APPROVED,
+    detect_pdf_tables,
+    project_pdf_tables,
+)
 
 PLAN_NAME = "ingest-plan.yaml"
 
@@ -177,21 +182,35 @@ def plan_cmd(model, sources, origin_url):
     for src in sources:
         src = src.resolve()
         type_ = detect_type(src)
-        entries.append(
-            {
-                "path": str(src),
-                "name": source_name_from_path(src),
-                "type": type_,
-                "projection": projection_intent(type_),
-                "origin_url": origin_url,
-            }
-        )
+        entry = {
+            "path": str(src),
+            "name": source_name_from_path(src),
+            "type": type_,
+            "projection": projection_intent(type_),
+            "origin_url": origin_url,
+        }
+        if type_ == "pdf":
+            preview = detect_pdf_tables(src)
+            entry["projection"] = preview.get("projection") or "skipped"
+            if preview.get("skip_reason"):
+                entry["skip_reason"] = preview["skip_reason"]
+            if preview.get("tables") is not None:
+                entry["tables"] = preview.get("tables") or []
+            if preview.get("warnings"):
+                entry["warnings"] = preview["warnings"]
+        entries.append(entry)
     data = {"model": model, "status": "draft", "sources": entries}
     save_plan(model, data)
     log_info(f"Wrote ingest plan ({len(entries)} source(s), status=draft)")
     click.echo(f"  {ingest_plan_path(model)}")
     for entry in entries:
         click.echo(f"  - {entry['name']}  type={entry['type']}  projection={entry['projection']}")
+        for table in entry.get("tables") or []:
+            click.echo(
+                f"      {table.get('id')}  {table.get('name')}  "
+                f"pages={table.get('pages')}  rows={table.get('row_count')}  "
+                f"decision={table.get('decision')}"
+            )
 
 
 @ingest.command("approve")
@@ -241,22 +260,20 @@ def implement_cmd(model, acknowledge_drift):
         dest = raw_dir / src.name
         new_sum = sha256_file(src)
         old = existing.get(name)
-        if old and old.get("checksum") == new_sum and dest.is_file():
+        checksum_changed = bool(old and old.get("checksum") and old.get("checksum") != new_sum)
+        want_tables = entry.get("projection") == "tables"
+        already_projected = bool(old and old.get("projection") == "tables" and dest.is_file())
+        if old and old.get("checksum") == new_sum and dest.is_file() and not want_tables and not already_projected:
             log_info(f"Unchanged, skipping: {name}")
             continue
-        if (
-            old
-            and old.get("checksum")
-            and old.get("checksum") != new_sum
-            and _has_structured_artifacts(md)
-            and not acknowledge_drift
-        ):
+        if checksum_changed and _has_structured_artifacts(md) and not acknowledge_drift:
             raise click.ClickException(
                 f"Source '{name}' checksum changed and structured/ has artifacts. "
                 "Re-run with --acknowledge-drift to refresh L1 only (L2 is not overwritten)."
             )
 
-        shutil.copy2(src, dest)
+        if not dest.is_file() or checksum_changed or old is None:
+            shutil.copy2(src, dest)
         rec = {
             "name": name,
             "file": _consumer_relative(dest),
@@ -267,13 +284,34 @@ def implement_cmd(model, acknowledge_drift):
             "projection": entry.get("projection"),
         }
 
-        if entry.get("projection") == "tables":
+        included_pdf = [
+            t for t in (entry.get("tables") or []) if t.get("decision") == "include"
+        ]
+        if type_ == "pdf" and want_tables and not included_pdf:
+            want_tables = False
+            rec["projection"] = "skipped"
+            rec["skip_reason"] = SKIP_NONE_APPROVED
+
+        if want_tables:
             if type_ == "excel":
                 sheets = project_excel(dest)
             elif type_ == "csv":
                 sheets = project_csv(dest)
+            elif type_ == "pdf":
+                sheets = project_pdf_tables(dest, included_pdf)
+                if not sheets:
+                    rec["projection"] = "skipped"
+                    rec["skip_reason"] = SKIP_NONE_APPROVED
+                    log_info(f"Registered {name} (projection skipped: {SKIP_NONE_APPROVED})")
+                    locked_update_tracking(
+                        lambda t, record=rec, model_name=model, src_name=name: _register_source(
+                            t, model_name, src_name, record
+                        )
+                    )
+                    continue
             else:
                 raise click.ClickException(f"Cannot project type {type_} as tables")
+            rec["projection"] = "tables"
             proj_path = proj_dir / f"{name}.yaml"
             write_projection(proj_path, src.name, type_, sheets)
             rec["projection_file"] = _consumer_relative(proj_path)
@@ -281,8 +319,12 @@ def implement_cmd(model, acknowledge_drift):
             log_info(f"Projected {name}: {len(sheets)} sheet(s), {n_rows} data row(s)")
         else:
             rec["projection"] = "skipped"
-            rec["skip_reason"] = type_
-            log_info(f"Registered {name} (projection skipped: {type_})")
+            rec["skip_reason"] = rec.get("skip_reason") or entry.get("skip_reason") or type_
+            rec.pop("projection_file", None)
+            stale = proj_dir / f"{name}.yaml"
+            if stale.is_file():
+                stale.unlink()
+            log_info(f"Registered {name} (projection skipped: {rec['skip_reason']})")
             if type_ == "pdf":
                 md_guess = dest.with_suffix(".md")
                 if md_guess.exists():

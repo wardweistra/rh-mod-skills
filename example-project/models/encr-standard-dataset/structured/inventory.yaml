@@ -1,0 +1,374 @@
+model: encr-standard-dataset
+entities:
+- id: table-1
+  title: Table 1
+  elements:
+  - id: personal-identification
+    display: Preferably a unique ID number, otherwise full name
+    path: table-1.personal-identification
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 1
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: date-of-birth-dd-mm-yyyy
+    display: date-of-birth-dd-mm-yyyy
+    path: table-1.date-of-birth-dd-mm-yyyy
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 2
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: sex-at-birth
+    display: Male/female/undetermined
+    path: table-1.sex-at-birth
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 3
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: postal-code-zip-code
+    display: Needed for identification and for geographical based studies
+    path: table-1.postal-code-zip-code
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 4
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: hospital-s-of-diagnosis
+    display: hospital-s-of-diagnosis
+    path: table-1.hospital-s-of-diagnosis
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 5
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: incidence-date
+    display: According to ENCR recommendations
+    path: table-1.incidence-date
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 6
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: basis-of-the-diagnosis
+    display: According to ENCR recommendations
+    path: table-1.basis-of-the-diagnosis
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 7
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: topography-primary-site
+    display: According to the latest version of ICD-O*
+    path: table-1.topography-primary-site
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 8
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: laterality-left-right-bilateral
+    display: Laterality should be recorded for all solid cancers in paired 
+      organs (salivary gland, nasal cavity, paranasal sinuses, lung, pleura, 
+      breast, ovary/fallopian tube, testis, kidney, renal pelvis, ureter, eye 
+      and adrenal gland) Bilateral cases in paired organs should be registered 
+      separately, except for bilateral cancers of the ovary/fallopian tube, 
+      nephroblastoma and neuroblastoma Laterality is optional for sarcomas and 
+      skin cancers of the extremities
+    path: table-1.laterality-left-right-bilateral
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 9
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: morphology-including-behaviour-code
+    display: According to the latest version of ICD-O*
+    path: table-1.morphology-including-behaviour-code
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 10
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: grade-differentiation-grade-who-grade-gleason-grade-group
+    display: According to the latest version of ICD-O* and/or WHO
+    path: table-1.grade-differentiation-grade-who-grade-gleason-grade-group
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 11
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: immunophenotype-t-cell-b-cell-nk-cell
+    display: For lymphoid haematological malignancies
+    path: table-1.immunophenotype-t-cell-b-cell-nk-cell
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 12
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: stage
+    display: See table 2 for the recommended stage variables
+    path: table-1.stage
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 13
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: 
+      prognostic-tumour-factors-such-as-er-pr-and-her2-breast-cancer-breslow-thickness-melanoma-hpv-status-oral-cavity-cervix-vulva-cytogenetic-aberrations-cns-sarcoma-haematological-malignancies-etc
+    display: According to ENCR recommendations
+    path: 
+      table-1.prognostic-tumour-factors-such-as-er-pr-and-her2-breast-cancer-breslow-thickness-melanoma-hpv-status-oral-cavity-cervix-vulva-cytogenetic-aberrations-cns-sarcoma-haematological-malignancies-etc
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 14
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: primary-treatment
+    display: According to ENCR recommendations
+    path: table-1.primary-treatment
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 15
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: hospital-s-of-treatment
+    display: hospital-s-of-treatment
+    path: table-1.hospital-s-of-treatment
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 16
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: date-and-site-s-of-recurrence-progression
+    display: According to ENCR recommendations
+    path: table-1.date-and-site-s-of-recurrence-progression
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 17
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: vital-status
+    display: Needed for the study of survival
+    path: table-1.vital-status
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 18
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: date-of-death-or-date-of-last-follow-up-dd-mm-yyyy
+    display: date-of-death-or-date-of-last-follow-up-dd-mm-yyyy
+    path: table-1.date-of-death-or-date-of-last-follow-up-dd-mm-yyyy
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 19
+      columns:
+        id: Variable
+        category:
+        label: Comment
+  - id: cause-of-death
+    display: According to the standard of the cause of death registration in the
+      registration area
+    path: table-1.cause-of-death
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 1
+      row: 20
+      columns:
+        id: Variable
+        category:
+        label: Comment
+- id: table-2
+  title: Table 2
+  elements:
+  - id: row-1
+    display: row-1
+    path: table-2.row-1
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 2
+      row: 1
+      columns:
+        id:
+        category:
+        label:
+    notes:
+      Type of cancer: Solid cancers in adults
+      Recommended stage variables: TNM classification of malignant tumours 
+        (UICC)
+      Remarks: This includes (y)cTNM and (y)pTNM (if applicable) Essential TNM 
+        may be an alternative for poorly resourced registries FIGO stage for 
+        gynaecological tumours is optional A registry should keep record which 
+        edition of the TNM classification was used for which incidence year
+  - id: row-2
+    display: row-2
+    path: table-2.row-2
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 2
+      row: 2
+      columns:
+        id:
+        category:
+        label:
+    notes:
+      Type of cancer: Solid cancers in adults for which TNM is not applicable 
+        (excluding tumours of the central nervous system)
+      Recommended stage variables: Extent of disease
+      Remarks: 'Extent of disease should be classified as follows: Localized disease
+        Locally advanced disease (invasion of neighbouring organs) Regional disease
+        (spread of the tumour to regional lymph nodes) Metastatic disease'
+  - id: row-3
+    display: row-3
+    path: table-2.row-3
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 2
+      row: 3
+      columns:
+        id:
+        category:
+        label:
+    notes:
+      Type of cancer: Paediatric tumours
+      Recommended stage variables: Tier 2 of the Toronto consensus principles 
+        and guidelines
+      Remarks: Tier 1 may be an alternative for poorly resourced registries
+  - id: row-4
+    display: row-4
+    path: table-2.row-4
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 2
+      row: 4
+      columns:
+        id:
+        category:
+        label:
+    notes:
+      Type of cancer: Lymphoma
+      Recommended stage variables: Lugano classification
+      Remarks: The Lugano classification is an updated version of the Ann Arbor 
+        classification
+  - id: row-5
+    display: row-5
+    path: table-2.row-5
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: encr-recommendation-standard-dataset-mar2023
+      sheet: Table 2
+      row: 5
+      columns:
+        id:
+        category:
+        label:
+    notes:
+      Type of cancer: Haematological malignancies
+      Recommended stage variables: International prognostic scoring systems
+      Remarks: The scoring system is different for each haematological 
+        malignancy. For example, the IPI-score for diffuse large B-cell lymphoma
+        requires information on age, Ann Arbor stage, performance status, serum 
+        LDH and extranodal involvement.

@@ -11,9 +11,10 @@ from rh_mod_skills.commands.init import init
 from rh_mod_skills.commands.ingest import ingest
 from rh_mod_skills.commands.status import status
 
+from pdf_fixtures import write_empty_pdf
+
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "l1"
 IKNL = FIXTURES / "nkr-breast" / "IKNL_Data_dictionary.xlsx"
-ENCR = FIXTURES / "encr-standard-dataset" / "ENCR-Recommendation-standard-dataset_Mar2023.pdf"
 
 
 def load_yaml(path):
@@ -97,35 +98,26 @@ def test_iknl_excel_projection(tmp_consumer):
     assert "mapping" not in st.output.lower()
 
 
-def test_pdf_register_skips_projection(tmp_consumer):
-    _init("encr-standard-dataset")
+def test_pdf_without_tables_skips_projection(tmp_consumer):
+    _init("blank-pdf")
+    pdf = write_empty_pdf(tmp_consumer / "blank.pdf")
     runner = CliRunner()
-    runner.invoke(
-        ingest,
-        [
-            "plan",
-            "encr-standard-dataset",
-            "--source",
-            str(ENCR),
-            "--origin-url",
-            "https://www.encr.eu/ENCR-Recommendations",
-        ],
-    )
-    runner.invoke(ingest, ["approve", "encr-standard-dataset"])
-    result = runner.invoke(ingest, ["implement", "encr-standard-dataset"])
+    runner.invoke(ingest, ["plan", "blank-pdf", "--source", str(pdf)])
+    runner.invoke(ingest, ["approve", "blank-pdf"])
+    result = runner.invoke(ingest, ["implement", "blank-pdf"])
     assert result.exit_code == 0, result.output
-    dest = tmp_consumer / "models" / "encr-standard-dataset" / "sources" / "raw" / ENCR.name
+    dest = tmp_consumer / "models" / "blank-pdf" / "sources" / "raw" / pdf.name
     assert dest.is_file()
-    proj_dir = tmp_consumer / "models" / "encr-standard-dataset" / "sources" / "projections"
+    proj_dir = tmp_consumer / "models" / "blank-pdf" / "sources" / "projections"
     assert not any(proj_dir.glob("*.yaml")) if proj_dir.exists() else True
-    assert not list((tmp_consumer / "models" / "encr-standard-dataset" / "sources").rglob("*.md"))
+    assert not list((tmp_consumer / "models" / "blank-pdf" / "sources").rglob("*.md"))
     tracking = load_yaml(tmp_consumer / "tracking.yaml")
     src = tracking["models"][0]["sources"][0]
     assert src["type"] == "pdf"
     assert src["projection"] == "skipped"
-    verify = runner.invoke(ingest, ["verify", "encr-standard-dataset"])
+    verify = runner.invoke(ingest, ["verify", "blank-pdf"])
     assert verify.exit_code == 0, verify.output
-    assert "skipped (pdf)" in verify.output
+    assert "skipped (no-text-layer)" in verify.output
 
 
 def test_verify_idempotent_and_drift(tmp_consumer):

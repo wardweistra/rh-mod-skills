@@ -12,9 +12,10 @@ from rh_mod_skills.commands.init import init
 from rh_mod_skills.commands.ingest import ingest
 from rh_mod_skills.commands.status import status
 
+from pdf_fixtures import write_empty_pdf
+
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "l1"
 IKNL = FIXTURES / "nkr-breast" / "IKNL_Data_dictionary.xlsx"
-ENCR = FIXTURES / "encr-standard-dataset" / "ENCR-Recommendation-standard-dataset_Mar2023.pdf"
 
 
 def load_yaml(path):
@@ -187,21 +188,15 @@ def test_reviewer_merge_entities(tmp_consumer):
 
 def test_pdf_only_plan_fails(tmp_consumer):
     runner = CliRunner()
-    _init("encr-standard-dataset")
-    runner.invoke(ingest, ["plan", "encr-standard-dataset", "--source", str(ENCR)])
-    runner.invoke(ingest, ["approve", "encr-standard-dataset"])
-    assert runner.invoke(ingest, ["implement", "encr-standard-dataset"]).exit_code == 0
-    result = runner.invoke(extract, ["plan", "encr-standard-dataset"])
+    _init("pdf-only")
+    pdf = write_empty_pdf(tmp_consumer / "blank.pdf")
+    runner.invoke(ingest, ["plan", "pdf-only", "--source", str(pdf)])
+    runner.invoke(ingest, ["approve", "pdf-only"])
+    assert runner.invoke(ingest, ["implement", "pdf-only"]).exit_code == 0
+    result = runner.invoke(extract, ["plan", "pdf-only"])
     assert result.exit_code == 1
     assert "table projection" in result.output
-    plan = (
-        tmp_consumer
-        / "models"
-        / "encr-standard-dataset"
-        / "process"
-        / "plans"
-        / "extract-plan.yaml"
-    )
+    plan = tmp_consumer / "models" / "pdf-only" / "process" / "plans" / "extract-plan.yaml"
     assert not plan.exists()
 
 

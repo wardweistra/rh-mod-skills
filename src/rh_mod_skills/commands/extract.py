@@ -27,9 +27,9 @@ PLAN_NAME = "extract-plan.yaml"
 INVENTORY_NAME = "inventory.yaml"
 VALUE_DOMAINS_NAME = "value-domains.yaml"
 
-ID_HEADERS = ("variabele_name", "name", "id", "code")
+ID_HEADERS = ("variabele_name", "name", "id", "code", "variable")
 CAT_HEADERS = ("variabele_categorie", "category", "group", "entity")
-LABEL_HEADERS = ("variabele_label", "label", "description", "title")
+LABEL_HEADERS = ("variabele_label", "label", "description", "title", "comment")
 DATATYPE_HEADERS = ("datatype", "data_type")
 CARDINALITY_HEADERS = ("cardinality", "card", "multiplicity")
 DOMAIN_VAR_HEADERS = ("variable", "variabele", "element")

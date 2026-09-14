@@ -199,15 +199,6 @@ models:
     origin_url: https://www.encr.eu/ENCR-Recommendations
     projection: skipped
     skip_reason: pdf
-  - name: encr-recommendation-standard-dataset-mar2023
-    file: 
-      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-standard-dataset_Mar2023.pdf
-    type: pdf
-    checksum: cdc4410fe69ed3658a1c5c2afc437760138ef559997f4ba894703efc9d32f914
-    ingested_at: '2026-09-11T23:11:57Z'
-    origin_url: https://www.encr.eu/ENCR-Recommendations
-    projection: skipped
-    skip_reason: pdf
   - name: encr-recommendation-treatment-jan2025-en
     file: 
       models/encr-standard-dataset/sources/raw/ENCR-Recommendation-treatment_Jan2025_EN.pdf
@@ -235,7 +226,18 @@ models:
     origin_url: https://www.encr.eu/ENCR-Recommendations
     projection: skipped
     skip_reason: pdf
-  structured: []
+  - name: encr-recommendation-standard-dataset-mar2023
+    file: 
+      models/encr-standard-dataset/sources/raw/ENCR-Recommendation-standard-dataset_Mar2023.pdf
+    type: pdf
+    checksum: cdc4410fe69ed3658a1c5c2afc437760138ef559997f4ba894703efc9d32f914
+    ingested_at: '2026-09-14T06:48:21Z'
+    origin_url: https://www.encr.eu/ENCR-Recommendations
+    projection: tables
+    projection_file: 
+      models/encr-standard-dataset/sources/projections/encr-recommendation-standard-dataset-mar2023.yaml
+  structured:
+  - inventory.yaml
   computable: []
   events:
   - timestamp: '2026-09-11T23:08:31Z'
@@ -307,6 +309,15 @@ models:
   - timestamp: '2026-09-11T23:11:57Z'
     type: source_added
     description: 'Source registered: encr-structured-registry-review-en'
+  - timestamp: '2026-09-14T06:48:21Z'
+    type: source_added
+    description: 'Source registered: encr-recommendation-standard-dataset-mar2023'
+  - timestamp: '2026-09-14T06:48:21Z'
+    type: extract_planned
+    description: 'Extract plan drafted: 2 entities, 25 elements'
+  - timestamp: '2026-09-14T06:48:22Z'
+    type: inventory_derived
+    description: 'Inventory written: 2 entities, 25 elements'
 events:
 - timestamp: '2026-09-11T23:08:30Z'
   type: model_created
@@ -389,3 +400,12 @@ events:
 - timestamp: '2026-09-13T21:40:50Z'
   type: inventory_derived
   description: 'nkr-breast: inventory derived'
+- timestamp: '2026-09-14T06:48:21Z'
+  type: source_added
+  description: 'encr-standard-dataset: encr-recommendation-standard-dataset-mar2023'
+- timestamp: '2026-09-14T06:48:21Z'
+  type: extract_planned
+  description: 'encr-standard-dataset: extract plan drafted'
+- timestamp: '2026-09-14T06:48:22Z'
+  type: inventory_derived
+  description: 'encr-standard-dataset: inventory derived'

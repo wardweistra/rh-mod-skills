@@ -2,134 +2,34 @@ model: encr-standard-dataset
 status: approved
 sources:
 - path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Data-quality-checks-ECIS_v1.1_2026_EN.pdf
-  name: encr-data-quality-checks-ecis-v1.1-2026-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Guidelines-confidentiality-ethics_2012_EN.pdf
-  name: encr-guidelines-confidentiality-ethics-2012-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Position-paper-EU-data-protection_2012_EN.pdf
-  name: encr-position-paper-eu-data-protection-2012-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Position-paper-haematological-coding_2015.pdf
-  name: encr-position-paper-haematological-coding-2015
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Position-paper-survival-in-ECIS_2025_EN.pdf
-  name: encr-position-paper-survival-in-ecis-2025-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-basis-of-diagnosis_Oct2022_EN.pdf
-  name: encr-recommendation-basis-of-diagnosis-oct2022-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-bladder-tumours_1995_EN.pdf
-  name: encr-recommendation-bladder-tumours-1995-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-brain-cns_1998_EN.pdf
-  name: encr-recommendation-brain-cns-1998-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-cns_Dec2024_EN.pdf
-  name: encr-recommendation-cns-dec2024-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-condensed-tnm_2002_EN.pdf
-  name: encr-recommendation-condensed-tnm-2002-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-confidentiality_2002_EN.pdf
-  name: encr-recommendation-confidentiality-2002-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-haematological-malignancies_Feb2014_EN.pdf
-  name: encr-recommendation-haematological-malignancies-feb2014-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-incidence-date_Mar2022_EN.pdf
-  name: encr-recommendation-incidence-date-mar2022-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-method-of-detection_2001_EN.pdf
-  name: encr-recommendation-method-of-detection-2001-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-migrants_Jun2022_EN.pdf
-  name: encr-recommendation-migrants-jun2022-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-multiple-primaries_Jul2004_EN.pdf
-  name: encr-recommendation-multiple-primaries-jul2004-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-non-melanoma-skin_2000_EN.pdf
-  name: encr-recommendation-non-melanoma-skin-2000-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-recurrence-progression-transformation_Feb2025_EN.pdf
-  name: encr-recommendation-recurrence-progression-transformation-feb2025-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
     /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-standard-dataset_Mar2023.pdf
   name: encr-recommendation-standard-dataset-mar2023
   type: pdf
-  projection: skipped
+  projection: tables
   origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-treatment_Jan2025_EN.pdf
-  name: encr-recommendation-treatment-jan2025-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Recommendation-urothelial-tumours_Jun2022_EN.pdf
-  name: encr-recommendation-urothelial-tumours-jun2022-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
-- path: 
-    /Users/ward/workspace/rh-mod-skills/tests/fixtures/l1/encr-standard-dataset/ENCR-Structured-registry-review_EN.pdf
-  name: encr-structured-registry-review-en
-  type: pdf
-  projection: skipped
-  origin_url: https://www.encr.eu/ENCR-Recommendations
+  tables:
+  - id: t1
+    name: Table 1
+    pages:
+    - 2
+    - 3
+    columns:
+    - Variable
+    - Comment
+    row_count: 20
+    warnings:
+    - continued-without-header
+    decision: include
+    reason: ''
+  - id: t2
+    name: Table 2
+    pages:
+    - 4
+    columns:
+    - Type of cancer
+    - Recommended stage variables
+    - Remarks
+    row_count: 5
+    warnings: []
+    decision: include
+    reason: ''

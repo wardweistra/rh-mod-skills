@@ -1,12 +1,17 @@
 # 004-rh-mod-ingest-pdf
 
-PDF data dictionaries → same L1 table projection as Excel/CSV. Extends `ingest`, does not add extract-time PDF parsing.
+PDF data dictionaries → same L1 table projection as Excel/CSV. Extends `ingest`.
 
 | Artifact | Path |
 |----------|------|
 | Spec | [spec.md](spec.md) |
+| Plan | [plan.md](plan.md) |
+| Research | [research.md](research.md) |
+| Data model | [data-model.md](data-model.md) |
+| Quickstart | [quickstart.md](quickstart.md) |
+| Tasks | [tasks.md](tasks.md) |
 | Quality checklist | [checklists/requirements.md](checklists/requirements.md) |
 
-**Proving file**: `ENCR-Recommendation-standard-dataset_Mar2023.pdf` → Table 1 + Table 2.
+**Proving file**: `ENCR-Recommendation-standard-dataset_Mar2023.pdf` → Table 1 (20 rows) + Table 2 (5 rows).
 
-Next: `speckit-plan` / implement 004. Extract (003) can ship on Excel first; ENCR extract waits on this projection.
+Implemented: ingest plan lists detected tables; implement writes included sheets. Extract on ENCR now succeeds.
