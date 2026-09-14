@@ -1,0 +1,31 @@
+# L2 inventory written by `rh-mod-skills extract implement`
+# Path: models/<id>/structured/inventory.yaml
+schema_version: "1.0"
+
+structure:
+  model: string
+  entities:
+    - id: string
+      title: string
+      elements:
+        - id: string
+          display: string
+          path: string
+          datatype: string          # source-stated or "unknown"
+          cardinality: string       # source-stated or "unknown"
+          value_domain: string      # optional local domain id
+          notes: mapping            # optional leftover columns
+          provenance:
+            source: string
+            sheet: string
+            row: integer            # 1-based index into projection sheet.rows
+            columns:
+              id: string
+              category: string
+              label: string
+
+forbidden:
+  - bindings
+  - snomed
+  - loinc
+  - StructureDefinition

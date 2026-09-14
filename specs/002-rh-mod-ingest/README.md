@@ -17,4 +17,4 @@ Structured L1 ingest for Excel/CSV, plus PDF registration. Depends on 001 `init`
 - `nkr-breast` — IKNL Excel (153 variables) → table projection
 - `encr-standard-dataset` — 22 ENCR English PDFs → register only
 
-Next: specify **003 `rh-mod-extract`**.
+PDF table projection is specified separately as [004-rh-mod-ingest-pdf](../004-rh-mod-ingest-pdf/). Extract (003) reads table projections only.

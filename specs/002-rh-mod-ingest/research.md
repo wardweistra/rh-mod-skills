@@ -27,4 +27,4 @@
 ## 5. PDF
 
 **Decision**: Register only. `projection: skipped`, reason `pdf`.  
-**Rationale**: Spec + constitution. ENCR Table 1/2 extraction is a later plugin.
+**Rationale**: Spec + constitution 1.0 delivery constraint. ENCR Table 1/2 extraction is [004-rh-mod-ingest-pdf](../004-rh-mod-ingest-pdf/) (constitution 1.1.0 now allows PDF table projections).

@@ -1,6 +1,7 @@
 import click
 
 from rh_mod_skills import __version__
+from rh_mod_skills.commands.extract import extract
 from rh_mod_skills.commands.init import init
 from rh_mod_skills.commands.ingest import ingest
 from rh_mod_skills.commands.status import status
@@ -19,4 +20,5 @@ def version():
 
 main.add_command(init)
 main.add_command(ingest)
+main.add_command(extract)
 main.add_command(status)

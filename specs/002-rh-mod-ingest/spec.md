@@ -11,7 +11,7 @@
 ### Session 2026-09-11
 
 - Q: What is in the first proving corpus? → A: `nkr-breast` uses the IKNL Excel export (1 sheet `Variabelen`, 153 variables, columns `variabele_name` / `variabele_categorie` / `variabele_label`) from the [NKR-datacatalogus](https://iknl.nl/nkr/cijfers-op-maat/over-datacatalogus). `encr-standard-dataset` uses the ENCR 2023 [standard dataset PDF](https://www.encr.eu/ENCR-Recommendations) (Table 1 + Table 2) plus the other English recommendation PDFs from that page (cited companions and the rest of the English list). All are registered as L1; only Excel/CSV get a table projection.
-- Q: How is PDF handled in v1? → A: Register original bytes, checksum, and optional origin URL. Do not flatten to Markdown as the only form. Extracting PDF tables into rows is a later ingest plugin, not this feature.
+- Q: How is PDF handled in v1? → A: Register original bytes, checksum, and optional origin URL. Do not flatten to Markdown as the only form. Extracting PDF tables into rows is [004-rh-mod-ingest-pdf](../004-rh-mod-ingest-pdf/), not this feature.
 - Q: Is ingest gated? → A: Yes. `plan → human approval → implement → verify`. Implement fails closed without an approved plan.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -132,7 +132,7 @@ A registry exports a codebook as CSV instead of Excel. Ingest treats the file as
 
 - 001 `init` / `tracking.yaml` / `models/<id>/` exist (or land immediately before this implementation).
 - v1 structured projection formats are Excel (`.xlsx`) and CSV only. `.xls` and ODS are out of scope.
-- PDF table extraction (ENCR Table 1 / Table 2 → rows) is a later ingest plugin. Companion ENCR PDFs in `tests/fixtures/l1/encr-standard-dataset/` are registered the same way as the index PDF.
+- PDF table extraction (ENCR Table 1 / Table 2 → rows) is [004-rh-mod-ingest-pdf](../004-rh-mod-ingest-pdf/). Companion ENCR PDFs in `tests/fixtures/l1/encr-standard-dataset/` are registered the same way as the index PDF in this feature.
 - The two proving sources are two models, not one model with two files. Mapping NKR → ENCR is rh-map-skills.
 - Projection stores literals from the sheet; it does not translate Dutch labels or bind SNOMED/ICD-O.
 - `openpyxl` (or equivalent) is an allowed dependency expansion justified in the 002 plan, not this spec.
@@ -140,7 +140,7 @@ A registry exports a codebook as CSV instead of Excel. Ingest treats the file as
 
 ## Out of Scope
 
-- PDF/OCR table extraction (ENCR PDFs are registered as originals only in this feature)
+- PDF/OCR table extraction (ENCR PDFs are registered as originals only in this feature; tables are 004)
 - Translations of ENCR recommendations (ES/FR/RO/DE) and the Toronto Childhood Cancer Stage Guidelines (endorsement page only, no ENCR-hosted PDF)
 - Element inventory, value domains, terminology bindings
 - FHIR `StructureDefinition` / ValueSet generation

@@ -31,7 +31,7 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-- Confirm the deterministic write boundary is assigned to concrete `rh-skills`
+- Confirm the deterministic write boundary is assigned to concrete `rh-mod-skills`
   CLI commands.
 - Confirm any state-changing workflow uses an explicit
   `plan -> implement -> verify` lifecycle or justify why it does not.

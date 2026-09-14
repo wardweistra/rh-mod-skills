@@ -14,7 +14,8 @@ Mappings between two logical models (or a logical model and FHIR resources) belo
 L1 Ingest                         L2 Specify                         L3 Formalize
 ─────────────────────             ──────────                         ────────────
 Codebooks, dictionaries,    ──→   Inventory, bindings,         ──→   FHIR StructureDefinition
-Excel/CSV (structure kept)        fully specified LM YAML            (kind=logical) + ValueSets
+Excel/CSV/PDF tables              fully specified LM YAML            (kind=logical) + ValueSets
+(structure kept; not MD-only)
 ```
 
 Planned skills (CLI for init/status/ingest exists; curated SKILL.md files do not):
@@ -33,13 +34,13 @@ Planned skills (CLI for init/status/ingest exists; curated SKILL.md files do not
 
 - **CLI writes, skills reason.** Durable artifacts go through `rh-mod-skills` commands.
 - **Plan → human review → implement → verify** at every stage.
-- **YAML is canonical.** Excel/CSV codebooks are L1 sources, not L2 truth. Mapping workbooks live in rh-map-skills.
+- **YAML is canonical.** Excel, CSV, and PDF table projections are L1 sources, not L2 truth. Mapping workbooks live in rh-map-skills.
 
 ## Consumer project layout
 
 ```text
 models/<model-id>/
-  sources/                         # L1 codebooks, Excel, CSV, PDF
+  sources/                         # L1 codebooks: Excel, CSV, PDF (tables projected, not MD-only)
   structured/
     inventory.yaml                 # tables/classes, elements, types, cardinality
     value-domains.yaml             # local code lists
@@ -56,7 +57,7 @@ tracking.yaml
 
 ## Status
 
-`init`, `status`, and `ingest` (Excel/CSV table projection; PDF register-only) work. Curated skills and extract/annotate/specify/formalize are not built yet.
+`init`, `status`, `ingest` (Excel/CSV table projection; PDF register-only until 004), and `extract` (IKNL inventory from table projections) work. PDF table projection is specified as 004. Curated skills and annotate/specify/formalize are not built yet.
 
 Try the proving consumer:
 
@@ -67,7 +68,7 @@ uv run --project .. rh-mod-skills status
 
 1. Read [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
 2. Read [`specs/001-rh-mod-framework/spec.md`](specs/001-rh-mod-framework/spec.md)
-3. Next product spec: extract (`rh-mod-extract`)
+3. Next product spec to implement: PDF table ingest (`004-rh-mod-ingest-pdf`)
 
 ## Prerequisites
 

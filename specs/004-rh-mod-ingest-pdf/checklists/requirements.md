@@ -1,7 +1,7 @@
-# Specification Quality Checklist: rh-mod-ingest
+# Specification Quality Checklist: rh-mod-ingest-pdf
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning  
-**Created**: 2026-09-11  
+**Created**: 2026-09-13  
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -31,6 +31,5 @@
 
 ## Notes
 
-- `openpyxl` is mentioned only in Assumptions as a plan-time dependency expansion; it is not a functional requirement.
-- SHA-256 is the checksum already named in 001; ingest inherits it rather than introducing a stack.
-- PDF table extraction is explicitly deferred to [004-rh-mod-ingest-pdf](../../004-rh-mod-ingest-pdf/); that is a scope bound, not an open clarification.
+- Table-extraction library is deferred to the 004 plan (constitution extra-dependency gate), not named in this spec.
+- CLI command names appear because durable writes are CLI-owned.

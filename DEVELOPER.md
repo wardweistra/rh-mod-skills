@@ -35,5 +35,5 @@ Use Speckit in this repo (not in rh-skills):
 ## Do not
 
 - Import or vendor `rh-skills` clinical L2 types (decision-table, measure, …)
-- Flatten Excel codebooks to Markdown as the only L1 form
+- Flatten Excel/CSV/PDF codebooks to Markdown as the only L1 form
 - Add StructureMap / FML / mapping.xlsx

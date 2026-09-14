@@ -15,7 +15,8 @@ models:
     projection: tables
     projection_file: 
       models/nkr-breast/sources/projections/iknl-data-dictionary.yaml
-  structured: []
+  structured:
+  - inventory.yaml
   computable: []
   events:
   - timestamp: '2026-09-11T23:08:30Z'
@@ -24,6 +25,12 @@ models:
   - timestamp: '2026-09-11T23:11:56Z'
     type: source_added
     description: 'Source registered: iknl-data-dictionary'
+  - timestamp: '2026-09-13T21:40:49Z'
+    type: extract_planned
+    description: 'Extract plan drafted: 5 entities, 153 elements'
+  - timestamp: '2026-09-13T21:40:50Z'
+    type: inventory_derived
+    description: 'Inventory written: 5 entities, 153 elements'
 - name: encr-standard-dataset
   title: ENCR standard dataset
   description: European Network of Cancer Registries minimum dataset (2023)
@@ -376,3 +383,9 @@ events:
 - timestamp: '2026-09-11T23:11:57Z'
   type: source_added
   description: 'encr-standard-dataset: encr-structured-registry-review-en'
+- timestamp: '2026-09-13T21:40:49Z'
+  type: extract_planned
+  description: 'nkr-breast: extract plan drafted'
+- timestamp: '2026-09-13T21:40:50Z'
+  type: inventory_derived
+  description: 'nkr-breast: inventory derived'

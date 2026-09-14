@@ -9,4 +9,4 @@ Proving sources for rh-mod-skills ingest. Originals are untrusted dictionary con
 
 The ENCR set is indexed by the 2023 standard dataset. Companion recommendations cited from that PDF (incidence date, basis of diagnosis, treatment, recurrence, multiple primaries, CNS, haematological, condensed TNM) plus the other English PDFs on the same page are listed in [`encr-standard-dataset/README.md`](encr-standard-dataset/README.md).
 
-Structured L1 projection in v1 applies to Excel/CSV. ENCR PDFs are registered as sources (checksum + original bytes) until a PDF table plugin exists.
+Structured L1 projection applies to Excel/CSV now, and to PDF tables under [004-rh-mod-ingest-pdf](../../../specs/004-rh-mod-ingest-pdf/). Until 004 is implemented, ENCR PDFs are registered as sources (checksum + original bytes) with `projection: skipped`. Markdown is never the only L1 form.

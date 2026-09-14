@@ -1,3 +1,26 @@
+<!--
+Sync Impact Report
+Version change: 1.0.0 → 1.1.0 (MINOR: Delivery Constraints expanded to include PDF table projections as a first-class L1 tabular form; flattening to Markdown remains forbidden. No principle titles renamed.)
+Modified principles: none (I–V unchanged)
+Added sections: none
+Removed sections: none
+Templates requiring updates:
+  ✅ .specify/templates/plan-template.md (Constitution Check now names rh-mod-skills)
+  ✅ .specify/templates/spec-template.md (no mandated-section change; reviewed)
+  ✅ .specify/templates/tasks-template.md (no new task type; reviewed)
+  ✅ .specify/templates/commands/*.md (n/a — no command templates with L1 format list)
+  ✅ AGENTS.md
+  ✅ README.md
+  ✅ docs/GETTING_STARTED.md
+  ✅ docs/WORKFLOW.md
+  ✅ DEVELOPER.md
+  ✅ tests/fixtures/l1/README.md
+  ✅ specs/002-rh-mod-ingest/{spec.md,research.md,README.md,checklists/requirements.md}
+  ✅ specs/003-rh-mod-extract/{spec.md,README.md}
+  ✅ specs/001-rh-mod-framework/research.md (historical note pointing at 004)
+Follow-up TODOs: none deferred. OCR remains out of scope until a later spec.
+-->
+
 # RH Mod Skills Constitution
 
 ## Core Principles
@@ -75,9 +98,12 @@ model/map product split honest.
   `SKILL.md`, `reference.md`, and worked examples.
 - Features that can create durable model artifacts MUST document review and
   approval gates explicitly in their specs, plans, and skills.
-- L1 ingest of tabular sources (Excel, CSV) MUST preserve sheet/column/row
-  structure. Flattening a codebook to Markdown as the only normalized form is
-  forbidden.
+- L1 ingest of tabular sources (Excel, CSV, and PDF table projections) MUST
+  preserve sheet/column/row structure in the same projection schema. Original
+  files MUST remain in `sources/raw/`. Flattening a codebook to Markdown as the
+  only normalized form is forbidden. When PDF tables cannot be reconstructed
+  (no text layer, no tables, or none approved), register-only with an explicit
+  skip reason is allowed. OCR is out of scope until a later spec.
 - The unit of work is a **model** (`models/<model-id>/`), not a clinical topic.
 - L3 output for a logical model is FHIR R4 `StructureDefinition` with
   `kind=logical` (plus `ValueSet` resources for bound value domains). FSH MAY
@@ -108,4 +134,4 @@ Amendments MUST:
 2. classify the version bump as MAJOR, MINOR, or PATCH;
 3. update dependent templates and docs in the same change.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-09-11
+**Version**: 1.1.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-09-13

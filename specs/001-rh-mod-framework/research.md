@@ -75,7 +75,7 @@ This slice implements the workspace skeleton only (`init`, `tracking.yaml`, dire
 
 ## 7. Excel/CSV now, PDF structured extract later
 
-**Decision**: 001 does not parse source bytes. 002 structured projection is `.xlsx` / `.csv` only. PDF is registered as original bytes + checksum; extracting Table 1 / Table 2 into rows is a later ingest plugin.
+**Decision**: 001 does not parse source bytes. 002 structured projection is `.xlsx` / `.csv` only. PDF is registered as original bytes + checksum; extracting Table 1 / Table 2 into rows is [004-rh-mod-ingest-pdf](../004-rh-mod-ingest-pdf/).
 
 **Rationale**: Constitution delivery constraint and 001 assumptions. The IKNL workbook is the first file that can round-trip sheet/column/row. The ENCR PDF is still a first-class L1 source for provenance.
 

@@ -6,7 +6,7 @@
 L1 Ingest                    L2 Extract / Annotate / Specify         L3 Formalize
 ─────────                    ─────────────────────────────────       ────────────
 Codebooks, dictionaries  →   Inventory + bindings + LM YAML     →    StructureDefinition
-(Excel/CSV structure kept)   (human-editable, reviewer-gated)         kind=logical + ValueSets
+(Excel/CSV/PDF tables)       (human-editable, reviewer-gated)         kind=logical + ValueSets
 ```
 
 ```

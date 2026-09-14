@@ -1,0 +1,2027 @@
+model: nkr-breast
+entities:
+- id: patientgegevens
+  title: Patiëntgegevens
+  elements:
+  - id: gebdat
+    display: Geboortedatum
+    path: patientgegevens.gebdat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 1
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: gesl
+    display: Geslacht
+    path: patientgegevens.gesl
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 2
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: iacr
+    display: Telt volgens IACR regels mee in de incidentie
+    path: patientgegevens.iacr
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 3
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: incdat
+    display: Incidentiedatum
+    path: patientgegevens.incdat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 4
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: incjr
+    display: Incidentiejaar
+    path: patientgegevens.incjr
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 5
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: ink-ses
+    display: Mediaan inkomen in postcodegebied als proxy voor sociaaleconomische
+      status (SES)
+    path: patientgegevens.ink-ses
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 6
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: leeft
+    display: Leeftijd op incidentiedatum
+    path: patientgegevens.leeft
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 7
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mal
+    display: Eerdere of latere maligniteiten
+    path: patientgegevens.mal
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 8
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mal-incdat
+    display: Incidentiedatum van de eerdere of latere maligniteit
+    path: patientgegevens.mal-incdat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 9
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mal-int
+    display: Interval incidentiedatum en datum van de eerdere of latere 
+      maligniteit
+    path: patientgegevens.mal-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 10
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mal-tumsoort
+    display: Tumorsoort van de eerdere of latere maligniteit
+    path: patientgegevens.mal-tumsoort
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 11
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: meno-stat
+    display: Menopauzale status bij diagnose
+    path: patientgegevens.meno-stat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 12
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: ovldat
+    display: Overlijdensdatum
+    path: patientgegevens.ovldat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 13
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: post-cijf
+    display: Het cijferdeel van de postcode van de patiënt ten tijde van 
+      incidentie
+    path: patientgegevens.post-cijf
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 14
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rook-stat
+    display: Roken status
+    path: patientgegevens.rook-stat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 15
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: vit-stat-dat
+    display: Datum van vitale status
+    path: patientgegevens.vit-stat-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 16
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: vit-stat-int
+    display: Interval incidentiedatum en datum vitale status (dagen)
+    path: patientgegevens.vit-stat-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 17
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: vit-stat
+    display: Vitale status
+    path: patientgegevens.vit-stat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 18
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+- id: tumorgegevens
+  title: Tumorgegevens
+  elements:
+  - id: topo
+    display: Topografie exclusief sublokalisatie
+    path: tumorgegevens.topo
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 19
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: topo-sublok
+    display: Topografie inclusief sublokalisatie
+    path: tumorgegevens.topo-sublok
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 20
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: later
+    display: Lateralisatie
+    path: tumorgegevens.later
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 21
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: morf
+    display: Morfologie
+    path: tumorgegevens.morf
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 22
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: gedrag
+    display: Gedrag
+    path: tumorgegevens.gedrag
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 23
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: diffgrad
+    display: (Differentiatie)graad
+    path: tumorgegevens.diffgrad
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 24
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: ct
+    display: cT (TNM)
+    path: tumorgegevens.ct
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 25
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: cn
+    display: cN (TNM)
+    path: tumorgegevens.cn
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 26
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: cm
+    display: cM (TNM)
+    path: tumorgegevens.cm
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 27
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: pt
+    display: pT (TNM)
+    path: tumorgegevens.pt
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 28
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: pn
+    display: pN (TNM)
+    path: tumorgegevens.pn
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 29
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: pm
+    display: pM (TNM)
+    path: tumorgegevens.pm
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 30
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: cstadium
+    display: Klinisch TNM-stadium
+    path: tumorgegevens.cstadium
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 31
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: pstadium
+    display: Pathologisch TNM-stadium
+    path: tumorgegevens.pstadium
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 32
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: stadium
+    display: TNM-stadium
+    path: tumorgegevens.stadium
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 33
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: ceod
+    display: Klinische tumoruitbreiding (EoD)
+    path: tumorgegevens.ceod
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 34
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: peod
+    display: Pathologische tumoruitbreiding (EoD)
+    path: tumorgegevens.peod
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 35
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: ond-lymf
+    display: Aantal onderzochte regionale lymfeklieren
+    path: tumorgegevens.ond-lymf
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 36
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: pos-lymf
+    display: Aantal positieve regionale lymfeklieren
+    path: tumorgegevens.pos-lymf
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 37
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: diag-basis
+    display: Basis voor diagnose
+    path: tumorgegevens.diag-basis
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 38
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: birads
+    display: BI-RADS classificatie
+    path: tumorgegevens.birads
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 39
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dcis-comp
+    display: Aanwezigheid van DCIS component naast de invasieve tumor
+    path: tumorgegevens.dcis-comp
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 40
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: er-stat
+    display: Oestrogeenreceptor status
+    path: tumorgegevens.er-stat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 41
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: er-waarde
+    display: Oestrogeenreceptor waarde
+    path: tumorgegevens.er-waarde
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 42
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: her2-stat
+    display: Her2Neu-receptor status
+    path: tumorgegevens.her2-stat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 43
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: her2-tech
+    display: Techniek gebruikt voor Her2Neu-receptor bepaling
+    path: tumorgegevens.her2-tech
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 44
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mammaprint-uitslag
+    display: Uitslag van mammaprint
+    path: tumorgegevens.mammaprint-uitslag
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 45
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: meta-incdat
+    display: Incidentiedatum van metastase
+    path: tumorgegevens.meta-incdat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 46
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: meta-int
+    display: Interval incidentiedatum en datum van metastase (dagen)
+    path: tumorgegevens.meta-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 47
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: meta-topo-sublok
+    display: Topografie inclusief sublokalisatie van metastase
+    path: tumorgegevens.meta-topo-sublok
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 48
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: meta-topo
+    display: Topografie exclusief sublokalisatie van metastase
+    path: tumorgegevens.meta-topo
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 49
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: multifoc
+    display: Multifocaliteit tumor
+    path: tumorgegevens.multifoc
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 50
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: oncotype-uitslag
+    display: Uitslag van oncotype DX
+    path: tumorgegevens.oncotype-uitslag
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 51
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: palpabel
+    display: Palpabiliteit tumor
+    path: tumorgegevens.palpabel
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 52
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: pr-stat
+    display: Progesteronreceptor status
+    path: tumorgegevens.pr-stat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 53
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: pr-waarde
+    display: Progesteronreceptor waarde
+    path: tumorgegevens.pr-waarde
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 54
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: tum-afm
+    display: Pathologische afmeting van de tumor (mm)
+    path: tumorgegevens.tum-afm
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 55
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+- id: procesgegevens
+  title: Procesgegevens
+  elements:
+  - id: bvo-detec
+    display: Tumor gedetecteerd na verwijzing door bevolkingsonderzoek
+    path: procesgegevens.bvo-detec
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 56
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: contact-zkh1
+    display: Ziekenhuis van eerste contact i.v.m. maligniteit
+    path: procesgegevens.contact-zkh1
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 57
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: diag-reden
+    display: Reden voor diagnostiek
+    path: procesgegevens.diag-reden
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 58
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: genmut-ond-dat
+    display: Datum van genmutatie onderzoek
+    path: procesgegevens.genmut-ond-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 59
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: genmut-ond-int
+    display: Interval incidentiedatum en datum van genmutatie onderzoek (dagen)
+    path: procesgegevens.genmut-ond-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 60
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: genmut-ond
+    display: Genmutatie onderzoek uitgevoerd
+    path: procesgegevens.genmut-ond
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 61
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: lokalproc
+    display: Lokalisatieprocedure van de tumor
+    path: procesgegevens.lokalproc
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 62
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mari
+    display: MARI-procedure uitgevoerd
+    path: procesgegevens.mari
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 63
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mari-dat
+    display: Datum van MARI-procedure
+    path: procesgegevens.mari-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 64
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mari-int
+    display: Interval incidentiedatum en datum van MARI-procedure (dagen)
+    path: procesgegevens.mari-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 65
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mari-uitslag
+    display: Uitslag van MARI-procedure
+    path: procesgegevens.mari-uitslag
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 66
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mari-zkh
+    display: Ziekenhuis van MARI-procedure
+    path: procesgegevens.mari-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 67
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mri
+    display: MRI-scan uitgevoerd
+    path: procesgegevens.mri
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 68
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mri-dat
+    display: Datum van MRI-scan
+    path: procesgegevens.mri-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 69
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: mri-int
+    display: Interval incidentiedatum en datum van MRI-scan (dagen)
+    path: procesgegevens.mri-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 70
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: oksel-echo-dat
+    display: Datum waarop echogeleide punctie en/of biopsie in oksel is 
+      uitgevoerd
+    path: procesgegevens.oksel-echo-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 71
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: oksel-echo
+    display: Echogeleide punctie en/of biopsie in de oksel uitgevoerd
+    path: procesgegevens.oksel-echo
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 72
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: oksel-echo-int
+    display: Interval incidentiedatum en datum echogeleide punctie en/of biopsie
+      in oksel
+    path: procesgegevens.oksel-echo-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 73
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: oksel-echo-uitslag
+    display: Uitslag van de echogeleide punctie en/of biopsie in de oksel
+    path: procesgegevens.oksel-echo-uitslag
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 74
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: oksel-echo-zkh
+    display: Ziekenhuis waar echogeleide punctie en/of biopsie in oksel is 
+      uitgevoerd
+    path: procesgegevens.oksel-echo-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 75
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: plast-chir-consult-dat
+    display: Datum van eerste consult bij plastisch chirurg bij ablatio
+    path: procesgegevens.plast-chir-consult-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 76
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: plast-chir-consult-int
+    display: Interval incidentiedatum en datum eerste consult plastisch chirurg 
+      bij ablatio
+    path: procesgegevens.plast-chir-consult-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 77
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-consult-dat
+    display: Datum van eerste consult bij radiotherapeut bij prechirurgische 
+      therapie
+    path: procesgegevens.rt-consult-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 78
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-consult-int
+    display: Interval incidentiedatum en consult radiotherapeut bij 
+      prechirurgische therapie
+    path: procesgegevens.rt-consult-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 79
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: swk
+    display: Schildwachtklierprocedure uitgevoerd
+    path: procesgegevens.swk
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 80
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: swk-dat
+    display: Datum van schildwachtklierprocedure
+    path: procesgegevens.swk-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 81
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: swk-int
+    display: Interval incidentiedatum en datum van schildwachtklierprocedure 
+      (dagen)
+    path: procesgegevens.swk-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 82
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: swk-uitslag
+    display: Uitslag van schildwachtklierprocedure
+    path: procesgegevens.swk-uitslag
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 83
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: swk-zkh
+    display: Ziekenhuis van schildwachtklierprocedure
+    path: procesgegevens.swk-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 84
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: zkh-patnum
+    display: Patiëntnummer in zkh
+    path: procesgegevens.zkh-patnum
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 85
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: zkh-consult-dat
+    display: Datum eerste bezoek aan ziekenhuis gerelateerd aan de maligniteit
+    path: procesgegevens.zkh-consult-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 86
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: zkh2-consult-dat
+    display: Datum van eerste consult bij behandelaar van tweede ziekenhuis
+    path: procesgegevens.zkh2-consult-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 87
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: zkh2-consult-int
+    display: Interval incidentiedatum en datum eerste consult behandelaar tweede
+      ziekenhuis
+    path: procesgegevens.zkh2-consult-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 88
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+- id: risicofactoren
+  title: Risicofactoren
+  elements:
+  - id: chir-voor
+    display: Voorgeschiedenis van chirurgie aan de borst
+    path: risicofactoren.chir-voor
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 89
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: gewicht
+    display: Gewicht patiënt (kg)
+    path: risicofactoren.gewicht
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 90
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: lengte
+    display: Lengte patiënt (cm)
+    path: risicofactoren.lengte
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 91
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: perf-stat
+    display: WHO performance status voor start therapie
+    path: risicofactoren.perf-stat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 92
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: zwanger
+    display: Zwangerschap bij diagnose
+    path: risicofactoren.zwanger
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 93
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+- id: behandelgegevens
+  title: Behandelgegevens
+  elements:
+  - id: basaal-okd-dat
+    display: Datum van basale okselklierdissectie
+    path: behandelgegevens.basaal-okd-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 94
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: basaal-okd-int
+    display: Interval incidentiedatum en datum basale okselklierdissectie 
+      (dagen)
+    path: behandelgegevens.basaal-okd-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 95
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: basaal-okd
+    display: Basale okselklierdissectie uitgevoerd
+    path: behandelgegevens.basaal-okd
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 96
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: basaal-okd-zkh
+    display: Ziekenhuis van basale okselklierdissectie
+    path: behandelgegevens.basaal-okd-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 97
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo
+    display: Systemische chemotherapie naar pre- en postchirurgisch ingedeeld
+    path: behandelgegevens.chemo
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 98
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo-code-1-n
+    display: Code van systemische chemotherapie[1-n]
+    path: behandelgegevens.chemo-code-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 99
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo-compl
+    display: Complicaties tijdens of na de systemische chemotherapie
+    path: behandelgegevens.chemo-compl
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 100
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo-start-int-1-n
+    display: Interval incidentiedatum en startdatum van systemische 
+      chemotherapie (dagen)[1-n]
+    path: behandelgegevens.chemo-start-int-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 101
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo-stop-int-1-n
+    display: Interval incidentiedatum en stopdatum van systemische chemotherapie
+      (dagen)[1-n]
+    path: behandelgegevens.chemo-stop-int-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 102
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo-startdat-1-n
+    display: Startdatum van systemische chemotherapie[1-n]
+    path: behandelgegevens.chemo-startdat-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 103
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo-stopdat-1-n
+    display: Stopdatum van systemische chemotherapie[1-n]
+    path: behandelgegevens.chemo-stopdat-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 104
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chemo-zkh-1-n
+    display: Ziekenhuis van systemische chemotherapie[1-n]
+    path: behandelgegevens.chemo-zkh-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 105
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir
+    display: Chirurgie uitgevoerd
+    path: behandelgegevens.chir
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 106
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir-compl
+    display: Complicatie tijdens of na de chirurgie
+    path: behandelgegevens.chir-compl
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 107
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir-dat-1-2
+    display: Datum van chirurgie[1-2]
+    path: behandelgegevens.chir-dat-1-2
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 108
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir-int-1-2
+    display: Interval incidentiedatum en datum van chirurgie (dagen)[1-2]
+    path: behandelgegevens.chir-int-1-2
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 109
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir-opnameduur-1-2
+    display: Opnameduur na chirurgie (dagen)[1-2]
+    path: behandelgegevens.chir-opnameduur-1-2
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 110
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir-toeval
+    display: De tumor is een toevalsbevinding bij chirurgie voor andere 
+      indicatie
+    path: behandelgegevens.chir-toeval
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 111
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir-type-1-2
+    display: Type van chirurgie[1-2]
+    path: behandelgegevens.chir-type-1-2
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 112
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: chir-zkh-1-2
+    display: Ziekenhuis van chirurgie[1-2]
+    path: behandelgegevens.chir-zkh-1-2
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 113
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dcis-rad-laatste
+    display: Radicaliteit van DCIS component bij laatste chirurgie
+    path: behandelgegevens.dcis-rad-laatste
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 114
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dcis-rad1
+    display: Radicaliteit van DCIS component bij eerste chirurgie
+    path: behandelgegevens.dcis-rad1
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 115
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dir-reconstr-dat
+    display: Datum van directe reconstructie
+    path: behandelgegevens.dir-reconstr-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 116
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dir-reconstr-int
+    display: Interval incidentiedatum en datum van directe reconstructie (dagen)
+    path: behandelgegevens.dir-reconstr-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 117
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dir-reconstr
+    display: Directe reconstructie uitgevoerd
+    path: behandelgegevens.dir-reconstr
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 118
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dir-reconstr-tech
+    display: Techniek van directe reconstructie
+    path: behandelgegevens.dir-reconstr-tech
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 119
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: dir-reconstr-zkh
+    display: Ziekenhuis waar directe reconstructie is uitgevoerd
+    path: behandelgegevens.dir-reconstr-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 120
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: geen-rt-reden
+    display: Reden van geen radiotherapie na borstsparende chirurgie
+    path: behandelgegevens.geen-rt-reden
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 121
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: horm
+    display: Systemische hormonale therapie naar pre- en postchirurgisch 
+      ingedeeld
+    path: behandelgegevens.horm
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 122
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: horm-code-1-n
+    display: Code van systemische hormonale therapie[1-n]
+    path: behandelgegevens.horm-code-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 123
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: horm-start-int-1-n
+    display: Interval incidentiedatum en startdatum systemische hormonale 
+      therapie[1-n]
+    path: behandelgegevens.horm-start-int-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 124
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: horm-startdat-1-n
+    display: Startdatum van systemische hormonale therapie[1-n]
+    path: behandelgegevens.horm-startdat-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 125
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: horm-zkh-1-n
+    display: Ziekenhuis van systemische hormonale therapie[1-n]
+    path: behandelgegevens.horm-zkh-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 126
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: inv-rad-laatste
+    display: Radicaliteit van invasief component bij laatste chirurgie
+    path: behandelgegevens.inv-rad-laatste
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 127
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: inv-rad1
+    display: Radicaliteit van invasief component bij eerste chirurgie
+    path: behandelgegevens.inv-rad1
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 128
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: meta-chir
+    display: Chirurgie gericht op metastasen uitgevoerd
+    path: behandelgegevens.meta-chir
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 129
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: meta-rt
+    display: Radiotherapie gericht op metastasen uitgevoerd
+    path: behandelgegevens.meta-rt
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 130
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: okd
+    display: Okselklierdissectie uitgevoerd
+    path: behandelgegevens.okd
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 131
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: okd-dat
+    display: Datum van okselklierdissectie
+    path: behandelgegevens.okd-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 132
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: okd-int
+    display: Interval incidentiedatum en datum van okselklierdissectie (dagen)
+    path: behandelgegevens.okd-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 133
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: okd-zkh
+    display: Ziekenhuis van okselklierdissectie
+    path: behandelgegevens.okd-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 134
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: residu
+    display: Tumorresidu na alle chirurgische therapieën
+    path: behandelgegevens.residu
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 135
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt
+    display: Radiotherapie naar pre- en postchirurgisch ingedeeld
+    path: behandelgegevens.rt
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 136
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-start-int
+    display: Interval incidentiedatum en startdatum van radiotherapie (dagen)
+    path: behandelgegevens.rt-start-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 137
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-stop-int
+    display: Interval incidentiedatum en stopdatum van radiotherapie (dagen)
+    path: behandelgegevens.rt-stop-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 138
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-startdat
+    display: Startdatum van radiotherapie
+    path: behandelgegevens.rt-startdat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 139
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-stopdat
+    display: Stopdatum van radiotherapie
+    path: behandelgegevens.rt-stopdat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 140
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-type
+    display: Type van uitwendige radiotherapie
+    path: behandelgegevens.rt-type
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 141
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: rt-zkh
+    display: Ziekenhuis van radiotherapie
+    path: behandelgegevens.rt-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 142
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: target
+    display: Systemische targeted therapie naar pre- en postchirurgisch 
+      ingedeeld
+    path: behandelgegevens.target
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 143
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: target-code-1-n
+    display: Code van systemische targeted therapie[1-n]
+    path: behandelgegevens.target-code-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 144
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: target-start-int-1-n
+    display: Interval incidentiedatum en startdatum systemische targeted 
+      therapie[1-n]
+    path: behandelgegevens.target-start-int-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 145
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: target-stop-int-1-n
+    display: Interval incidentiedatum en stopdatum systemische targeted 
+      therapie[1-n]
+    path: behandelgegevens.target-stop-int-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 146
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: target-startdat-1-n
+    display: Startdatum van systemische targeted therapie[1-n]
+    path: behandelgegevens.target-startdat-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 147
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: target-stopdat-1-n
+    display: Stopdatum van systemische targeted therapie[1-n]
+    path: behandelgegevens.target-stopdat-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 148
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: target-zkh-1-n
+    display: Ziekenhuis van systemische targeted therapie[1-n]
+    path: behandelgegevens.target-zkh-1-n
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 149
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: uitgebr-chir-dat
+    display: Datum van meest uitgebreide chirurgie
+    path: behandelgegevens.uitgebr-chir-dat
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 150
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: uitgebr-chir-int
+    display: Interval incidentiedatum en datum van meest uitgebreide chirurgie 
+      (dagen)
+    path: behandelgegevens.uitgebr-chir-int
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 151
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: uitgebr-chir-type
+    display: Type van meest uitgebreide chirurgie
+    path: behandelgegevens.uitgebr-chir-type
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 152
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
+  - id: uitgebr-chir-zkh
+    display: Ziekenhuis van meest uitgebreide chirurgie
+    path: behandelgegevens.uitgebr-chir-zkh
+    datatype: unknown
+    cardinality: unknown
+    provenance:
+      source: iknl-data-dictionary
+      sheet: Variabelen
+      row: 153
+      columns:
+        id: variabele_name
+        category: variabele_categorie
+        label: variabele_label
