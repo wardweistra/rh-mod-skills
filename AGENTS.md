@@ -42,8 +42,10 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 ## Recent Changes
 
 - Constitution 1.1.0: L1 tabular ingest is Excel, CSV, and PDF table projections (same YAML). Markdown-only L1 remains forbidden. OCR out of scope.
+- 006-extract-column-roles: extract plan `sheets[].columns` roles; header synonyms are a hint; remap in the plan then re-run `extract plan`
 - 005-rh-mod-annotate: `annotate plan|enrich|approve|implement|verify` writes `bindings.yaml`; MCP lookup in `rh-mod-annotate` skill; CLI does not HTTP-search
 - 004-rh-mod-ingest-pdf: `ingest` projects PDF tables (ENCR Table 1/2 proving); register-only when no tables
+- L1 fixtures: `nkr-breast-en` (English NKR Excel) and `nbca` (NBCA 2026 PDF). Extract header synonyms include English `variable_*` and Dutch `variabele` / `dataset`.
 - 003-rh-mod-extract: `extract plan|approve|implement|verify` — inventory from table projections
 - 002-rh-mod-ingest: `ingest plan|approve|implement|verify` — Excel/CSV table projection; PDF tables added in 004
 - 001-rh-mod-framework: `init`, `status`, consumer-root tracking, `models/<id>/` layout

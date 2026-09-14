@@ -27,14 +27,64 @@ PLAN_NAME = "extract-plan.yaml"
 INVENTORY_NAME = "inventory.yaml"
 VALUE_DOMAINS_NAME = "value-domains.yaml"
 
-ID_HEADERS = ("variabele_name", "name", "id", "code", "variable")
-CAT_HEADERS = ("variabele_categorie", "category", "group", "entity")
-LABEL_HEADERS = ("variabele_label", "label", "description", "title", "comment")
+ID_HEADERS = (
+    "variabele_name",
+    "variable_name",
+    "variabele",
+    "variable",
+    "name",
+    "id",
+    "code",
+)
+CAT_HEADERS = (
+    "variabele_categorie",
+    "variable_category",
+    "category",
+    "dataset",
+    "group",
+    "entity",
+)
+LABEL_HEADERS = (
+    "variabele_label",
+    "variable_label",
+    "omschrijving variabele",
+    "omschrijving",
+    "label",
+    "description",
+    "title",
+    "comment",
+)
 DATATYPE_HEADERS = ("datatype", "data_type")
 CARDINALITY_HEADERS = ("cardinality", "card", "multiplicity")
 DOMAIN_VAR_HEADERS = ("variable", "variabele", "element")
 DOMAIN_CODE_HEADERS = ("code", "waarde")
 DOMAIN_DISPLAY_HEADERS = ("display", "omschrijving")
+
+ROLE_UNUSED = "unused"
+ROLE_ID = "id"
+ROLE_CATEGORY = "category"
+ROLE_LABEL = "label"
+ROLE_DATATYPE = "datatype"
+ROLE_CARDINALITY = "cardinality"
+ROLE_DOMAIN_VAR = "domain_var"
+ROLE_DOMAIN_CODE = "domain_code"
+ROLE_DOMAIN_DISPLAY = "domain_display"
+EXCLUSIVE_ROLES = frozenset(
+    {
+        ROLE_ID,
+        ROLE_CATEGORY,
+        ROLE_LABEL,
+        ROLE_DATATYPE,
+        ROLE_CARDINALITY,
+        ROLE_DOMAIN_VAR,
+        ROLE_DOMAIN_CODE,
+        ROLE_DOMAIN_DISPLAY,
+    }
+)
+SHEET_KIND_ELEMENTS = "elements"
+SHEET_KIND_DOMAIN = "value-domain"
+ORIGIN_HINT = "hint"
+ORIGIN_REVIEWER = "reviewer"
 
 
 def _yaml() -> YAML:
@@ -80,12 +130,166 @@ def slug_id(text: str) -> str:
     return s or "entity"
 
 
-def _pick_header(columns: list[str], candidates: tuple[str, ...]) -> str | None:
-    lower = {c.lower(): c for c in columns if c}
+def _pick_header(
+    columns: list[str],
+    candidates: tuple[str, ...],
+    used: set[str] | None = None,
+) -> str | None:
+    skip = used or set()
+    lower = {c.lower(): c for c in columns if c and c not in skip}
     for cand in candidates:
         if cand in lower:
             return lower[cand]
     return None
+
+
+def hint_column_roles(columns: list[str]) -> list[dict]:
+    """First-pass roles from header names. Not the extract contract."""
+    assigned: dict[str, str] = {}
+    dv = _pick_header(columns, DOMAIN_VAR_HEADERS)
+    dc = _pick_header(columns, DOMAIN_CODE_HEADERS)
+    dd = _pick_header(columns, DOMAIN_DISPLAY_HEADERS)
+    if dv and dc and dd:
+        assigned[dv] = ROLE_DOMAIN_VAR
+        assigned[dc] = ROLE_DOMAIN_CODE
+        assigned[dd] = ROLE_DOMAIN_DISPLAY
+    else:
+        used: set[str] = set()
+        for role, cands in (
+            (ROLE_ID, ID_HEADERS),
+            (ROLE_CATEGORY, CAT_HEADERS),
+            (ROLE_LABEL, LABEL_HEADERS),
+            (ROLE_DATATYPE, DATATYPE_HEADERS),
+            (ROLE_CARDINALITY, CARDINALITY_HEADERS),
+        ):
+            header = _pick_header(columns, cands, used)
+            if header:
+                assigned[header] = role
+                used.add(header)
+    return [
+        {
+            "header": header,
+            "role": assigned.get(header, ROLE_UNUSED),
+            "origin": ORIGIN_HINT,
+        }
+        for header in columns
+    ]
+
+
+def resolve_column_roles(
+    columns: list[str],
+    prior: dict | None,
+    rehint: bool,
+) -> list[dict]:
+    if rehint or not prior or not (prior.get("columns")):
+        return hint_column_roles(columns)
+    by_header = {}
+    for col in prior.get("columns") or []:
+        header = col.get("header")
+        if not header:
+            continue
+        by_header[header] = {
+            "header": header,
+            "role": col.get("role") or ROLE_UNUSED,
+            "origin": col.get("origin") or ORIGIN_REVIEWER,
+        }
+    out = []
+    for header in columns:
+        if header in by_header:
+            out.append(dict(by_header[header]))
+        else:
+            out.append({"header": header, "role": ROLE_UNUSED, "origin": ORIGIN_HINT})
+    return out
+
+
+def _header_for_role(column_roles: list[dict], role: str) -> str | None:
+    for col in column_roles:
+        if col.get("role") == role:
+            return col.get("header")
+    return None
+
+
+def _duplicate_role_conflicts(source: str, sheet_name: str, column_roles: list[dict]) -> list[dict]:
+    headers_by_role: dict[str, list[str]] = defaultdict(list)
+    for col in column_roles:
+        role = col.get("role") or ROLE_UNUSED
+        header = col.get("header")
+        if role in EXCLUSIVE_ROLES and header:
+            headers_by_role[role].append(header)
+    conflicts = []
+    for role, headers in headers_by_role.items():
+        if len(headers) > 1:
+            conflicts.append(
+                {
+                    "type": "duplicate-role",
+                    "source": source,
+                    "sheet": sheet_name,
+                    "role": role,
+                    "headers": headers,
+                }
+            )
+    return conflicts
+
+
+def duplicate_role_conflicts_from_plan(plan: dict) -> list[dict]:
+    conflicts = []
+    for sheet in plan.get("sheets") or []:
+        conflicts.extend(
+            _duplicate_role_conflicts(
+                str(sheet.get("source") or ""),
+                str(sheet.get("name") or ""),
+                list(sheet.get("columns") or []),
+            )
+        )
+    return conflicts
+
+
+def _sheet_kind(column_roles: list[dict]) -> str:
+    if all(
+        _header_for_role(column_roles, role)
+        for role in (ROLE_DOMAIN_VAR, ROLE_DOMAIN_CODE, ROLE_DOMAIN_DISPLAY)
+    ):
+        return SHEET_KIND_DOMAIN
+    return SHEET_KIND_ELEMENTS
+
+
+def _prior_sheet_index(prior_sheets: list[dict] | None) -> dict[tuple[str, str], dict]:
+    index = {}
+    for sheet in prior_sheets or []:
+        key = (str(sheet.get("source") or ""), str(sheet.get("name") or ""))
+        index[key] = sheet
+    return index
+
+
+def _prov_key(prov: dict) -> tuple:
+    return (prov.get("source"), prov.get("sheet"), prov.get("row"))
+
+
+def preserve_plan_decisions(previous: dict, entities: list[dict], elements: list[dict]) -> None:
+    old_ents = {e.get("id"): e for e in previous.get("entities") or [] if e.get("id")}
+    for ent in entities:
+        old = old_ents.get(ent["id"])
+        if not old:
+            continue
+        if old.get("title"):
+            ent["title"] = old["title"]
+        if old.get("decision"):
+            ent["decision"] = old["decision"]
+        if "merge_into" in old:
+            ent["merge_into"] = old.get("merge_into")
+        if old.get("reason") is not None:
+            ent["reason"] = old.get("reason") or ""
+    old_els = {
+        _prov_key(el.get("provenance") or {}): el for el in previous.get("elements") or []
+    }
+    for el in elements:
+        old = old_els.get(_prov_key(el.get("provenance") or {}))
+        if not old:
+            continue
+        if old.get("decision"):
+            el["decision"] = old["decision"]
+        if old.get("reason") is not None:
+            el["reason"] = old.get("reason") or ""
 
 
 def _col_index(columns: list[str], header: str | None) -> int | None:
@@ -183,35 +387,48 @@ def _path_for(entity_id: str, element_id: str, row: int, seen: Counter) -> str:
     return f"{entity_id}.{element_id}__r{row}"
 
 
-def propose_from_projections(projections: list[dict]) -> tuple[list[dict], list[dict], list[dict], list[dict]]:
-    """Return entities, elements, conflicts, domain proposals. Copies cell strings only."""
+def propose_from_projections(
+    projections: list[dict],
+    prior_sheets: list[dict] | None = None,
+    rehint: bool = False,
+) -> tuple[list[dict], list[dict], list[dict], list[dict], list[dict]]:
+    """Return entities, elements, conflicts, domains, sheets. Copies cell strings only."""
     entity_order: list[str] = []
     entity_titles: dict[str, str] = {}
     elements: list[dict] = []
     conflicts: list[dict] = []
     id_seen_in_sheet: dict[tuple[str, str, str], int] = {}
     path_seen: Counter = Counter()
-
-    domain_sheets: list[tuple[str, dict]] = []
+    sheets_out: list[dict] = []
+    domain_sheets: list[tuple[str, dict, list[dict]]] = []
+    prior_index = _prior_sheet_index(prior_sheets)
 
     for proj in projections:
         source_name = proj.get("_source_name") or slug_id(str(proj.get("source") or "source"))
         for sheet in proj.get("sheets") or []:
             columns = [str(c) if c is not None else "" for c in (sheet.get("columns") or [])]
             sheet_name = sheet.get("name") or "sheet"
-            id_h = _pick_header(columns, ID_HEADERS)
-            cat_h = _pick_header(columns, CAT_HEADERS)
-            label_h = _pick_header(columns, LABEL_HEADERS)
-            type_h = _pick_header(columns, DATATYPE_HEADERS)
-            card_h = _pick_header(columns, CARDINALITY_HEADERS)
-            domain_var = _pick_header(columns, DOMAIN_VAR_HEADERS)
-            domain_code = _pick_header(columns, DOMAIN_CODE_HEADERS)
-            domain_disp = _pick_header(columns, DOMAIN_DISPLAY_HEADERS)
-            is_domain_sheet = bool(domain_var and domain_code and domain_disp)
-            if is_domain_sheet:
-                domain_sheets.append((source_name, sheet))
+            prior = prior_index.get((source_name, sheet_name))
+            column_roles = resolve_column_roles(columns, prior, rehint)
+            kind = _sheet_kind(column_roles)
+            sheets_out.append(
+                {
+                    "source": source_name,
+                    "name": sheet_name,
+                    "kind": kind,
+                    "columns": column_roles,
+                }
+            )
+            conflicts.extend(_duplicate_role_conflicts(source_name, sheet_name, column_roles))
+            if kind == SHEET_KIND_DOMAIN:
+                domain_sheets.append((source_name, sheet, column_roles))
                 continue
 
+            id_h = _header_for_role(column_roles, ROLE_ID)
+            cat_h = _header_for_role(column_roles, ROLE_CATEGORY)
+            label_h = _header_for_role(column_roles, ROLE_LABEL)
+            type_h = _header_for_role(column_roles, ROLE_DATATYPE)
+            card_h = _header_for_role(column_roles, ROLE_CARDINALITY)
             id_i = _col_index(columns, id_h)
             cat_i = _col_index(columns, cat_h)
             label_i = _col_index(columns, label_h)
@@ -223,6 +440,9 @@ def propose_from_projections(projections: list[dict]) -> tuple[list[dict], list[
                 row = list(raw) if raw is not None else []
                 if not any(_cell(row, i) for i in range(len(row))):
                     continue
+                raw_id = _cell(row, id_i) if id_h else ""
+                if id_h and not raw_id:
+                    continue
                 category = _cell(row, cat_i) if cat_h else sheet_name
                 if not category:
                     category = sheet_name
@@ -230,7 +450,6 @@ def propose_from_projections(projections: list[dict]) -> tuple[list[dict], list[
                 if entity_id not in entity_titles:
                     entity_titles[entity_id] = category
                     entity_order.append(entity_id)
-                raw_id = _cell(row, id_i) if id_h else ""
                 element_id = slug_id(raw_id) if raw_id else f"row-{idx}"
                 display = _cell(row, label_i) if label_h else (raw_id or element_id)
                 datatype = _cell(row, type_i) if type_h else ""
@@ -276,7 +495,7 @@ def propose_from_projections(projections: list[dict]) -> tuple[list[dict], list[
                     }
                 )
 
-    domains = _domains_from_sheets(domain_sheets)
+    domains = _domains_from_role_sheets(domain_sheets)
     domain_ids = {d["id"] for d in domains}
     for el in elements:
         if el["id"] in domain_ids:
@@ -292,16 +511,18 @@ def propose_from_projections(projections: list[dict]) -> tuple[list[dict], list[
         }
         for eid in entity_order
     ]
-    return entities, elements, conflicts, domains
+    return entities, elements, conflicts, domains, sheets_out
 
 
-def _domains_from_sheets(domain_sheets: list[tuple[str, dict]]) -> list[dict]:
+def _domains_from_role_sheets(
+    domain_sheets: list[tuple[str, dict, list[dict]]],
+) -> list[dict]:
     grouped: dict[str, list[dict]] = defaultdict(list)
-    for _source, sheet in domain_sheets:
+    for _source, sheet, column_roles in domain_sheets:
         columns = [str(c) if c is not None else "" for c in (sheet.get("columns") or [])]
-        var_h = _pick_header(columns, DOMAIN_VAR_HEADERS)
-        code_h = _pick_header(columns, DOMAIN_CODE_HEADERS)
-        disp_h = _pick_header(columns, DOMAIN_DISPLAY_HEADERS)
+        var_h = _header_for_role(column_roles, ROLE_DOMAIN_VAR)
+        code_h = _header_for_role(column_roles, ROLE_DOMAIN_CODE)
+        disp_h = _header_for_role(column_roles, ROLE_DOMAIN_DISPLAY)
         var_i = _col_index(columns, var_h)
         code_i = _col_index(columns, code_h)
         disp_i = _col_index(columns, disp_h)
@@ -415,7 +636,12 @@ def extract():
 
 @extract.command("plan")
 @click.argument("model")
-def plan_cmd(model):
+@click.option(
+    "--rehint",
+    is_flag=True,
+    help="Ignore saved column roles and propose from header hints.",
+)
+def plan_cmd(model, rehint):
     """Write a draft extract plan from table projections. Does not write inventory."""
     tracking = require_tracking()
     require_model(tracking, model)
@@ -427,11 +653,20 @@ def plan_cmd(model):
             "Ingest an Excel/CSV codebook, or project PDF tables (004-rh-mod-ingest-pdf)."
         )
 
-    entities, elements, conflicts, domains = propose_from_projections(projections)
+    previous = None
+    if extract_plan_path(model).is_file():
+        previous = load_plan(model)
+    prior_sheets = None if rehint else (previous or {}).get("sheets")
+    entities, elements, conflicts, domains, sheets = propose_from_projections(
+        projections, prior_sheets=prior_sheets, rehint=rehint
+    )
+    if previous:
+        preserve_plan_decisions(previous, entities, elements)
     data = {
         "model": model,
         "status": "draft",
         "allow_empty": False,
+        "sheets": sheets,
         "entities": entities,
         "elements": elements,
         "conflicts": conflicts,
@@ -448,6 +683,11 @@ def plan_cmd(model):
         f"{len(conflicts)} conflict(s), status=draft)"
     )
     click.echo(f"  {extract_plan_path(model)}")
+    for sheet in sheets:
+        roles = ", ".join(
+            f"{c['header']}={c['role']}" for c in sheet.get("columns") or [] if c.get("role") != ROLE_UNUSED
+        )
+        click.echo(f"  sheet {sheet['name']}: {roles or 'all unused'}")
     for ent in entities:
         n = sum(1 for el in elements if el["entity"] == ent["id"])
         click.echo(f"  - {ent['title']}  id={ent['id']}  elements={n}")
@@ -482,6 +722,12 @@ def implement_cmd(model, replace):
         raise click.ClickException(
             f"Extract plan is not approved (status={plan.get('status')!r}). "
             f"Run `rh-mod-skills extract approve {model}` after review."
+        )
+    dupes = duplicate_role_conflicts_from_plan(plan)
+    if dupes:
+        raise click.ClickException(
+            "Extract plan has duplicate column roles. "
+            "Assign each exclusive role at most once per sheet, then re-run extract plan."
         )
 
     inv_path = inventory_path(model)
@@ -521,10 +767,6 @@ def implement_cmd(model, replace):
     click.echo(f"  {inv_path}")
     if VALUE_DOMAINS_NAME in written:
         click.echo(f"  {vd_path}")
-
-
-def _prov_key(prov: dict) -> tuple:
-    return (prov.get("source"), prov.get("sheet"), prov.get("row"))
 
 
 @extract.command("verify")
@@ -594,7 +836,13 @@ def verify_cmd(model):
     missing = 0
     excluded = 0
     covered = 0
-    _, proposed, _, _ = propose_from_projections(projections) if projections else ([], [], [], [])
+    _, proposed, _, _, _ = (
+        propose_from_projections(
+            projections, prior_sheets=plan.get("sheets"), rehint=False
+        )
+        if projections
+        else ([], [], [], [], [])
+    )
     for el in proposed:
         projected += 1
         key = _prov_key(el.get("provenance") or {})

@@ -134,7 +134,7 @@ Some dictionaries include code-list sheets or value columns. Extract records tho
 
 - 001 `init`/`status` and 002 `ingest` exist.
 - The IKNL proving projection has columns `variabele_name`, `variabele_categorie`, `variabele_label` on sheet `Variabelen`.
-- Identifier / category / label columns are detected by those names first, then by a small header synonym list (`name`/`id`/`code`, `category`/`group`/`entity`, `label`/`description`/`title`). Unrecognized layouts stay in the plan as one entity per sheet, one element per row, all columns retained as notes — they are not discarded.
+- Identifier / category / label columns are detected by those names first, then by a small header synonym list (IKNL English `variable_name` / `variable_category` / `variable_label`; NBCA `variabele` / `dataset` / `omschrijving variabele`; generic `name`/`id`/`code`, `category`/`group`/`entity`, `label`/`description`/`title`). Empty identifier cells are skipped when an id column is present. Unrecognized layouts stay in the plan as one entity per sheet, one element per row, all columns retained as notes — they are not discarded.
 - Annotate (ReasonHub bindings) is a later spec.
 - Curated skill `rh-mod-extract` is authored only after these CLI commands exist.
 - Dutch labels are stored as display text; extract does not translate them.
