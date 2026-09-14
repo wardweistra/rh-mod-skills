@@ -1,0 +1,23 @@
+# L2 bindings written by `rh-mod-skills annotate implement`
+# Path: models/<id>/structured/bindings.yaml
+schema_version: "1.0"
+
+structure:
+  model: string
+  bindings:
+    - path: string                 # inventory path (unique key)
+      id: string
+      display: string              # inventory display (untrusted)
+      status: string               # bound | unbound
+      decision: string             # accept | replace | unbound
+      strength: string             # example | preferred | extensible | required | null if unbound
+      system: string               # FHIR system URI; null if unbound
+      code: string
+      display_term: string         # terminology display
+      reason: string               # required if unbound
+
+key: path
+
+forbidden:
+  - invented codes without ReasonHub or reviewer chosen
+  - StructureDefinition

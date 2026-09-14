@@ -9,7 +9,7 @@ Sibling of rh-skills. Last updated: 2026-09-14
 - Consumer-root `tracking.yaml` with `models:` (not `topics:`)
 - FHIR R4 JSON logical models under `models/<model>/computable/`
 - Speckit (`.specify/`) for feature specs, plans, and tasks
-- Optional: ReasonHub MCP for terminology search/lookup/expand
+- Optional: ReasonHub MCP for terminology search/lookup/expand; annotate CLI records MCP hits via `annotate enrich` (no HTTP search)
 
 ## Project Structure
 
@@ -42,6 +42,7 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 ## Recent Changes
 
 - Constitution 1.1.0: L1 tabular ingest is Excel, CSV, and PDF table projections (same YAML). Markdown-only L1 remains forbidden. OCR out of scope.
+- 005-rh-mod-annotate: `annotate plan|enrich|approve|implement|verify` writes `bindings.yaml`; MCP lookup in `rh-mod-annotate` skill; CLI does not HTTP-search
 - 004-rh-mod-ingest-pdf: `ingest` projects PDF tables (ENCR Table 1/2 proving); register-only when no tables
 - 003-rh-mod-extract: `extract plan|approve|implement|verify` — inventory from table projections
 - 002-rh-mod-ingest: `ingest plan|approve|implement|verify` — Excel/CSV table projection; PDF tables added in 004

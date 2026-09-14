@@ -2,6 +2,7 @@
 
 import click
 
+from rh_mod_skills.commands.annotate import decided_binding_paths, inventory_element_paths
 from rh_mod_skills.common import require_model, require_tracking
 
 
@@ -14,7 +15,7 @@ def _event_types(model: dict) -> set[str]:
 
 
 def compute_stage(model: dict) -> str:
-    """Derive stage from tracking events and artifact lists. 001: initialized only."""
+    """Derive stage from tracking events and artifact lists."""
     types = _event_types(model)
     if "model_formalized" in types or model.get("computable"):
         return "formalized"
@@ -34,17 +35,29 @@ def next_step(stage: str) -> str:
         "initialized": "ingest",
         "ingested": "extract",
         "extracted": "annotate",
-        "annotating": "specify",
+        "annotating": "annotate",
         "specified": "formalize",
         "formalized": "verify",
     }.get(stage, "ingest")
+
+
+def next_step_for_model(model: dict) -> str:
+    """Next is annotate until every inventory path is bound or unbound."""
+    stage = compute_stage(model)
+    if stage in ("extracted", "annotating"):
+        name = model.get("name") or ""
+        inv = inventory_element_paths(name)
+        if inv and set(inv) <= decided_binding_paths(name):
+            return "specify"
+        return "annotate"
+    return next_step(stage)
 
 
 def _render_model(model: dict) -> None:
     name = model.get("name", "")
     title = model.get("title", "")
     stage = compute_stage(model)
-    nxt = next_step(stage)
+    nxt = next_step_for_model(model)
     click.echo(f"Model: {name}")
     if title:
         click.echo(f"Title: {title}")
@@ -75,5 +88,5 @@ def status(model):
     for entry in models:
         name = entry.get("name", "")
         stage = compute_stage(entry)
-        nxt = next_step(stage)
+        nxt = next_step_for_model(entry)
         click.echo(f"{name}\t{stage}\tnext:{nxt}")

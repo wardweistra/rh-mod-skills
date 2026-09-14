@@ -69,3 +69,118 @@ def test_status_empty_models_message(tmp_consumer):
     result = CliRunner().invoke(status, [])
     assert result.exit_code == 0
     assert "No models yet" in result.output
+
+
+def test_status_partial_bindings_next_annotate(tmp_consumer):
+    CliRunner().invoke(init, ["nkr-breast"])
+    inv = tmp_consumer / "models" / "nkr-breast" / "structured" / "inventory.yaml"
+    y = YAML()
+    y.default_flow_style = False
+    with open(inv, "w", encoding="utf-8") as f:
+        y.dump(
+            {
+                "model": "nkr-breast",
+                "entities": [
+                    {
+                        "id": "patientgegevens",
+                        "title": "P",
+                        "elements": [
+                            {"id": "gesl", "display": "Geslacht", "path": "patientgegevens.gesl"},
+                            {
+                                "id": "gebdat",
+                                "display": "Geboortedatum",
+                                "path": "patientgegevens.gebdat",
+                            },
+                        ],
+                    }
+                ],
+            },
+            f,
+        )
+    tracking = load_yaml(tmp_consumer / "tracking.yaml")
+    tracking["models"][0]["events"].append(
+        {
+            "timestamp": "2026-09-14T00:00:00Z",
+            "type": "annotate_planned",
+            "description": "test",
+        }
+    )
+    with open(tmp_consumer / "tracking.yaml", "w", encoding="utf-8") as f:
+        y.dump(tracking, f)
+    with open(
+        tmp_consumer / "models" / "nkr-breast" / "structured" / "bindings.yaml",
+        "w",
+        encoding="utf-8",
+    ) as f:
+        y.dump(
+            {
+                "model": "nkr-breast",
+                "bindings": [
+                    {
+                        "path": "patientgegevens.gesl",
+                        "status": "bound",
+                        "decision": "accept",
+                    }
+                ],
+            },
+            f,
+        )
+    result = CliRunner().invoke(status, ["nkr-breast"])
+    assert result.exit_code == 0, result.output
+    assert "Stage: annotating" in result.output
+    assert "Next: annotate" in result.output
+
+
+def test_status_all_decided_next_specify(tmp_consumer):
+    CliRunner().invoke(init, ["nkr-breast"])
+    inv = tmp_consumer / "models" / "nkr-breast" / "structured" / "inventory.yaml"
+    y = YAML()
+    y.default_flow_style = False
+    with open(inv, "w", encoding="utf-8") as f:
+        y.dump(
+            {
+                "model": "nkr-breast",
+                "entities": [
+                    {
+                        "id": "patientgegevens",
+                        "title": "P",
+                        "elements": [
+                            {"id": "gesl", "display": "Geslacht", "path": "patientgegevens.gesl"},
+                        ],
+                    }
+                ],
+            },
+            f,
+        )
+    tracking = load_yaml(tmp_consumer / "tracking.yaml")
+    tracking["models"][0]["events"].append(
+        {
+            "timestamp": "2026-09-14T00:00:00Z",
+            "type": "element_bound",
+            "description": "test",
+        }
+    )
+    with open(tmp_consumer / "tracking.yaml", "w", encoding="utf-8") as f:
+        y.dump(tracking, f)
+    with open(
+        tmp_consumer / "models" / "nkr-breast" / "structured" / "bindings.yaml",
+        "w",
+        encoding="utf-8",
+    ) as f:
+        y.dump(
+            {
+                "model": "nkr-breast",
+                "bindings": [
+                    {
+                        "path": "patientgegevens.gesl",
+                        "status": "bound",
+                        "decision": "accept",
+                    }
+                ],
+            },
+            f,
+        )
+    result = CliRunner().invoke(status, ["nkr-breast"])
+    assert result.exit_code == 0, result.output
+    assert "Stage: annotating" in result.output
+    assert "Next: specify" in result.output
