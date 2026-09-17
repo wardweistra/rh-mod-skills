@@ -1,6 +1,6 @@
 # reason-mod-skills Development Guidelines
 
-Sibling of rh-skills. Last updated: 2026-09-14
+Sibling of rh-skills. Last updated: 2026-09-17
 
 ## Active Technologies
 
@@ -41,6 +41,7 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
+- 007-ingest-status-skills: curated `rh-mod-ingest` and `rh-mod-status` (SKILL.md + reference.md + examples); CLI unchanged
 - Constitution 1.1.0: L1 tabular ingest is Excel, CSV, and PDF table projections (same YAML). Markdown-only L1 remains forbidden. OCR out of scope.
 - 006-extract-column-roles: extract plan `sheets[].columns` roles; header synonyms are a hint; remap in the plan then re-run `extract plan`
 - 005-rh-mod-annotate: `annotate plan|enrich|approve|implement|verify` writes `bindings.yaml`; MCP lookup in `rh-mod-annotate` skill; CLI does not HTTP-search

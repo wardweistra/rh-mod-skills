@@ -18,7 +18,7 @@ Excel/CSV/PDF tables              fully specified LM YAML            (kind=logic
 (structure kept; not MD-only)
 ```
 
-Planned skills (CLI for init/status/ingest exists; curated SKILL.md files do not):
+Planned skills (CLI exists for init, status, ingest, extract, annotate; specify/formalize not built):
 
 | Skill | Stage | Job |
 |-------|-------|-----|
@@ -57,7 +57,9 @@ tracking.yaml
 
 ## Status
 
-`init`, `status`, `ingest` (Excel/CSV/PDF table projections), and `extract` work. Curated skills and annotate/specify/formalize are not built yet.
+`init`, `status`, `ingest` (Excel/CSV/PDF tables), `extract`, and `annotate` work.
+Curated skills: `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`, `rh-mod-status`.
+Specify and formalize are not built yet.
 
 Try the proving consumer:
 
@@ -68,7 +70,7 @@ uv run --project .. rh-mod-skills status
 
 1. Read [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
 2. Read [`specs/001-rh-mod-framework/spec.md`](specs/001-rh-mod-framework/spec.md)
-3. Next product spec: annotate (`rh-mod-annotate`)
+3. Next product spec: specify (`logical-model.yaml`)
 
 ## Prerequisites
 
