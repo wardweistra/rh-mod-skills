@@ -1,6 +1,7 @@
 # Getting Started
 
-This repo has a working workspace skeleton, L1 ingest (Excel/CSV/PDF tables), and L2 extract from table projections. Curated skills are not implemented yet.
+This repo has L1 ingest (Excel/CSV/PDF tables), L2 extract, and gated annotate.
+Curated skills for ingest, extract, annotate, and status live under `skills/.curated/`.
 
 ## 1. Open the right workspace
 
@@ -22,13 +23,15 @@ cd example-project
 uv run --project .. rh-mod-skills status
 ```
 
-`nkr-breast` is extracted (IKNL, 153 elements, 5 entities, next=`annotate`). `encr-standard-dataset` is extracted from ENCR Table 1 (20 variables) + Table 2 (5 rows); companion PDFs remain skipped. Both next=`annotate`.
+`nkr-breast` is annotating (IKNL, 153 elements; `gesl` bound; next=`annotate`). `encr-standard-dataset` is extracted from ENCR Table 1 (20 variables) + Table 2 (5 rows); companion PDFs remain skipped; next=`annotate`.
 
-Re-run from scratch with [001 quickstart](../specs/001-rh-mod-framework/quickstart.md), [002 quickstart](../specs/002-rh-mod-ingest/quickstart.md), [003 extract](../specs/003-rh-mod-extract/quickstart.md), then [004 PDF tables](../specs/004-rh-mod-ingest-pdf/quickstart.md). Use `--project ..`, not `--directory ..`.
+Re-run from scratch with [001 quickstart](../specs/001-rh-mod-framework/quickstart.md), [002 quickstart](../specs/002-rh-mod-ingest/quickstart.md), [003 extract](../specs/003-rh-mod-extract/quickstart.md), [004 PDF tables](../specs/004-rh-mod-ingest-pdf/quickstart.md), then [005 annotate](../specs/005-rh-mod-annotate/quickstart.md). Use `--project ..`, not `--directory ..`.
+
+Agent entry: `rh-mod-status` (orientation), `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`.
 
 ## 4. Next specification work
 
-Implement annotate, specify, formalize. Do not author `skills/.curated/rh-mod-*` until the matching CLI commands exist.
+Specify (`logical-model.yaml`, types/cardinality), then formalize. Do not author `skills/.curated/rh-mod-*` until the matching CLI commands exist.
 
 ## 5. What this product will not do
 
@@ -41,4 +44,6 @@ If you need mappings between two FHIR models, that is **rh-map-skills**. Do not 
 - [Ingest spec](../specs/002-rh-mod-ingest/spec.md)
 - [Extract spec](../specs/003-rh-mod-extract/spec.md)
 - [PDF ingest spec](../specs/004-rh-mod-ingest-pdf/spec.md)
+- [Annotate spec](../specs/005-rh-mod-annotate/spec.md)
+- [Ingest/status skills](../specs/007-ingest-status-skills/spec.md)
 - [Workflow](WORKFLOW.md)

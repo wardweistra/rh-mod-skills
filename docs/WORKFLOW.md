@@ -24,17 +24,17 @@ Every lifecycle transition follows the same gate as rh-skills:
 3. **Implement** — CLI writes artifacts; fails if the plan is not approved
 4. **Verify** — non-destructive; blocking errors vs warnings
 
-## Planned skill stages
+## Skill stages
 
-| Stage | Skill | Output |
-|-------|-------|--------|
-| Ingest | `rh-mod-ingest` | Structured L1 projection of the codebook |
-| Extract | `rh-mod-extract` | `inventory.yaml`, `value-domains.yaml` |
-| Annotate | `rh-mod-annotate` | `bindings.yaml` |
-| Specify | `rh-mod-specify` | `logical-model.yaml` |
-| Formalize | `rh-mod-formalize` | FHIR logical `StructureDefinition` + ValueSets + snapshot manifest |
-| Verify | `rh-mod-verify` | Consolidated report |
-| Status | `rh-mod-status` | Next step from tracking |
+| Stage | Skill | Output | Pack |
+|-------|-------|--------|------|
+| Ingest | `rh-mod-ingest` | Structured L1 projection of the codebook | full |
+| Extract | `rh-mod-extract` | `inventory.yaml`, `value-domains.yaml` | SKILL.md |
+| Annotate | `rh-mod-annotate` | `bindings.yaml` | SKILL.md |
+| Specify | `rh-mod-specify` | `logical-model.yaml` | not built |
+| Formalize | `rh-mod-formalize` | FHIR logical `StructureDefinition` + ValueSets + snapshot manifest | not built |
+| Verify | `rh-mod-verify` | Consolidated report | not built |
+| Status | `rh-mod-status` | Next step from tracking (read-only) | full |
 
 ## Guiding principle
 
