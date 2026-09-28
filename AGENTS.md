@@ -41,6 +41,7 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
+- 009-annotate-codesystems: `annotate plan --system` accepts `icd-10-cm`, `rxnorm`, `ucum`, and `all` (cross-system search); default remains snomed; enrich expands those aliases to FHIR URIs
 - 008-annotate-review: `annotate export` writes static HTML from the plan; `annotate import --from` applies picks YAML (accept by rank, unbound/skip/replace); import sets draft and does not write `bindings.yaml`
 - 007-ingest-status-skills: curated `rh-mod-ingest` and `rh-mod-status` (SKILL.md + reference.md + examples); CLI unchanged
 - Constitution 1.1.0: L1 tabular ingest is Excel, CSV, and PDF table projections (same YAML). Markdown-only L1 remains forbidden. OCR out of scope.
