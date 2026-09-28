@@ -112,6 +112,8 @@ def test_help_lists_annotate():
     assert result.exit_code == 0
     assert "plan" in result.output
     assert "enrich" in result.output
+    assert "export" in result.output
+    assert "import" in result.output
     assert "implement" in result.output
     assert "verify" in result.output
 

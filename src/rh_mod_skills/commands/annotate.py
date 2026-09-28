@@ -7,6 +7,7 @@ from pathlib import Path
 import click
 from ruamel.yaml import YAML
 
+from rh_mod_skills.annotate_review import REVIEW_NAME, apply_picks, load_picks, render_review_html
 from rh_mod_skills.commands.extract import _assert_ingest_clean, inventory_path
 from rh_mod_skills.common import (
     append_model_event,
@@ -41,6 +42,10 @@ def _yaml() -> YAML:
 
 def annotate_plan_path(name: str) -> Path:
     return model_dir(name) / "process" / "plans" / PLAN_NAME
+
+
+def review_html_path(name: str) -> Path:
+    return model_dir(name) / "process" / "plans" / REVIEW_NAME
 
 
 def bindings_path(name: str) -> Path:
@@ -419,6 +424,41 @@ def enrich_cmd(model, element, raw_candidates, lookup_query, lookup_notes):
         match["lookup_notes"] = lookup_notes
     save_plan(model, plan)
     log_info(f"Recorded {len(parsed)} candidate(s) for {target_path}")
+    click.echo(f"  {annotate_plan_path(model)}")
+
+
+@annotate.command("export")
+@click.argument("model")
+def export_cmd(model):
+    """Write a static HTML review page from the current annotate plan."""
+    tracking = require_tracking()
+    require_model(tracking, model)
+    plan = load_plan(model)
+    html_path = review_html_path(model)
+    html_path.parent.mkdir(parents=True, exist_ok=True)
+    html_path.write_text(render_review_html(plan), encoding="utf-8")
+    log_info("Wrote annotate review HTML")
+    click.echo(f"  {html_path}")
+
+
+@annotate.command("import")
+@click.argument("model")
+@click.option(
+    "--from",
+    "picks_from",
+    required=True,
+    type=click.Path(path_type=Path),
+    help="Picks YAML downloaded from the review page.",
+)
+def import_cmd(model, picks_from):
+    """Apply reviewer picks onto the annotate plan. Does not write bindings."""
+    tracking = require_tracking()
+    require_model(tracking, model)
+    plan = load_plan(model)
+    picks = load_picks(Path(picks_from))
+    apply_picks(plan, picks, model)
+    save_plan(model, plan)
+    log_info("Imported annotate picks (plan status=draft; bindings unchanged)")
     click.echo(f"  {annotate_plan_path(model)}")
 
 
