@@ -2,8 +2,9 @@
 name: "rh-mod-annotate"
 description: >
   Bind extracted inventory elements to terminology codes via ReasonHub MCP.
-  CLI writes the plan and bindings; this skill runs MCP search and records
-  hits with `rh-mod-skills annotate enrich`. Modes: plan · enrich · implement · verify.
+  CLI writes the plan, review HTML, picks import, and bindings; this skill
+  runs MCP search and records hits with `rh-mod-skills annotate enrich`.
+  Modes: plan · enrich · export · import · implement · verify.
 compatibility: "rh-mod-skills >= 0.1.0"
 metadata:
   author: "RH Mod Skills"
@@ -17,6 +18,8 @@ metadata:
   writes_via_cli:
     - "rh-mod-skills annotate plan"
     - "rh-mod-skills annotate enrich"
+    - "rh-mod-skills annotate export"
+    - "rh-mod-skills annotate import"
     - "rh-mod-skills annotate approve"
     - "rh-mod-skills annotate implement"
     - "rh-mod-skills annotate verify"
@@ -70,9 +73,25 @@ rh-mod-skills annotate enrich <model> --element <id-or-path> \
 
 7. Stop if any MCP call fails. Do not guess codes from `*dat` names or local value-domain lists.
 
+## Review (export / import)
+
+After enrich, generate the review page with the CLI. Do **not** write `annotate-review.html` or `annotate-picks.yaml` yourself.
+
+```bash
+rh-mod-skills annotate export <model>
+```
+
+Tell the reviewer to open `models/<model>/process/plans/annotate-review.html`, pick a candidate (or unbound / skip / replace), and download picks YAML. Then import:
+
+```bash
+rh-mod-skills annotate import <model> --from <picks.yaml>
+```
+
+Import updates the annotate plan only (`decision` / `chosen` / `reason`) and sets `status: draft`. It does not write `bindings.yaml`. If the plan was approved, import un-approves it.
+
 ## Implement
 
-Reviewer sets `decision` (`accept` / `reject` / `replace` / `unbound`) on the plan. Then:
+After import (or after the reviewer edited plan decisions), approve then implement:
 
 ```bash
 rh-mod-skills annotate approve <model>
