@@ -30,7 +30,13 @@ metadata:
     - tool: reasonhub-search_loinc
       when: enrich — plan systems includes loinc
     - tool: reasonhub-search_icd10
-      when: enrich — plan systems includes icd-10
+      when: enrich — plan systems includes icd-10 or icd-10-cm
+    - tool: reasonhub-search_rxnorm
+      when: enrich — plan systems includes rxnorm
+    - tool: reasonhub-search_ucum
+      when: enrich — plan systems includes ucum
+    - tool: reasonhub-search_all_codesystems
+      when: enrich — plan systems includes all (cross-system; do not also fan out per named system)
     - tool: reasonhub-codesystem_lookup
       when: enrich — confirm display / canonical system URI before recording
 ---
@@ -61,8 +67,8 @@ First word is the mode. Typical: `plan nkr-breast --element gesl`.
 1. Confirm extract is done (`inventory.yaml` present). If not, tell the user to run extract.
 2. Run `rh-mod-skills annotate plan <model> --element …` (or `--all-undecided`).
 3. Plan writes empty `candidates: []`. Query defaults to inventory display (Dutch for NKR). Do not translate the label as a substitute for binding.
-4. For each planned element, MCP search with `top_k=5` (or the plan `query` if the reviewer edited it). Prefer `search_snomed` unless the plan `systems` list says otherwise.
-5. Map MCP hits to FHIR system URIs (`http://snomed.info/sct`, `http://loinc.org`, `http://hl7.org/fhir/sid/icd-10`). Copy `code` and `display` exactly. Do not transform `distance`.
+4. For each planned element, MCP search with `top_k=5` (or the plan `query` if the reviewer edited it). If `systems` includes `all`, call `search_all_codesystems` once. Otherwise call the tool for each named system: `search_snomed`, `search_loinc`, `search_rxnorm`, `search_ucum`, `search_icd10` (`icd-10` and `icd-10-cm`). Default when `systems` is omitted/snomed-only: `search_snomed`.
+5. Map MCP hits to FHIR system URIs. Copy `system`, `code`, and `display` exactly from the hit (especially for `all`). Do not transform `distance`. Aliases on `--candidate`: `snomed`, `loinc`, `icd-10`, `icd-10-cm` (`http://hl7.org/fhir/sid/icd-10-cm`), `rxnorm` (`http://www.nlm.nih.gov/research/umls/rxnorm`), `ucum` (`http://unitsofmeasure.org`). Never record `all` as a candidate system.
 6. Record via CLI (at most five `--candidate` flags). Omit `--candidate` when MCP returned zero hits:
 
 ```bash

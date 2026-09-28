@@ -6,19 +6,43 @@ SYSTEM_URIS = {
     "snomed": "http://snomed.info/sct",
     "loinc": "http://loinc.org",
     "icd-10": "http://hl7.org/fhir/sid/icd-10",
+    "icd-10-cm": "http://hl7.org/fhir/sid/icd-10-cm",
+    "rxnorm": "http://www.nlm.nih.gov/research/umls/rxnorm",
+    "ucum": "http://unitsofmeasure.org",
 }
 
+SEARCH_MODES = frozenset({"all"})
 ALLOWED_SYSTEMS = tuple(SYSTEM_URIS)
+PLAN_SYSTEM_ALIASES = ALLOWED_SYSTEMS + ("all",)
 
 
 def system_uri(alias: str) -> str:
     key = (alias or "").strip().lower()
+    if key in SEARCH_MODES:
+        raise ValueError(
+            f"{key!r} is a search mode, not a code system. "
+            f"Use a FHIR URI or one of: {', '.join(ALLOWED_SYSTEMS)}"
+        )
     if key in SYSTEM_URIS:
         return SYSTEM_URIS[key]
     if (alias or "").startswith("http"):
         return alias
     raise ValueError(
-        f"Unknown code system {alias!r}. Use a FHIR URI or one of: {', '.join(ALLOWED_SYSTEMS)}"
+        f"Unknown code system {alias!r}. Use a FHIR URI or one of: {', '.join(PLAN_SYSTEM_ALIASES)}"
+    )
+
+
+def normalize_plan_system(alias: str) -> str:
+    """Alias or HTTP URI for annotate plan `systems`. Accepts search mode `all`."""
+    key = (alias or "").strip().lower()
+    if key in SEARCH_MODES:
+        return key
+    if key in SYSTEM_URIS:
+        return key
+    if (alias or "").startswith("http"):
+        return alias
+    raise ValueError(
+        f"Unknown code system {alias!r}. Use a FHIR URI or one of: {', '.join(PLAN_SYSTEM_ALIASES)}"
     )
 
 

@@ -21,9 +21,8 @@ from rh_mod_skills.common import (
     tracking_file,
 )
 from rh_mod_skills.terminology import (
-    ALLOWED_SYSTEMS,
     parse_candidate_flag,
-    system_uri,
+    normalize_plan_system,
 )
 
 PLAN_NAME = "annotate-plan.yaml"
@@ -135,10 +134,9 @@ def _validate_systems(systems: tuple[str, ...]) -> list[str]:
     out = []
     for alias in aliases:
         try:
-            system_uri(alias)
+            out.append(normalize_plan_system(alias))
         except ValueError as exc:
             raise click.UsageError(str(exc)) from exc
-        out.append(alias.lower() if alias.lower() in ALLOWED_SYSTEMS else alias)
     return out
 
 
@@ -307,7 +305,7 @@ def annotate():
     "--system",
     "systems",
     multiple=True,
-    help="Candidate code system alias (snomed, loinc, icd-10). Repeatable. Default: snomed.",
+    help="Candidate code system alias (snomed, loinc, icd-10, icd-10-cm, rxnorm, ucum, all). Repeatable. Default: snomed.",
 )
 def plan_cmd(model, elements, all_undecided, systems):
     """Write a draft annotate plan. Does not call ReasonHub; record MCP hits with enrich."""

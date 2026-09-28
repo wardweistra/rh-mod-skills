@@ -116,6 +116,12 @@ def test_help_lists_annotate():
     assert "import" in result.output
     assert "implement" in result.output
     assert "verify" in result.output
+    plan_help = CliRunner().invoke(main, ["annotate", "plan", "--help"])
+    assert plan_help.exit_code == 0
+    assert "rxnorm" in plan_help.output
+    assert "ucum" in plan_help.output
+    assert "icd-10-cm" in plan_help.output
+    assert " all" in plan_help.output or "all)" in plan_help.output
 
 
 def test_plan_requires_element_or_all(tmp_consumer):
@@ -438,6 +444,79 @@ def test_system_loinc_recorded(tmp_consumer):
     assert result.exit_code == 0, result.output
     plan = load_yaml(_plan_path(tmp_consumer))
     assert plan["systems"] == ["loinc"]
+
+
+def test_system_rxnorm_ucum_icd10cm_recorded(tmp_consumer):
+    runner = _extract_nkr()
+    result = runner.invoke(
+        annotate,
+        [
+            "plan",
+            "nkr-breast",
+            "--element",
+            "gesl",
+            "--system",
+            "rxnorm",
+            "--system",
+            "ucum",
+            "--system",
+            "icd-10-cm",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert load_yaml(_plan_path(tmp_consumer))["systems"] == ["rxnorm", "ucum", "icd-10-cm"]
+
+
+def test_system_all_recorded(tmp_consumer):
+    runner = _extract_nkr()
+    result = runner.invoke(
+        annotate, ["plan", "nkr-breast", "--element", "gesl", "--system", "all"]
+    )
+    assert result.exit_code == 0, result.output
+    assert load_yaml(_plan_path(tmp_consumer))["systems"] == ["all"]
+
+
+def test_unknown_system_fails(tmp_consumer):
+    runner = _extract_nkr()
+    result = runner.invoke(
+        annotate, ["plan", "nkr-breast", "--element", "gesl", "--system", "not-a-system"]
+    )
+    assert result.exit_code != 0
+    assert "not-a-system" in result.output
+    assert not _plan_path(tmp_consumer).exists()
+
+
+def test_enrich_rxnorm_and_http_candidates(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl", "--system", "all"])
+    result = _enrich(
+        runner,
+        candidates=[
+            "rxnorm|197361|Aspirin",
+            "ucum|mg|milligram",
+            "icd-10-cm|I25.10|ASHD of native coronary artery",
+            "http://loinc.org|72166-2|Tobacco smoking status",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    cands = load_yaml(_plan_path(tmp_consumer))["elements"][0]["candidates"]
+    assert cands[0]["system"] == "http://www.nlm.nih.gov/research/umls/rxnorm"
+    assert cands[0]["code"] == "197361"
+    assert cands[1]["system"] == "http://unitsofmeasure.org"
+    assert cands[2]["system"] == "http://hl7.org/fhir/sid/icd-10-cm"
+    assert cands[3]["system"] == "http://loinc.org"
+
+
+def test_enrich_rejects_all_candidate_system(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl", "--system", "all"])
+    result = runner.invoke(
+        annotate,
+        ["enrich", "nkr-breast", "--element", "gesl", "--candidate", "all|x|y"],
+    )
+    assert result.exit_code != 0
+    assert "all" in result.output.lower()
+    assert load_yaml(_plan_path(tmp_consumer))["elements"][0]["candidates"] == []
 
 
 def test_unknown_element_fails(tmp_consumer):
