@@ -58,7 +58,8 @@ Present the CLI output as-is. Then at most one sentence, using
 - `Next: ingest` → run `rh-mod-ingest`
 - `Next: extract` → run `rh-mod-extract`
 - `Next: annotate` → run `rh-mod-annotate`
-- `Next: specify` or `formalize` → those skills are not built yet
+- `Next: specify` → run `rh-mod-specify`
+- `Next: formalize` → that skill is not built yet
 - `Next: init` → `rh-mod-skills init <model>`
 
 If the user asks about source drift or checksums, point them to

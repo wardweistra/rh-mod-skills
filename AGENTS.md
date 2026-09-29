@@ -1,6 +1,6 @@
 # reason-mod-skills Development Guidelines
 
-Sibling of rh-skills. Last updated: 2026-09-28
+Sibling of rh-skills. Last updated: 2026-09-29
 
 ## Active Technologies
 
@@ -41,6 +41,7 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
+- 010-rh-mod-specify: `specify plan|approve|implement|verify` writes `logical-model.yaml` from annotate-complete inventory+bindings; types stay unknown unless recognized FHIR or reviewer-filled; no FHIR JSON
 - 009-annotate-codesystems: `annotate plan --system` accepts `icd-10-cm`, `rxnorm`, `ucum`, and `all` (cross-system search); default remains snomed; enrich expands those aliases to FHIR URIs
 - 008-annotate-review: `annotate export` writes static HTML from the plan; `annotate import --from` applies picks YAML (accept by rank, unbound/skip/replace); import sets draft and does not write `bindings.yaml`
 - 007-ingest-status-skills: curated `rh-mod-ingest` and `rh-mod-status` (SKILL.md + reference.md + examples); CLI unchanged
