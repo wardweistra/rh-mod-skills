@@ -1,7 +1,7 @@
 # Getting Started
 
-This repo has L1 ingest (Excel/CSV/PDF tables), L2 extract, and gated annotate.
-Curated skills for ingest, extract, annotate, and status live under `skills/.curated/`.
+This repo has L1 ingest (Excel/CSV/PDF tables), L2 extract, gated annotate, and specify.
+Curated skills for ingest, extract, annotate, specify, and status live under `skills/.curated/`.
 
 ## 1. Open the right workspace
 
@@ -27,11 +27,11 @@ uv run --project .. rh-mod-skills status
 
 Re-run from scratch with [001 quickstart](../specs/001-rh-mod-framework/quickstart.md), [002 quickstart](../specs/002-rh-mod-ingest/quickstart.md), [003 extract](../specs/003-rh-mod-extract/quickstart.md), [004 PDF tables](../specs/004-rh-mod-ingest-pdf/quickstart.md), then [005 annotate](../specs/005-rh-mod-annotate/quickstart.md). Use `--project ..`, not `--directory ..`.
 
-Agent entry: `rh-mod-status` (orientation), `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`.
+Agent entry: `rh-mod-status` (orientation), `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`, `rh-mod-specify`.
 
 ## 4. Next specification work
 
-Specify (`logical-model.yaml`, types/cardinality), then formalize. Do not author `skills/.curated/rh-mod-*` until the matching CLI commands exist.
+Formalize (`StructureDefinition`, ValueSets, snapshot manifest).
 
 ## 5. What this product will not do
 

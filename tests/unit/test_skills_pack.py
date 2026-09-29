@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CURATED = ROOT / "skills" / ".curated"
 
-FULL_PACKS = ("rh-mod-ingest", "rh-mod-status")
+FULL_PACKS = ("rh-mod-ingest", "rh-mod-status", "rh-mod-specify")
 SKILL_ONLY = ("rh-mod-extract", "rh-mod-annotate")
 
 

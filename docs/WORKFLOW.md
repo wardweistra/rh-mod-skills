@@ -31,7 +31,7 @@ Every lifecycle transition follows the same gate as rh-skills:
 | Ingest | `rh-mod-ingest` | Structured L1 projection of the codebook | full |
 | Extract | `rh-mod-extract` | `inventory.yaml`, `value-domains.yaml` | SKILL.md |
 | Annotate | `rh-mod-annotate` | `bindings.yaml` | SKILL.md |
-| Specify | `rh-mod-specify` | `logical-model.yaml` | not built |
+| Specify | `rh-mod-specify` | `logical-model.yaml` | full |
 | Formalize | `rh-mod-formalize` | FHIR logical `StructureDefinition` + ValueSets + snapshot manifest | not built |
 | Verify | `rh-mod-verify` | Consolidated report | not built |
 | Status | `rh-mod-status` | Next step from tracking (read-only) | full |

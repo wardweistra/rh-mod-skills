@@ -1,0 +1,37 @@
+# L2 logical model written by `rh-mod-skills specify implement`
+# Path: models/<id>/structured/logical-model.yaml
+schema_version: "1.0"
+
+structure:
+  model: string
+  entities:
+    - id: string
+      title: string
+      elements:
+        - id: string
+          display: string
+          path: string
+          datatype: string          # recognized FHIR type or "unknown"
+          cardinality: string       # n..m / n..* or "unknown"
+          issues: list              # unknown-datatype, unknown-cardinality
+          binding:
+            status: string          # bound | unbound
+            decision: string
+            strength: string
+            system: string
+            code: string
+            display: string
+            reason: string
+          provenance:
+            source: string
+            sheet: string
+            row: integer
+            columns:
+              id: string
+              category: string
+              label: string
+
+forbidden:
+  - StructureDefinition
+  - invented codes
+  - codebook letters F/A as datatype
