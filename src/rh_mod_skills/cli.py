@@ -3,6 +3,7 @@ import click
 from rh_mod_skills import __version__
 from rh_mod_skills.commands.annotate import annotate
 from rh_mod_skills.commands.extract import extract
+from rh_mod_skills.commands.formalize import formalize
 from rh_mod_skills.commands.init import init
 from rh_mod_skills.commands.ingest import ingest
 from rh_mod_skills.commands.specify import specify
@@ -25,4 +26,5 @@ main.add_command(ingest)
 main.add_command(extract)
 main.add_command(annotate)
 main.add_command(specify)
+main.add_command(formalize)
 main.add_command(status)

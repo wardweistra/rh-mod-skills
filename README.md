@@ -18,7 +18,7 @@ Excel/CSV/PDF tables              fully specified LM YAML            (kind=logic
 (structure kept; not MD-only)
 ```
 
-Planned skills (CLI exists for init, status, ingest, extract, annotate, specify; formalize not built):
+Planned skills (CLI exists for init, status, ingest, extract, annotate, specify, formalize):
 
 | Skill | Stage | Job |
 |-------|-------|-----|
@@ -57,9 +57,8 @@ tracking.yaml
 
 ## Status
 
-`init`, `status`, `ingest` (Excel/CSV/PDF tables), `extract`, `annotate`, and `specify` work.
-Curated skills: `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`, `rh-mod-specify`, `rh-mod-status`.
-Formalize is not built yet.
+`init`, `status`, `ingest` (Excel/CSV/PDF tables), `extract`, `annotate`, `specify`, and `formalize` work.
+Curated skills: `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`, `rh-mod-specify`, `rh-mod-formalize`, `rh-mod-status`.
 
 Try the proving consumer:
 
@@ -70,7 +69,7 @@ uv run --project .. rh-mod-skills status
 
 1. Read [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
 2. Read [`specs/001-rh-mod-framework/spec.md`](specs/001-rh-mod-framework/spec.md)
-3. Next product spec: formalize (FHIR logical `StructureDefinition`)
+3. Next product spec: `rh-mod-verify` (consolidated coverage / validator coordinator)
 
 ## Prerequisites
 
