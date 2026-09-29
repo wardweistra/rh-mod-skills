@@ -30,7 +30,7 @@ metadata:
 
 Specify is the L2 logical-model stage. Annotate already owns terminology.
 This skill proposes **types and cardinality** on the specify plan. Extract
-already owns paths and provenance. Formalize (FHIR JSON) is later.
+already owns paths and provenance. Formalize emits FHIR JSON after this stage.
 
 **Never inspect `rh-mod-skills` source code.** Use this skill, [reference.md](reference.md),
 and `rh-mod-skills specify --help`. Do not write `logical-model.yaml` or the
@@ -77,5 +77,4 @@ Unknown types/cardinality are advisory on verify. Missing paths are blocking.
 
 ## Verify
 
-`specify verify` is read-only. Next after a successful implement is `formalize`
-(not built yet).
+`specify verify` is read-only. Next after a successful implement is `formalize`.

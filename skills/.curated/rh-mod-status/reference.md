@@ -20,7 +20,7 @@ There is no `status check-changes`. Drift is `rh-mod-skills ingest verify <model
 | extracted | annotate | `rh-mod-annotate` |
 | annotating | annotate | `rh-mod-annotate` |
 | extracted / annotating (every inventory path bound or unbound) | specify | `rh-mod-specify` |
-| specified | formalize | not built yet |
+| specified | formalize | `rh-mod-formalize` |
 | formalized | verify | `rh-mod-verify` not built yet |
 | (no tracking / no models) | init | `rh-mod-skills init` |
 
