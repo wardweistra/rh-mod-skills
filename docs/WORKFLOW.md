@@ -33,7 +33,8 @@ Every lifecycle transition follows the same gate as rh-skills:
 | Annotate | `rh-mod-annotate` | `bindings.yaml` | SKILL.md |
 | Specify | `rh-mod-specify` | `logical-model.yaml` | full |
 | Formalize | `rh-mod-formalize` | FHIR logical `StructureDefinition` + ValueSets + snapshot manifest | full |
-| Verify | `rh-mod-verify` | Consolidated report | not built |
+| IG | `rh-mod-ig` | IG Publisher tree from snapshot (scripts + input JSON) | full |
+| Verify | `rh-mod-verify` | Consolidated report | full |
 | Status | `rh-mod-status` | Next step from tracking (read-only) | full |
 
 ## Guiding principle

@@ -76,5 +76,9 @@ verify. Missing StructureDefinition / ValueSet / checksum mismatch is blocking.
 ## Verify
 
 `formalize verify` is read-only. Next after a successful implement is `verify`
-(`rh-mod-verify` is not built yet). Validator-not-run is advisory, not a reason
-to skip snapshot checksums.
+— run `rh-mod-verify` (the coordinator). Validator-not-run is advisory, not a
+reason to skip snapshot checksums.
+
+Optional: `rh-mod-ig` (`rh-mod-skills ig sync`) stages `models/<model>/ig/` so
+the reviewer can run the HL7 IG Publisher locally. That does not change `status`
+next.

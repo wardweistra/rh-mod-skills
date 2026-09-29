@@ -4,10 +4,12 @@ from rh_mod_skills import __version__
 from rh_mod_skills.commands.annotate import annotate
 from rh_mod_skills.commands.extract import extract
 from rh_mod_skills.commands.formalize import formalize
+from rh_mod_skills.commands.ig import ig
 from rh_mod_skills.commands.init import init
 from rh_mod_skills.commands.ingest import ingest
 from rh_mod_skills.commands.specify import specify
 from rh_mod_skills.commands.status import status
+from rh_mod_skills.commands.verify import verify
 
 
 @click.group()
@@ -27,4 +29,6 @@ main.add_command(extract)
 main.add_command(annotate)
 main.add_command(specify)
 main.add_command(formalize)
+main.add_command(ig)
 main.add_command(status)
+main.add_command(verify)

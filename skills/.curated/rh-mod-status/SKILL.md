@@ -60,7 +60,7 @@ Present the CLI output as-is. Then at most one sentence, using
 - `Next: annotate` → run `rh-mod-annotate`
 - `Next: specify` → run `rh-mod-specify`
 - `Next: formalize` → run `rh-mod-formalize`
-- `Next: verify` → `rh-mod-verify` is not built yet
+- `Next: verify` → run `rh-mod-verify`
 - `Next: init` → `rh-mod-skills init <model>`
 
 If the user asks about source drift or checksums, point them to

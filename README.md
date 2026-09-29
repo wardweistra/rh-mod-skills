@@ -18,7 +18,7 @@ Excel/CSV/PDF tables              fully specified LM YAML            (kind=logic
 (structure kept; not MD-only)
 ```
 
-Planned skills (CLI exists for init, status, ingest, extract, annotate, specify, formalize):
+Planned skills (CLI exists for init, status, ingest, extract, annotate, specify, formalize, verify, ig):
 
 | Skill | Stage | Job |
 |-------|-------|-----|
@@ -27,6 +27,7 @@ Planned skills (CLI exists for init, status, ingest, extract, annotate, specify,
 | `rh-mod-annotate` | L2 | Per-element terminology binding with the user + ReasonHub |
 | `rh-mod-specify` | L2 | Fully specified logical model (human-editable YAML) |
 | `rh-mod-formalize` | L3 | FHIR logical-model `StructureDefinition` (+ ValueSets) |
+| `rh-mod-ig` | L3 view | IG Publisher tree from the snapshot (no Java in this CLI) |
 | `rh-mod-verify` | cross-cutting | Coverage, unbound elements, validator checks |
 | `rh-mod-status` | cross-cutting | Next step from `tracking.yaml` |
 
@@ -49,6 +50,7 @@ models/<model-id>/
   computable/
     StructureDefinition-*.json     # FHIR logical model
     ValueSet-*.json
+  ig/                              # generated IG Publisher tree (optional)
   process/plans/ ...
 tracking.yaml
 ```
@@ -57,8 +59,8 @@ tracking.yaml
 
 ## Status
 
-`init`, `status`, `ingest` (Excel/CSV/PDF tables), `extract`, `annotate`, `specify`, and `formalize` work.
-Curated skills: `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`, `rh-mod-specify`, `rh-mod-formalize`, `rh-mod-status`.
+`init`, `status`, `ingest` (Excel/CSV/PDF tables), `extract`, `annotate`, `specify`, `formalize`, `verify`, and `ig sync` work.
+Curated skills: `rh-mod-ingest`, `rh-mod-extract`, `rh-mod-annotate`, `rh-mod-specify`, `rh-mod-formalize`, `rh-mod-verify`, `rh-mod-ig`, `rh-mod-status`.
 
 Try the proving consumer:
 
@@ -69,7 +71,7 @@ uv run --project .. rh-mod-skills status
 
 1. Read [`.specify/memory/constitution.md`](.specify/memory/constitution.md)
 2. Read [`specs/001-rh-mod-framework/spec.md`](specs/001-rh-mod-framework/spec.md)
-3. Next product spec: `rh-mod-verify` (consolidated coverage / validator coordinator)
+3. Mapping between two FHIR models is **rh-map-skills** (sibling repo), not this CLI.
 
 ## Prerequisites
 
