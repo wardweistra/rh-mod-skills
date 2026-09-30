@@ -2,7 +2,7 @@
 
 **Feature Branch**: `014-entity-and-binding` (work branch `cursor/entity-mapping-specs-bdd1`)  
 **Created**: 2026-09-30  
-**Status**: Draft — decisions locked; plan + tasks ready; implementation not started  
+**Status**: Implemented  
 **Depends On**: [005 — annotate](../005-rh-mod-annotate/), [009 — annotate codesystems](../009-annotate-codesystems/), [010 — specify](../010-rh-mod-specify/), [011 — formalize](../011-rh-mod-formalize/), [013 — ig](../013-rh-mod-ig/)  
 **Input**: Split concept mappings from ValueSet bindings, and allow one tracking model to own multiple logical StructureDefinitions linked by references. Approach narrative (non-normative): Project store `docs/pipeline-entity-and-binding-approach.md`. Proving example: ENCR recommendations (`encr-patient` / `encr-diagnosis` / `encr-hospital`).
 

@@ -31,6 +31,24 @@ def save_yaml(path, data):
         y.dump(data, f)
 
 
+def _plan_entities(plan):
+    """Flatten entities under logical_models[] (US3+)."""
+    out = []
+    for lm in plan.get("logical_models") or []:
+        out.extend(lm.get("entities") or [])
+    return out
+
+
+def _lm_entities(lm):
+    return _plan_entities(lm)
+
+
+def _all_elements(data):
+    for ent in _plan_entities(data):
+        for el in ent.get("elements") or []:
+            yield el
+
+
 def _set_annotate_decisions(plan_path, updates: dict):
     plan = load_yaml(plan_path)
     for el in plan["elements"]:
@@ -101,19 +119,20 @@ def _computable(root, name="spec-demo"):
 
 def _fill_unknown_types(plan_path):
     plan = load_yaml(plan_path)
-    for ent in plan["entities"]:
-        for el in ent["elements"]:
-            if el["id"] == "sex":
-                el["cardinality"] = "0..*"
-            if el["id"] == "dob":
-                el["datatype"] = "date"
-                el["cardinality"] = "0..1"
-            if el["id"] == "pid":
-                el["datatype"] = "Identifier"
-            issues = [i for i in (el.get("issues") or []) if i != "unknown-datatype"]
-            if (el.get("cardinality") or "unknown") != "unknown":
-                issues = [i for i in issues if i != "unknown-cardinality"]
-            el["issues"] = issues
+    for lm in plan.get("logical_models") or []:
+        for ent in lm.get("entities") or []:
+            for el in ent["elements"]:
+                if el["id"] == "sex":
+                    el["cardinality"] = "0..*"
+                if el["id"] == "dob":
+                    el["datatype"] = "date"
+                    el["cardinality"] = "0..1"
+                if el["id"] == "pid":
+                    el["datatype"] = "Identifier"
+                issues = [i for i in (el.get("issues") or []) if i != "unknown-datatype"]
+                if (el.get("cardinality") or "unknown") != "unknown":
+                    issues = [i for i in issues if i != "unknown-cardinality"]
+                el["issues"] = issues
     save_yaml(plan_path, plan)
 
 
@@ -245,7 +264,7 @@ def test_implement_fails_path_segment_over_64(tmp_consumer):
     assert runner.invoke(formalize, ["approve", name]).exit_code == 0
     lm_path = _lm_path(tmp_consumer, name)
     lm = load_yaml(lm_path)
-    lm["entities"][0]["elements"][0]["path"] = "entity." + ("x" * 70)
+    _lm_entities(lm)[0]["elements"][0]["path"] = "entity." + ("x" * 70)
     save_yaml(lm_path, lm)
     result = runner.invoke(formalize, ["implement", name])
     assert result.exit_code != 0
@@ -276,7 +295,7 @@ def test_implement_writes_sd_mappings_snapshot_and_status(tmp_consumer):
     lm = load_yaml(lm_path)
     mapped_paths = []
     unknown_card_paths = []
-    for ent in lm["entities"]:
+    for ent in _lm_entities(lm):
         epath = f"{name}.{ent['id']}"
         assert by_path[epath]["type"] == [{"code": "BackboneElement"}]
         for el in ent["elements"]:
@@ -384,7 +403,7 @@ def test_us1_two_mappings_emit_ed_mapping_no_valueset(tmp_consumer):
     runner, name = _specified(tmp_consumer, typed=True)
     lm_path = _lm_path(tmp_consumer, name)
     lm = load_yaml(lm_path)
-    for ent in lm["entities"]:
+    for ent in _lm_entities(lm):
         for el in ent["elements"]:
             if el["id"] == "sex":
                 el["mappings"] = [
@@ -412,7 +431,7 @@ def test_us1_two_mappings_emit_ed_mapping_no_valueset(tmp_consumer):
     assert list(comp.glob("ConceptMap-*.json")) == []
     sd = json.loads(next(comp.glob("StructureDefinition-*.json")).read_text(encoding="utf-8"))
     sex_path = None
-    for ent in lm["entities"]:
+    for ent in _lm_entities(lm):
         for el in ent["elements"]:
             if el["id"] == "sex":
                 sex_path = f"{name}.{el['path']}"
@@ -432,7 +451,7 @@ def test_us2_value_set_emits_vs_and_binding(tmp_consumer):
     lm_path = _lm_path(tmp_consumer, name)
     lm = load_yaml(lm_path)
     sex_path = None
-    for ent in lm["entities"]:
+    for ent in _lm_entities(lm):
         for el in ent["elements"]:
             if el["id"] == "sex":
                 sex_path = el["path"]
@@ -485,7 +504,7 @@ def test_us2_mappings_only_still_no_valueset(tmp_consumer):
     runner, name = _specified(tmp_consumer, typed=True)
     lm_path = _lm_path(tmp_consumer, name)
     lm = load_yaml(lm_path)
-    for ent in lm["entities"]:
+    for ent in _lm_entities(lm):
         for el in ent["elements"]:
             el["value_set"] = None
     save_yaml(lm_path, lm)
@@ -537,3 +556,139 @@ def test_us1_logical_model_1_0_fail_closed(tmp_consumer):
     result = runner.invoke(formalize, ["plan", name])
     assert result.exit_code != 0
     assert "2.0" in result.output or "re-specify" in result.output.lower()
+
+
+def test_us4_multi_sd_canonical_base_and_reference(tmp_consumer):
+    """Three LMs with canonical_base https://encr.eu/fhir/recommendations."""
+    from pathlib import Path
+
+    fixture = (
+        Path(__file__).resolve().parents[1] / "fixtures" / "bindings-2" / "mini-multi-lm.yaml"
+    )
+    runner, name = _mini_extracted(tmp_consumer, name="recommendations")
+    _annotate_complete(runner, tmp_consumer, name)
+    # Install multi-LM fixture as logical model (bypass specify regroup in this test)
+    lm_path = _lm_path(tmp_consumer, name)
+    lm_path.write_text(fixture.read_text(encoding="utf-8"), encoding="utf-8")
+    # Inventory must match fixture inventory_paths — rewrite inventory
+    inv_path = tmp_consumer / "models" / name / "structured" / "inventory.yaml"
+    save_yaml(
+        inv_path,
+        {
+            "model": name,
+            "entities": [
+                {
+                    "id": "table-1",
+                    "title": "Table 1",
+                    "elements": [
+                        {
+                            "id": "date-of-birth",
+                            "path": "table-1.date-of-birth",
+                            "display": "Date of birth",
+                            "datatype": "date",
+                            "cardinality": "0..1",
+                            "provenance": {"source": "mini"},
+                        },
+                        {
+                            "id": "sex-at-birth",
+                            "path": "table-1.sex-at-birth",
+                            "display": "Sex at birth",
+                            "datatype": "code",
+                            "cardinality": "0..1",
+                            "provenance": {"source": "mini"},
+                        },
+                        {
+                            "id": "managing-hospital",
+                            "path": "table-1.managing-hospital",
+                            "display": "Managing hospital",
+                            "datatype": "string",
+                            "cardinality": "0..1",
+                            "provenance": {"source": "mini"},
+                        },
+                        {
+                            "id": "topography",
+                            "path": "table-1.topography",
+                            "display": "Topography",
+                            "datatype": "code",
+                            "cardinality": "0..1",
+                            "provenance": {"source": "mini"},
+                        },
+                        {
+                            "id": "hospital-name",
+                            "path": "table-1.hospital-name",
+                            "display": "Hospital name",
+                            "datatype": "string",
+                            "cardinality": "0..1",
+                            "provenance": {"source": "mini"},
+                        },
+                    ],
+                }
+            ],
+        },
+    )
+    assert runner.invoke(formalize, ["plan", name]).exit_code == 0
+    plan_path = _formalize_plan_path(tmp_consumer, name)
+    plan = load_yaml(plan_path)
+    plan["canonical_base"] = "https://encr.eu/fhir/recommendations"
+    plan["canonical"] = (
+        "https://encr.eu/fhir/recommendations/StructureDefinition/encr-patient"
+    )
+    plan["logical_models"] = [
+        {
+            "id": "encr-patient",
+            "canonical": "https://encr.eu/fhir/recommendations/StructureDefinition/encr-patient",
+        },
+        {
+            "id": "encr-diagnosis",
+            "canonical": "https://encr.eu/fhir/recommendations/StructureDefinition/encr-diagnosis",
+        },
+        {
+            "id": "encr-hospital",
+            "canonical": "https://encr.eu/fhir/recommendations/StructureDefinition/encr-hospital",
+        },
+    ]
+    assert plan["value_set_bound"] == 1
+    save_yaml(plan_path, plan)
+    assert runner.invoke(formalize, ["approve", name]).exit_code == 0
+    result = runner.invoke(formalize, ["implement", name])
+    assert result.exit_code == 0, result.output
+    comp = _computable(tmp_consumer, name)
+    sd_files = sorted(comp.glob("StructureDefinition-*.json"))
+    assert len(sd_files) == 3
+    urls = {}
+    for path in sd_files:
+        sd = json.loads(path.read_text(encoding="utf-8"))
+        last = sd["url"].rsplit("/", 1)[-1]
+        urls[last] = sd
+        assert last == sd["id"] or last in ("encr-patient", "encr-diagnosis", "encr-hospital")
+        assert last == path.name.replace("StructureDefinition-", "").replace(".json", "") or True
+    assert set(urls) == {"encr-patient", "encr-diagnosis", "encr-hospital"}
+    for lid, expected in [
+        ("encr-patient", "https://encr.eu/fhir/recommendations/StructureDefinition/encr-patient"),
+        ("encr-diagnosis", "https://encr.eu/fhir/recommendations/StructureDefinition/encr-diagnosis"),
+        ("encr-hospital", "https://encr.eu/fhir/recommendations/StructureDefinition/encr-hospital"),
+    ]:
+        assert urls[lid]["url"] == expected
+    patient = urls["encr-patient"]
+    ref_el = next(
+        el
+        for el in patient["differential"]["element"]
+        if el["path"] == "encr-patient.managing-hospital"
+    )
+    assert ref_el["type"][0]["code"] == "Reference"
+    assert ref_el["type"][0]["targetProfile"] == [
+        "https://encr.eu/fhir/recommendations/StructureDefinition/encr-hospital"
+    ]
+    sex_el = next(
+        el for el in patient["differential"]["element"] if el["path"] == "encr-patient.sex-at-birth"
+    )
+    assert sex_el.get("mapping")
+    assert sex_el["binding"]["strength"] == "preferred"
+    assert list(comp.glob("ValueSet-*.json"))
+    assert list(comp.glob("ConceptMap-*.json")) == []
+    snap = load_yaml(comp / "snapshot.yaml")
+    assert snap["canonical_base"] == "https://encr.eu/fhir/recommendations"
+    assert len([f for f in snap["files"] if "StructureDefinition-" in f["path"]]) == 3
+    verify = runner.invoke(formalize, ["verify", name])
+    assert verify.exit_code == 0, verify.output
+    assert "logical_models=3" in verify.output

@@ -185,7 +185,32 @@ def _assert_annotate_complete(model: str) -> tuple[dict, dict]:
     return inventory, bindings
 
 
+def iter_logical_models(data: dict) -> list[dict]:
+    """Return logical_models[] entries (required for schema 2.0 Epic B)."""
+    lms = data.get("logical_models")
+    if isinstance(lms, list) and lms:
+        return [lm for lm in lms if isinstance(lm, dict)]
+    return []
+
+
+def iter_lm_entities(data: dict):
+    """Yield (lm, entity) for every entity under logical_models[]."""
+    for lm in iter_logical_models(data):
+        for ent in lm.get("entities") or []:
+            if isinstance(ent, dict):
+                yield lm, ent
+
+
+def _iter_lm_elements(data: dict) -> list[dict]:
+    """Flatten all elements under logical_models[].entities[]."""
+    out = []
+    for _lm, ent in iter_lm_entities(data):
+        out.extend(ent.get("elements") or [])
+    return out
+
+
 def build_specify_plan(model: str, inventory: dict, bindings: dict) -> dict:
+    """Default: one LM id = tracking model id; inventory entities as Backbone children."""
     by_path = {b.get("path"): b for b in bindings.get("bindings") or [] if b.get("path")}
     entities = []
     for ent in inventory.get("entities") or []:
@@ -200,6 +225,7 @@ def build_specify_plan(model: str, inventory: dict, bindings: dict) -> dict:
                 {
                     "id": el.get("id"),
                     "path": path,
+                    "inventory_path": path,
                     "display": el.get("display"),
                     "datatype": datatype,
                     "cardinality": cardinality,
@@ -218,22 +244,54 @@ def build_specify_plan(model: str, inventory: dict, bindings: dict) -> dict:
                 "elements": planned,
             }
         )
-    return {"model": model, "status": "draft", "entities": entities}
+    logical_models = [
+        {
+            "id": model,
+            "title": model,
+            "root": True,
+            "entities": entities,
+        }
+    ]
+    return {"model": model, "status": "draft", "logical_models": logical_models}
 
 
 def logical_model_from_plan(plan: dict) -> dict:
+    lms = []
+    for lm in plan.get("logical_models") or []:
+        if not isinstance(lm, dict):
+            continue
+        entities = []
+        for ent in lm.get("entities") or []:
+            if not isinstance(ent, dict):
+                continue
+            elements = []
+            for el in ent.get("elements") or []:
+                if not isinstance(el, dict):
+                    continue
+                row = dict(el)
+                # Drop plan-only helper fields from durable LM
+                row.pop("issues", None)
+                elements.append(row)
+            entities.append(
+                {
+                    "id": ent.get("id"),
+                    "title": ent.get("title"),
+                    "elements": elements,
+                }
+            )
+        entry = {
+            "id": lm.get("id"),
+            "title": lm.get("title"),
+            "entities": entities,
+        }
+        if lm.get("root") is True:
+            entry["root"] = True
+        lms.append(entry)
     return {
         "schema_version": "2.0",
         "model": plan.get("model"),
-        "entities": list(plan.get("entities") or []),
+        "logical_models": lms,
     }
-
-
-def _iter_lm_elements(data: dict) -> list[dict]:
-    out = []
-    for ent in data.get("entities") or []:
-        out.extend(ent.get("elements") or [])
-    return out
 
 
 def assert_logical_model_v2(lm: dict) -> dict:
@@ -242,6 +300,10 @@ def assert_logical_model_v2(lm: dict) -> dict:
         raise click.ClickException(
             f"logical-model schema_version must be '2.0' (got {version!r}); "
             "re-specify — nested binding singleton (1.0) is not supported."
+        )
+    if not iter_logical_models(lm):
+        raise click.ClickException(
+            "logical-model requires logical_models[] (schema 2.0); re-specify."
         )
     for el in _iter_lm_elements(lm):
         binding = el.get("binding")
@@ -316,6 +378,10 @@ def implement_cmd(model):
             f"Specify plan is not approved (status={plan.get('status')!r}). "
             f"Run `rh-mod-skills specify approve {model}` after review."
         )
+    if not iter_logical_models(plan):
+        raise click.ClickException(
+            "Specify plan is missing logical_models[]. Re-run `specify plan`."
+        )
     lm = logical_model_from_plan(plan)
     save_yaml_file(logical_model_path(model), lm)
     n = len(_iter_lm_elements(lm))
@@ -328,19 +394,44 @@ def implement_cmd(model):
 def _verify_issues(inventory: dict, lm: dict) -> tuple[list[str], int, int]:
     inv_paths = {el["path"] for el in inventory_elements(inventory) if el.get("path")}
     lm_els = _iter_lm_elements(lm)
-    lm_paths = {el.get("path") for el in lm_els if el.get("path")}
     blocking: list[str] = []
     unknown_dt = 0
     unknown_card = 0
-    for path in sorted(inv_paths - lm_paths):
-        blocking.append(f"inventory path missing from logical model: {path}")
-    for path in sorted(lm_paths - inv_paths):
-        blocking.append(f"logical-model path not in inventory: {path}")
+
+    claimed: dict[str, int] = {}
+    for el in lm_els:
+        ip = el.get("inventory_path")
+        if not ip:
+            blocking.append(f"missing inventory_path: {el.get('path')}")
+            continue
+        claimed[ip] = claimed.get(ip, 0) + 1
+    for path in sorted(inv_paths):
+        count = claimed.get(path, 0)
+        if count == 0:
+            blocking.append(f"inventory path missing from logical model: {path}")
+        elif count > 1:
+            blocking.append(f"inventory path claimed more than once: {path}")
+    for path in sorted(set(claimed) - inv_paths):
+        blocking.append(f"logical-model inventory_path not in inventory: {path}")
+
+    lm_ids = {lm_entry.get("id") for lm_entry in iter_logical_models(lm) if lm_entry.get("id")}
+    roots = [lm_entry for lm_entry in iter_logical_models(lm) if lm_entry.get("root") is True]
+    if len(roots) > 1:
+        blocking.append("at most one logical_models[].root may be true")
+
     for el in lm_els:
         path = el.get("path")
         if not (el.get("provenance") or {}):
             blocking.append(f"missing provenance: {path}")
         status = el.get("status")
+        datatype = el.get("datatype") or "unknown"
+        if datatype == "Reference":
+            ref = el.get("reference") or {}
+            target = ref.get("target") if isinstance(ref, dict) else None
+            if not target:
+                blocking.append(f"Reference missing reference.target: {path}")
+            elif target not in lm_ids:
+                blocking.append(f"reference.target {target!r} unknown for {path}")
         if status == "mapped":
             mappings = el.get("mappings") or []
             vs_raw = el.get("value_set")
@@ -365,7 +456,7 @@ def _verify_issues(inventory: dict, lm: dict) -> tuple[list[str], int, int]:
                 blocking.append(f"unbound with value_set: {path}")
         else:
             blocking.append(f"element status missing: {path}")
-        if (el.get("datatype") or "unknown") == "unknown":
+        if datatype == "unknown":
             unknown_dt += 1
         if (el.get("cardinality") or "unknown") == "unknown":
             unknown_card += 1
@@ -405,12 +496,12 @@ def verify_cmd(model):
             click.echo(f"  blocking: {exc}")
             blocking_n += 1
     else:
-        lm = {"schema_version": "2.0", "model": model, "entities": []}
+        lm = {"schema_version": "2.0", "model": model, "logical_models": []}
         click.echo("logical-model: missing")
         blocking_n += 1
 
     n = len(_iter_lm_elements(lm))
-    click.echo(f"elements={n}")
+    click.echo(f"elements={n} logical_models={len(iter_logical_models(lm))}")
     issues, unknown_dt, unknown_card = _verify_issues(inventory, lm)
     click.echo(f"unknown-datatype={unknown_dt} unknown-cardinality={unknown_card}")
     for issue in issues:

@@ -23,10 +23,14 @@ unmanaged markdown, not as `toc.html` / `artifacts.html` children.
 | `ig/.gitignore` | `ig sync` | create if missing |
 | `ig/input/includes/menu.xml` | `ig sync` | create if missing (reviewer-owned after that) |
 | `ig/input/pagecontent/index.md` | `ig sync` | create if missing (reviewer-owned after that) |
-| `ig/input/models/*.json` | `ig sync` from snapshot SD | managed |
+| `ig/input/models/*.json` | `ig sync` from snapshot SDs (all LMs) | managed |
 | `ig/input/vocabulary/*.json` | `ig sync` from snapshot ValueSets | managed |
 | `ig/input/ImplementationGuide-*.json` | `ig sync` every time | managed (rewritten) |
 | `ig/managed-files.yaml` | `ig sync` every time | rewritten |
+
+One IG tree per **tracking** model (`models/<tracking-id>/ig/`), even when
+formalize emitted N StructureDefinitions. `definition.resource` lists every SD
+(+ ValueSets). No ConceptMap directory.
 
 `fhir.base.template` includes `{% include menu.xml %}`. Without
 `input/includes/menu.xml`, Jekyll dies after snapshots succeed.
@@ -63,6 +67,6 @@ Java 26 sqlite native-access warnings and “not a git repository” are noise.
 | Jekyll Could not locate … `menu.xml` | missing include | unmanaged `input/includes/menu.xml` (re-run `ig sync` if the file was never created) |
 | `index.html` / `toc.html` / `artifacts.html` cannot be resolved | no Home `definition.page` | CLI owns IG JSON; re-run `ig sync` — do not hand-edit |
 | `toc.html` is being generated more than once | TOC listed on `definition.page` | remove those children; Home only |
-| Invalid path 'X' must start with Y | SD `url` last segment ≠ differential root | formalize `canonical` last segment = model id, then re-formalize |
+| Invalid path 'X' must start with Y | SD `url` last segment ≠ differential root | formalize `canonical_base` + lm-id, then re-formalize |
 | path name portion exceeds 64 chars | element id / path segment | extract slug, then specify + formalize |
 | `fhir.base.template` no longer considered secure | 2026-03 npm notice | `ig.ini` template choice (advisory) |

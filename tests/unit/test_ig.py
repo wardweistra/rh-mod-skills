@@ -137,3 +137,65 @@ def test_sync_idempotent_keeps_reviewer_files_and_drops_stale(fetch_script, tmp_
     page = ig_json["definition"]["page"]
     assert page["nameUrl"] == "index.html"
     assert "page" not in page
+
+
+@patch("rh_mod_skills.commands.ig.fetch_script", side_effect=_stub_fetch)
+def test_us4_ig_sync_lists_all_structure_definitions(_fetch, tmp_consumer):
+    """ig sync copies all SDs into one IG under the tracking model."""
+    from pathlib import Path
+
+    from test_formalize import _annotate_complete, _computable, _formalize_plan_path, _lm_path
+
+    fixture = (
+        Path(__file__).resolve().parents[1] / "fixtures" / "bindings-2" / "mini-multi-lm.yaml"
+    )
+    runner, name = _mini_extracted(tmp_consumer, name="recommendations")
+    _annotate_complete(runner, tmp_consumer, name)
+    lm_path = _lm_path(tmp_consumer, name)
+    lm_path.write_text(fixture.read_text(encoding="utf-8"), encoding="utf-8")
+    inv_path = tmp_consumer / "models" / name / "structured" / "inventory.yaml"
+    save_yaml(
+        inv_path,
+        {
+            "model": name,
+            "entities": [
+                {
+                    "id": "table-1",
+                    "title": "Table 1",
+                    "elements": [
+                        {"id": "date-of-birth", "path": "table-1.date-of-birth", "display": "DOB", "provenance": {"source": "x"}},
+                        {"id": "sex-at-birth", "path": "table-1.sex-at-birth", "display": "Sex", "provenance": {"source": "x"}},
+                        {"id": "managing-hospital", "path": "table-1.managing-hospital", "display": "Hosp", "provenance": {"source": "x"}},
+                        {"id": "topography", "path": "table-1.topography", "display": "Topo", "provenance": {"source": "x"}},
+                        {"id": "hospital-name", "path": "table-1.hospital-name", "display": "Name", "provenance": {"source": "x"}},
+                    ],
+                }
+            ],
+        },
+    )
+    assert runner.invoke(formalize, ["plan", name]).exit_code == 0
+    plan_path = _formalize_plan_path(tmp_consumer, name)
+    plan = load_yaml(plan_path)
+    plan["canonical_base"] = "https://encr.eu/fhir/recommendations"
+    plan["canonical"] = (
+        "https://encr.eu/fhir/recommendations/StructureDefinition/encr-patient"
+    )
+    save_yaml(plan_path, plan)
+    assert runner.invoke(formalize, ["approve", name]).exit_code == 0
+    assert runner.invoke(formalize, ["implement", name]).exit_code == 0
+    assert len(list(_computable(tmp_consumer, name).glob("StructureDefinition-*.json"))) == 3
+
+    result = runner.invoke(ig, ["sync", name])
+    assert result.exit_code == 0, result.output
+    root = tmp_consumer / "models" / name / "ig"
+    sd = list((root / "input" / "models").glob("StructureDefinition-*.json"))
+    assert len(sd) == 3
+    ig_json = json.loads(next((root / "input").glob("ImplementationGuide-*.json")).read_text())
+    refs = {e["reference"]["reference"] for e in ig_json["definition"]["resource"]}
+    assert "StructureDefinition/encr-patient" in refs
+    assert "StructureDefinition/encr-diagnosis" in refs
+    assert "StructureDefinition/encr-hospital" in refs
+    assert not any(r.startswith("ConceptMap/") for r in refs)
+    # Still one IG tree under the tracking model
+    assert (tmp_consumer / "models" / name / "ig" / "ig.ini").is_file()
+    assert not (tmp_consumer / "models" / "encr-patient" / "ig").exists()

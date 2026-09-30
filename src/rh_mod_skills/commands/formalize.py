@@ -15,6 +15,7 @@ from rh_mod_skills.commands.extract import _assert_ingest_clean
 from rh_mod_skills.commands.specify import (
     CARD_RE,
     assert_logical_model_v2,
+    iter_logical_models,
     logical_model_path,
 )
 from rh_mod_skills.common import (
@@ -118,27 +119,26 @@ def min_max(cardinality: str | None) -> tuple[int, str]:
     return int(lo), hi
 
 
-def iter_lm_elements(lm: dict):
-    for ent in lm.get("entities") or []:
-        for el in ent.get("elements") or []:
-            yield ent, el
+def iter_lm_elements(lm_doc: dict):
+    """Yield (logical_model, entity, element) for every leaf under logical_models[]."""
+    for lm in iter_logical_models(lm_doc):
+        for ent in lm.get("entities") or []:
+            for el in ent.get("elements") or []:
+                yield lm, ent, el
 
 
-def valueset_url(canonical: str, vs_id: str) -> str:
-    if "/StructureDefinition/" in canonical:
-        base = canonical.split("/StructureDefinition/", 1)[0]
-        return f"{base}/ValueSet/{vs_id}"
-    parent = canonical.rsplit("/", 1)[0]
-    return f"{parent}/ValueSet/{vs_id}"
+def valueset_url(canonical_base: str, vs_id: str) -> str:
+    base = (canonical_base or "").strip().rstrip("/")
+    return f"{base}/ValueSet/{vs_id}"
 
 
 def default_canonical_base(model: str) -> str:
     return f"{DEFAULT_CANONICAL_HOST}/{model}"
 
 
-def derive_structure_definition_url(canonical_base: str, model_id: str) -> str:
+def derive_structure_definition_url(canonical_base: str, lm_id: str) -> str:
     base = (canonical_base or "").strip().rstrip("/")
-    return f"{base}/StructureDefinition/{model_id}"
+    return f"{base}/StructureDefinition/{lm_id}"
 
 
 def _validate_http_uri(url: str, field: str) -> str:
@@ -151,56 +151,84 @@ def _validate_http_uri(url: str, field: str) -> str:
     return cleaned
 
 
-def resolve_plan_canonical(plan: dict, model: str) -> tuple[str, str]:
-    """Return (canonical_base, StructureDefinition url) for Epic A single-SD."""
+def resolve_plan_canonical(plan: dict, model: str, lm_doc: dict | None = None) -> tuple[str, dict[str, str]]:
+    """Return (canonical_base, {lm_id: StructureDefinition url}).
+
+    Per-LM last segment = lm-id (not necessarily tracking model id).
+    Primary/root LM URL is also stored as plan canonical for IG package guess.
+    """
+    lms = iter_logical_models(lm_doc or {})
+    if not lms:
+        raise click.ClickException("logical-model has no logical_models[] entries.")
+    lm_ids = []
+    for lm in lms:
+        lid = lm.get("id")
+        if not lid:
+            raise click.ClickException("Each logical_models[] entry needs an id.")
+        if lid in lm_ids:
+            raise click.ClickException(f"Duplicate logical model id: {lid}")
+        lm_ids.append(lid)
+
     base_raw = plan.get("canonical_base")
-    explicit = (plan.get("canonical") or "").strip()
     if base_raw is not None and str(base_raw).strip():
         base = _validate_http_uri(str(base_raw), "canonical_base")
-        derived = derive_structure_definition_url(base, model)
-        last = derived.rsplit("/", 1)[-1]
-        if last != model:
+    else:
+        explicit = (plan.get("canonical") or "").strip()
+        if not explicit:
             raise click.ClickException(
-                f"Derived StructureDefinition URL last segment must equal model id {model!r} "
-                f"(got {last!r}). Example canonical_base: {default_canonical_base(model)}"
+                "Formalize plan needs canonical_base (preferred) or canonical. "
+                f"Example canonical_base: {default_canonical_base(model)}"
             )
-        if explicit and explicit.rstrip("/") != derived:
+        url = _validate_http_uri(explicit, "canonical")
+        if "/StructureDefinition/" in url:
+            base = url.split("/StructureDefinition/", 1)[0]
+        else:
+            base = url.rsplit("/", 1)[0]
+
+    urls: dict[str, str] = {}
+    for lid in lm_ids:
+        derived = derive_structure_definition_url(base, lid)
+        last = derived.rsplit("/", 1)[-1]
+        if last != lid:
             raise click.ClickException(
-                f"Formalize plan canonical must equal "
-                f"{{canonical_base}}/StructureDefinition/{{model}} ({derived!r}); "
+                f"Derived StructureDefinition URL last segment must equal lm-id {lid!r} "
+                f"(got {last!r})."
+            )
+        urls[lid] = derived
+
+    # Optional plan.canonical must match root LM (or sole LM) when present
+    explicit = (plan.get("canonical") or "").strip()
+    if explicit:
+        root = next((lm for lm in lms if lm.get("root") is True), lms[0])
+        root_url = urls[root["id"]]
+        if explicit.rstrip("/") != root_url:
+            raise click.ClickException(
+                f"Formalize plan canonical must equal root LM URL {root_url!r}; "
                 f"got {explicit!r}."
             )
-        return base, derived
-    if not explicit:
-        raise click.ClickException(
-            "Formalize plan needs canonical_base (preferred) or canonical. "
-            f"Example canonical_base: {default_canonical_base(model)}"
-        )
-    url = _validate_http_uri(explicit, "canonical")
-    last = url.rsplit("/", 1)[-1]
-    if last != model:
-        raise click.ClickException(
-            f"Formalize plan canonical last segment must equal the model id {model!r} "
-            f"(IG Publisher requires StructureDefinition.url to match the differential root). "
-            f"Got {last!r}. Prefer canonical_base "
-            f"{default_canonical_base(model)!r} → …/StructureDefinition/{model}."
-        )
-    if "/StructureDefinition/" in url:
-        base = url.split("/StructureDefinition/", 1)[0]
-    else:
-        base = url.rsplit("/", 1)[0]
-    return base, url
+    return base, urls
 
 
-def long_path_segments(model: str, lm: dict) -> list[str]:
+def primary_canonical(lm_doc: dict, urls: dict[str, str]) -> str:
+    lms = iter_logical_models(lm_doc)
+    root = next((lm for lm in lms if lm.get("root") is True), lms[0] if lms else None)
+    if root and root.get("id") in urls:
+        return urls[root["id"]]
+    return next(iter(urls.values())) if urls else ""
+
+
+def long_path_segments(lm_doc: dict) -> list[str]:
     """FHIR path name portions (dot segments) must be ≤ 64 characters."""
-    paths = [model]
-    for ent in lm.get("entities") or []:
-        eid = ent.get("id") or "entity"
-        paths.append(f"{model}.{eid}")
-        for el in ent.get("elements") or []:
-            path = el.get("path") or eid
-            paths.append(f"{model}.{path}")
+    paths: list[str] = []
+    for lm in iter_logical_models(lm_doc):
+        root = lm.get("id") or "model"
+        paths.append(root)
+        for ent in lm.get("entities") or []:
+            eid = ent.get("id") or "entity"
+            paths.append(f"{root}.{eid}")
+            for el in ent.get("elements") or []:
+                path = el.get("path") or eid
+                paths.append(f"{root}.{path}")
     bad: list[str] = []
     for full in paths:
         for part in str(full).split("."):
@@ -227,13 +255,13 @@ def element_status(el: dict) -> str | None:
     return status
 
 
-def summarize_lm(lm: dict) -> tuple[list[str], int, int, int, int]:
+def summarize_lm(lm_doc: dict) -> tuple[list[str], int, int, int, int]:
     unknown_dt: list[str] = []
     unknown_card = 0
     mapped = 0
     value_set_bound = 0
     unbound = 0
-    for _ent, el in iter_lm_elements(lm):
+    for _lm, _ent, el in iter_lm_elements(lm_doc):
         path = el.get("path") or "?"
         if (el.get("datatype") or "unknown") == "unknown":
             unknown_dt.append(path)
@@ -250,33 +278,33 @@ def summarize_lm(lm: dict) -> tuple[list[str], int, int, int, int]:
     return unknown_dt, unknown_card, mapped, value_set_bound, unbound
 
 
-def collect_mapping_identities(lm: dict) -> list[dict]:
-    """StructureDefinition.mapping entries for every distinct system URI."""
+def collect_mapping_identities_for_lm(lm: dict) -> list[dict]:
     by_id: dict[str, dict] = {}
-    for _ent, el in iter_lm_elements(lm):
-        for m in el.get("mappings") or []:
-            system = m.get("system")
-            if not system:
-                continue
-            ident = mapping_identity(str(system))
-            by_id.setdefault(
-                ident,
-                {"identity": ident, "uri": str(system), "name": ident},
-            )
+    for ent in lm.get("entities") or []:
+        for el in ent.get("elements") or []:
+            for m in el.get("mappings") or []:
+                system = m.get("system")
+                if not system:
+                    continue
+                ident = mapping_identity(str(system))
+                by_id.setdefault(
+                    ident,
+                    {"identity": ident, "uri": str(system), "name": ident},
+                )
     return list(by_id.values())
 
 
 def build_valueset(
-    model: str,
-    canonical: str,
+    canonical_base: str,
     version: str,
+    lm_id: str,
     el: dict,
     vs: dict,
 ) -> tuple[str, dict]:
     """Build a multi-concept ValueSet from authored value_set.concepts[]."""
     path = el.get("path") or "element"
-    vs_id = fhir_id(f"{model}-{path.replace('.', '-')}")
-    url = valueset_url(canonical, vs_id)
+    vs_id = fhir_id(f"{lm_id}-{path.replace('.', '-')}")
+    url = valueset_url(canonical_base, vs_id)
     by_system: dict[str, list[dict]] = {}
     for concept in vs.get("concepts") or []:
         system = concept.get("system")
@@ -310,24 +338,26 @@ def build_valueset(
 
 
 def build_structure_definition(
-    model: str,
     lm: dict,
     canonical: str,
     version: str,
     name: str,
+    lm_canonicals: dict[str, str],
     vs_urls: dict[str, str] | None = None,
     vs_strengths: dict[str, str] | None = None,
 ) -> dict:
     vs_urls = vs_urls or {}
     vs_strengths = vs_strengths or {}
-    root = model
+    root = lm.get("id")
+    if not root:
+        raise click.ClickException("logical model entry missing id")
     elements = [
         {
             "id": root,
             "path": root,
             "min": 0,
             "max": "1",
-            "short": name,
+            "short": lm.get("title") or name,
         }
     ]
     for ent in lm.get("entities") or []:
@@ -347,6 +377,13 @@ def build_structure_definition(
             path = el.get("path") or eid
             fpath = f"{root}.{path}"
             lo, hi = min_max(el.get("cardinality"))
+            datatype = el.get("datatype")
+            type_entry: dict = {"code": datatype}
+            if datatype == "Reference":
+                ref = el.get("reference") or {}
+                target = ref.get("target") if isinstance(ref, dict) else None
+                if target and target in lm_canonicals:
+                    type_entry["targetProfile"] = [lm_canonicals[target]]
             row = {
                 "id": fpath,
                 "path": fpath,
@@ -354,7 +391,7 @@ def build_structure_definition(
                 "definition": el.get("display") or path,
                 "min": lo,
                 "max": str(hi),
-                "type": [{"code": el.get("datatype")}],
+                "type": [type_entry],
             }
             ed_mappings = []
             for m in el.get("mappings") or []:
@@ -370,15 +407,16 @@ def build_structure_definition(
                 )
             if ed_mappings:
                 row["mapping"] = ed_mappings
-            if path in vs_urls:
+            vs_key = f"{root}:{path}"
+            if vs_key in vs_urls:
                 row["binding"] = {
-                    "strength": vs_strengths.get(path) or "example",
-                    "valueSet": vs_urls[path],
+                    "strength": vs_strengths.get(vs_key) or "example",
+                    "valueSet": vs_urls[vs_key],
                 }
             elements.append(row)
     sd = {
         "resourceType": "StructureDefinition",
-        "id": fhir_id(model),
+        "id": fhir_id(root),
         "url": canonical,
         "version": version,
         "name": name,
@@ -390,7 +428,7 @@ def build_structure_definition(
         "derivation": "specialization",
         "differential": {"element": elements},
     }
-    identities = collect_mapping_identities(lm)
+    identities = collect_mapping_identities_for_lm(lm)
     if identities:
         sd["mapping"] = identities
     return sd
@@ -423,17 +461,31 @@ def plan_cmd(model):
     tracking = require_tracking()
     require_model(tracking, model)
     _assert_ingest_clean(tracking, model)
-    lm = load_logical_model(model)
-    unknown_dt, unknown_card, mapped, value_set_bound, unbound = summarize_lm(lm)
+    lm_doc = load_logical_model(model)
+    unknown_dt, unknown_card, mapped, value_set_bound, unbound = summarize_lm(lm_doc)
     canonical_base = default_canonical_base(model)
-    canonical = derive_structure_definition_url(canonical_base, model)
+    lm_rows = []
+    for entry in iter_logical_models(lm_doc):
+        lid = entry.get("id")
+        lm_rows.append(
+            {
+                "id": lid,
+                "canonical": derive_structure_definition_url(canonical_base, lid),
+            }
+        )
+    root = next(
+        (e for e in iter_logical_models(lm_doc) if e.get("root") is True),
+        iter_logical_models(lm_doc)[0],
+    )
+    primary = derive_structure_definition_url(canonical_base, root.get("id"))
     data = {
         "model": model,
         "status": "draft",
         "canonical_base": canonical_base,
-        "canonical": canonical,
+        "canonical": primary,
         "version": "0.1.0",
         "name": fhir_name(model),
+        "logical_models": lm_rows,
         "unknown_datatype": unknown_dt,
         "unknown_cardinality": unknown_card,
         "mapped": mapped,
@@ -462,7 +514,7 @@ def approve_cmd(model):
 @formalize.command("implement")
 @click.argument("model")
 def implement_cmd(model):
-    """Write StructureDefinition, ValueSets (when authored), and snapshot under computable/."""
+    """Write StructureDefinitions, ValueSets (when authored), and snapshot under computable/."""
     tracking = require_tracking()
     require_model(tracking, model)
     _assert_ingest_clean(tracking, model)
@@ -472,13 +524,12 @@ def implement_cmd(model):
             f"Formalize plan is not approved (status={plan.get('status')!r}). "
             f"Run `rh-mod-skills formalize approve {model}` after review."
         )
-    canonical_base, canonical = resolve_plan_canonical(plan, model)
+    lm_doc = load_logical_model(model)
+    canonical_base, lm_urls = resolve_plan_canonical(plan, model, lm_doc)
     version = str(plan.get("version") or "").strip()
     if not version:
         raise click.ClickException("Formalize plan version is empty.")
-    name = str(plan.get("name") or fhir_name(model))
-    lm = load_logical_model(model)
-    unknown_dt, _unknown_card, _mapped, _vs_bound, _unbound = summarize_lm(lm)
+    unknown_dt, _unknown_card, _mapped, _vs_bound, _unbound = summarize_lm(lm_doc)
     if unknown_dt:
         listed = ", ".join(unknown_dt[:8])
         more = "" if len(unknown_dt) <= 8 else f" (+{len(unknown_dt) - 8} more)"
@@ -486,7 +537,7 @@ def implement_cmd(model):
             f"Cannot formalize with unknown datatype: {listed}{more}. "
             "Fix types on the specify plan and re-implement specify first."
         )
-    too_long = long_path_segments(model, lm)
+    too_long = long_path_segments(lm_doc)
     if too_long:
         listed = "; ".join(too_long[:6])
         more = "" if len(too_long) <= 6 else f" (+{len(too_long) - 6} more)"
@@ -495,7 +546,7 @@ def implement_cmd(model):
             f"{listed}{more}. Re-run extract so slugs are truncated, then specify again."
         )
 
-    for _ent, el in iter_lm_elements(lm):
+    for _lm, _ent, el in iter_lm_elements(lm_doc):
         status = element_status(el)
         mappings = el.get("mappings") or []
         vs = validate_value_set(el.get("path"), el.get("value_set"))
@@ -510,9 +561,19 @@ def implement_cmd(model):
                 raise click.ClickException(
                     f"Mapped element {el.get('path')} is missing mappings[] and value_set."
                 )
+        if (el.get("datatype") or "") == "Reference":
+            ref = el.get("reference") or {}
+            target = ref.get("target") if isinstance(ref, dict) else None
+            if not target or target not in lm_urls:
+                raise click.ClickException(
+                    f"Reference element {el.get('path')} needs reference.target "
+                    "equal to another logical model id."
+                )
 
     out_dir = computable_dir(model)
     out_dir.mkdir(parents=True, exist_ok=True)
+    for stale in out_dir.glob("StructureDefinition-*.json"):
+        stale.unlink()
     for stale in out_dir.glob("ValueSet-*.json"):
         stale.unlink()
     for stale in out_dir.glob("ConceptMap-*.json"):
@@ -521,48 +582,67 @@ def implement_cmd(model):
     vs_urls: dict[str, str] = {}
     vs_strengths: dict[str, str] = {}
     json_files: list[Path] = []
-    for _ent, el in iter_lm_elements(lm):
+    for lm, _ent, el in iter_lm_elements(lm_doc):
         path = el.get("path")
+        lid = lm.get("id")
         vs = validate_value_set(path, el.get("value_set"))
         if vs is None:
             continue
-        vs_id, vs_resource = build_valueset(model, canonical, version, el, vs)
+        vs_id, vs_resource = build_valueset(canonical_base, version, lid, el, vs)
         vs_path = out_dir / f"ValueSet-{vs_id}.json"
         write_json(vs_path, vs_resource)
-        vs_urls[path] = vs_resource["url"]
-        vs_strengths[path] = vs["strength"]
+        key = f"{lid}:{path}"
+        vs_urls[key] = vs_resource["url"]
+        vs_strengths[key] = vs["strength"]
         json_files.append(vs_path)
 
-    sd = build_structure_definition(
-        model, lm, canonical, version, name, vs_urls=vs_urls, vs_strengths=vs_strengths
-    )
-    sd_path = out_dir / f"StructureDefinition-{fhir_id(model)}.json"
-    write_json(sd_path, sd)
-    json_files.insert(0, sd_path)
+    sd_files: list[Path] = []
+    for lm in iter_logical_models(lm_doc):
+        lid = lm.get("id")
+        canonical = lm_urls[lid]
+        sd_name = fhir_name(lid)
+        sd = build_structure_definition(
+            lm,
+            canonical,
+            version,
+            sd_name,
+            lm_urls,
+            vs_urls=vs_urls,
+            vs_strengths=vs_strengths,
+        )
+        sd_path = out_dir / f"StructureDefinition-{fhir_id(lid)}.json"
+        write_json(sd_path, sd)
+        sd_files.append(sd_path)
 
+    all_files = sd_files + json_files
     root = consumer_root()
     json_meta = [
-        {"path": str(p.relative_to(root)), "checksum": sha256_file(p)} for p in json_files
+        {"path": str(p.relative_to(root)), "checksum": sha256_file(p)} for p in all_files
     ]
+    primary = primary_canonical(lm_doc, lm_urls)
     snap = {
         "model": model,
         "canonical_base": canonical_base,
-        "canonical": canonical,
+        "canonical": primary,
         "version": version,
         "kind": "logical",
+        "logical_models": [
+            {"id": lid, "canonical": url} for lid, url in lm_urls.items()
+        ],
         "files": json_meta,
     }
     snap_file = snapshot_path(model)
     save_yaml_file(snap_file, snap)
 
-    tracking_names = [p.name for p in json_files]
+    tracking_names = [p.name for p in all_files]
     tracking_names.append(SNAPSHOT_NAME)
     locked_update_tracking(
         lambda t, names=tracking_names: _record_model_formalized(t, model, names)
     )
     log_info(f"Wrote formalized logical model ({len(json_meta)} JSON file(s))")
-    click.echo(f"  {sd_path}")
-    for p in json_files[1:]:
+    for p in sd_files:
+        click.echo(f"  {p}")
+    for p in json_files:
         click.echo(f"  {p}")
     click.echo(f"  {snap_file}")
 
@@ -591,51 +671,77 @@ def verify_cmd(model):
         click.echo("plan: missing")
 
     try:
-        lm = load_logical_model(model)
+        lm_doc = load_logical_model(model)
     except click.ClickException as exc:
         click.echo(f"logical-model: {exc}")
         blocking_n += 1
-        lm = {"entities": []}
+        lm_doc = {"logical_models": []}
 
-    sd_file = computable_dir(model) / f"StructureDefinition-{fhir_id(model)}.json"
-    if sd_file.is_file():
-        sd = json.loads(sd_file.read_text(encoding="utf-8"))
-        click.echo("structuredefinition: present")
+    lms = iter_logical_models(lm_doc)
+    sd_by_id: dict[str, dict] = {}
+    for lm in lms:
+        lid = lm.get("id")
+        sd_file = computable_dir(model) / f"StructureDefinition-{fhir_id(lid)}.json"
+        if sd_file.is_file():
+            sd_by_id[lid] = json.loads(sd_file.read_text(encoding="utf-8"))
+        else:
+            click.echo(f"structuredefinition: missing for {lid}")
+            blocking_n += 1
+
+    if sd_by_id:
+        click.echo(f"structuredefinition: present ({len(sd_by_id)})")
+    elif lms:
+        pass
+    else:
+        click.echo("structuredefinition: missing")
+
+    for lid, sd in sd_by_id.items():
         if sd.get("kind") != "logical":
-            click.echo(f"  blocking: kind is {sd.get('kind')!r}, expected 'logical'")
+            click.echo(f"  blocking: kind is {sd.get('kind')!r} for {lid}, expected 'logical'")
             blocking_n += 1
         if sd.get("resourceType") != "StructureDefinition":
-            click.echo("  blocking: resourceType is not StructureDefinition")
+            click.echo(f"  blocking: resourceType is not StructureDefinition for {lid}")
             blocking_n += 1
         url = str(sd.get("url") or "")
         last = url.rstrip("/").rsplit("/", 1)[-1] if url else ""
-        if last and last != model:
+        if last and last != lid:
             click.echo(
                 f"  blocking: StructureDefinition.url last segment is {last!r}, "
-                f"expected model id {model!r}"
+                f"expected lm-id {lid!r}"
             )
             blocking_n += 1
-    else:
-        sd = {}
-        click.echo("structuredefinition: missing")
-        blocking_n += 1
 
-    _unknown_dt, unknown_card, mapped, value_set_bound, _unbound = summarize_lm(lm)
+    _unknown_dt, unknown_card, mapped, value_set_bound, _unbound = summarize_lm(lm_doc)
     click.echo(
         f"cardinality-default-n={unknown_card} mapped={mapped} "
-        f"value_set_bound={value_set_bound} validator=not-run"
+        f"value_set_bound={value_set_bound} logical_models={len(lms)} validator=not-run"
     )
 
-    too_long = long_path_segments(model, lm)
+    too_long = long_path_segments(lm_doc)
     for issue in too_long:
         click.echo(f"  blocking: path name portion exceeds {FHIR_PATH_SEGMENT_MAX}: {issue}")
         blocking_n += 1
 
-    expected_leaf = {f"{model}.{el.get('path')}" for _e, el in iter_lm_elements(lm) if el.get("path")}
-    expected_ent = {f"{model}.{ent.get('id')}" for ent in lm.get("entities") or [] if ent.get("id")}
-    expected = expected_leaf | expected_ent | {model}
-    actual = _sd_paths(sd)
-    if sd:
+    if list(computable_dir(model).glob("ConceptMap-*.json")):
+        click.echo("  blocking: ConceptMap resources are out of scope")
+        blocking_n += 1
+
+    for lm in lms:
+        lid = lm.get("id")
+        sd = sd_by_id.get(lid) or {}
+        if not sd:
+            continue
+        expected_leaf = {
+            f"{lid}.{el.get('path')}"
+            for ent in lm.get("entities") or []
+            for el in ent.get("elements") or []
+            if el.get("path")
+        }
+        expected_ent = {
+            f"{lid}.{ent.get('id')}" for ent in lm.get("entities") or [] if ent.get("id")
+        }
+        expected = expected_leaf | expected_ent | {lid}
+        actual = _sd_paths(sd)
         for path in sorted(expected - actual):
             click.echo(f"  blocking: differential missing path {path}")
             blocking_n += 1
@@ -647,64 +753,68 @@ def verify_cmd(model):
             for el in (sd.get("differential") or {}).get("element") or []
             if el.get("path")
         }
-        for _ent, el in iter_lm_elements(lm):
-            path = el.get("path")
-            fpath = f"{model}.{path}" if path else None
-            mappings = el.get("mappings") or []
-            try:
-                value_set = validate_value_set(path, el.get("value_set"))
-            except click.ClickException as exc:
-                click.echo(f"  blocking: {exc}")
-                blocking_n += 1
-                value_set = None
-            row = by_path.get(fpath or "") or {}
-            if mappings and value_set is None:
-                # mappings-only: must have ElementDefinition.mapping; must NOT have ValueSet/binding
-                ed_maps = row.get("mapping") or []
-                if len(ed_maps) != len(mappings):
-                    click.echo(
-                        f"  blocking: ElementDefinition.mapping count mismatch for {path}"
-                    )
+        for ent in lm.get("entities") or []:
+            for el in ent.get("elements") or []:
+                path = el.get("path")
+                fpath = f"{lid}.{path}" if path else None
+                mappings = el.get("mappings") or []
+                try:
+                    value_set = validate_value_set(path, el.get("value_set"))
+                except click.ClickException as exc:
+                    click.echo(f"  blocking: {exc}")
                     blocking_n += 1
-                for m in mappings:
-                    ident = mapping_identity(str(m.get("system") or ""))
-                    if ident not in sd_map_ids:
+                    value_set = None
+                row = by_path.get(fpath or "") or {}
+                if (el.get("datatype") or "") == "Reference":
+                    types = row.get("type") or []
+                    tp = (types[0] or {}).get("targetProfile") if types else None
+                    if not tp:
                         click.echo(
-                            f"  blocking: missing StructureDefinition.mapping identity {ident} "
-                            f"for {path}"
+                            f"  blocking: Reference {path} missing targetProfile on SD"
                         )
                         blocking_n += 1
-                if row.get("binding"):
-                    click.echo(
-                        f"  blocking: mappings-only path {path} must not have ElementDefinition.binding"
-                    )
-                    blocking_n += 1
-                vs_id = fhir_id(f"{model}-{(path or '').replace('.', '-')}")
-                vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
-                if vs_file.is_file():
-                    click.echo(f"  blocking: mappings-only path {path} must not have ValueSet")
-                    blocking_n += 1
-            if value_set is not None:
-                binding = row.get("binding") or {}
-                if not binding.get("valueSet"):
-                    click.echo(
-                        f"  blocking: value_set path {path} missing ElementDefinition.binding.valueSet"
-                    )
-                    blocking_n += 1
-                elif binding.get("strength") != value_set.get("strength"):
-                    click.echo(
-                        f"  blocking: value_set path {path} binding strength mismatch"
-                    )
-                    blocking_n += 1
-                vs_id = fhir_id(f"{model}-{(path or '').replace('.', '-')}")
-                vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
-                if not vs_file.is_file():
-                    click.echo(f"  blocking: value_set path {path} missing ValueSet file")
-                    blocking_n += 1
-            if list(computable_dir(model).glob("ConceptMap-*.json")):
-                click.echo("  blocking: ConceptMap resources are out of scope")
-                blocking_n += 1
-                break
+                if mappings and value_set is None:
+                    ed_maps = row.get("mapping") or []
+                    if len(ed_maps) != len(mappings):
+                        click.echo(
+                            f"  blocking: ElementDefinition.mapping count mismatch for {path}"
+                        )
+                        blocking_n += 1
+                    for m in mappings:
+                        ident = mapping_identity(str(m.get("system") or ""))
+                        if ident not in sd_map_ids:
+                            click.echo(
+                                f"  blocking: missing StructureDefinition.mapping identity {ident} "
+                                f"for {path}"
+                            )
+                            blocking_n += 1
+                    if row.get("binding"):
+                        click.echo(
+                            f"  blocking: mappings-only path {path} must not have ElementDefinition.binding"
+                        )
+                        blocking_n += 1
+                    vs_id = fhir_id(f"{lid}-{(path or '').replace('.', '-')}")
+                    vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
+                    if vs_file.is_file():
+                        click.echo(f"  blocking: mappings-only path {path} must not have ValueSet")
+                        blocking_n += 1
+                if value_set is not None:
+                    binding = row.get("binding") or {}
+                    if not binding.get("valueSet"):
+                        click.echo(
+                            f"  blocking: value_set path {path} missing ElementDefinition.binding.valueSet"
+                        )
+                        blocking_n += 1
+                    elif binding.get("strength") != value_set.get("strength"):
+                        click.echo(
+                            f"  blocking: value_set path {path} binding strength mismatch"
+                        )
+                        blocking_n += 1
+                    vs_id = fhir_id(f"{lid}-{(path or '').replace('.', '-')}")
+                    vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
+                    if not vs_file.is_file():
+                        click.echo(f"  blocking: value_set path {path} missing ValueSet file")
+                        blocking_n += 1
 
     snap_file = snapshot_path(model)
     if snap_file.is_file():
@@ -726,6 +836,15 @@ def verify_cmd(model):
             if actual_sum != expected_sum:
                 click.echo(f"  blocking: checksum mismatch: {rel}")
                 blocking_n += 1
+        listed_sd = {
+            row.get("path", "").rsplit("/", 1)[-1]
+            for row in snap.get("files") or []
+            if "StructureDefinition-" in (row.get("path") or "")
+        }
+        expected_sd = {f"StructureDefinition-{fhir_id(lm.get('id'))}.json" for lm in lms}
+        for missing in sorted(expected_sd - listed_sd):
+            click.echo(f"  blocking: snapshot missing {missing}")
+            blocking_n += 1
     else:
         click.echo("snapshot: missing")
         blocking_n += 1

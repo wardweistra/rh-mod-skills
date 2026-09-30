@@ -41,7 +41,7 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
-- 014-entity-and-binding: US1 shipped — bindings/LM schema 2.0 `mappings[]`; formalize `ElementDefinition.mapping` (no singleton VS); `canonical_base` on formalize plan; clean break on 1.0. US2 value_set / US3 multi-LM / US4 multi-SD+IG still open
+- 014-entity-and-binding: Implemented — bindings/LM schema 2.0 `mappings[]` + optional `value_set`; specify `logical_models[]` (regroup + Reference); formalize N StructureDefinitions under configurable `canonical_base` + ValueSets only when authored; `ig sync` one IG lists all SDs; no ConceptMap / no legacy compat
 - Constitution 1.2.0: Principle IV distinguishes concept mappings (no strength) from ValueSet bindings (strength + domain); verify reports mapped / VS-bound / unbound
 - 013-rh-mod-ig: `ig sync` stages a buildable stub (`definition.page` Home only, `input/includes/menu.xml`, create-if-missing `index.md`) plus snapshot JSON and pinned HL7 scripts; no Java / no publisher.jar; IG JSON rewritten each sync; skill owns publisher error triage
 - 012-rh-mod-verify: `rh-mod-skills verify [model]` is a read-only coordinator over ingest/extract/annotate/specify/formalize verify; coverage + unbound + `validator=not-run`; no tracking writes; status next stays verify

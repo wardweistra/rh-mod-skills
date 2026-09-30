@@ -2,7 +2,7 @@
 
 One feature, two epics: (A) concept mappings vs ValueSet bindings; (B) multi-entity logical models + references + one IG.
 
-**Status**: Foundational + US1 (T001–T015) implemented on `cursor/entity-mapping-specs-bdd1`. Constitution 1.2.0 IV amended. Next: US2 value_set, then Epic B (US3/US4).
+**Status**: Implemented (US1–US4 + polish) on `cursor/entity-mapping-specs-bdd1`. Constitution 1.2.0 IV amended.
 
 **Artifacts**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/cli-schema.md`, `quickstart.md`, `tasks.md`, `checklists/requirements.md`
 

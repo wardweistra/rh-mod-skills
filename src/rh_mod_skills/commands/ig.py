@@ -95,6 +95,17 @@ def load_snapshot(model: str) -> dict:
     return load_yaml_file(path)
 
 
+def snapshot_canonical(snap: dict) -> str:
+    """Prefer snapshot.canonical (root LM); fall back to canonical_base-derived IG base."""
+    canonical = str(snap.get("canonical") or "").strip()
+    if canonical:
+        return canonical
+    base = str(snap.get("canonical_base") or "").strip().rstrip("/")
+    if base:
+        return base
+    return ""
+
+
 def _ensure_scripts(root: Path, previous_pin: str | None) -> int:
     missing = [n for n in SCRIPT_NAMES if not (root / n).is_file()]
     if previous_pin == SCRIPTS_PIN and not missing:
@@ -212,10 +223,12 @@ def sync_cmd(model):
     tracking = require_tracking()
     require_model(tracking, model)
     snap = load_snapshot(model)
-    canonical = str(snap.get("canonical") or "").strip()
+    canonical = snapshot_canonical(snap)
     version = str(snap.get("version") or "").strip() or "0.1.0"
     if not canonical:
-        raise click.ClickException("snapshot.yaml is missing canonical.")
+        raise click.ClickException(
+            "snapshot.yaml is missing canonical (and canonical_base)."
+        )
 
     root = ig_dir(model)
     root.mkdir(parents=True, exist_ok=True)

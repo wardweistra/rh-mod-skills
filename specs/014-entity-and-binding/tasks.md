@@ -89,14 +89,14 @@
 
 ### Tests for User Story 3
 
-- [ ] T023 [P] [US3] Tests in `tests/unit/test_specify.py`: plan/implement write `logical_models[]`; default one LM id = tracking model id; Reference requires `reference.target`; verify fails on missing/duplicate `inventory_path` or unknown target; extract inventory file hash unchanged
-- [ ] T024 [P] [US3] Mini multi-LM fixture under `tests/fixtures/bindings-2/` (Patient + Hospital + Reference) for specify tests
+- [x] T023 [P] [US3] Tests in `tests/unit/test_specify.py`: plan/implement write `logical_models[]`; default one LM id = tracking model id; Reference requires `reference.target`; verify fails on missing/duplicate `inventory_path` or unknown target; extract inventory file hash unchanged
+- [x] T024 [P] [US3] Mini multi-LM fixture under `tests/fixtures/bindings-2/` (Patient + Hospital + Reference) for specify tests
 
 ### Implementation for User Story 3
 
-- [ ] T025 [US3] Finalize `schemas/logical-model-schema.yaml` for required `logical_models[]`, `inventory_path`, `reference.target`, optional `root`
-- [ ] T026 [US3] Implement specify plan regroup surface + implement/verify in `src/rh_mod_skills/commands/specify.py` (CLI persists; no extract clinical regroup). Default when reviewer does nothing: one `logical_models[]` entry with `id` = tracking model id and inventory entities as Backbone children under that LM.
-- [ ] T027 [US3] Update `skills/.curated/rh-mod-specify/` (`SKILL.md` + `reference.md` + examples) to propose Patient/diagnosis/hospital-style splits and Reference edges onto the plan YAML only
+- [x] T025 [US3] Finalize `schemas/logical-model-schema.yaml` for required `logical_models[]`, `inventory_path`, `reference.target`, optional `root`
+- [x] T026 [US3] Implement specify plan regroup surface + implement/verify in `src/rh_mod_skills/commands/specify.py` (CLI persists; no extract clinical regroup). Default when reviewer does nothing: one `logical_models[]` entry with `id` = tracking model id and inventory entities as Backbone children under that LM.
+- [x] T027 [US3] Update `skills/.curated/rh-mod-specify/` (`SKILL.md` + `reference.md` + examples) to propose Patient/diagnosis/hospital-style splits and Reference edges onto the plan YAML only
 
 **Checkpoint**: L2 multi-entity graph ready; formalize still may be single-SD until US4
 
@@ -110,15 +110,15 @@
 
 ### Tests for User Story 4
 
-- [ ] T028 [P] [US4] Tests in `tests/unit/test_formalize.py`: N SD files; canonical last segment = lm-id; Reference targetProfile/canonical; snapshot has `canonical_base` + all files; mappings still emit; ConceptMap absent
-- [ ] T029 [P] [US4] Tests in `tests/unit/test_ig.py`: `ig sync` copies all SDs into `input/models/` and IG `definition.resource` lists them; still one IG tree under tracking model
+- [x] T028 [P] [US4] Tests in `tests/unit/test_formalize.py`: N SD files; canonical last segment = lm-id; Reference targetProfile/canonical; snapshot has `canonical_base` + all files; mappings still emit; ConceptMap absent
+- [x] T029 [P] [US4] Tests in `tests/unit/test_ig.py`: `ig sync` copies all SDs into `input/models/` and IG `definition.resource` lists them; still one IG tree under tracking model
 
 ### Implementation for User Story 4
 
-- [ ] T030 [US4] Multi-SD emit + snapshot in `src/rh_mod_skills/commands/formalize.py` from `logical_models[]` + `canonical_base`; path segments ≤ 64 still enforced
-- [ ] T031 [US4] Update `src/rh_mod_skills/commands/ig.py` for multi-SD resource listing (one IG per tracking model)
-- [ ] T032 [US4] Update verify coordinator / formalize verify coverage across multi-LM in `src/rh_mod_skills/commands/verify.py` and `formalize.py`
-- [ ] T033 [US4] Update skills `skills/.curated/rh-mod-formalize/` and `skills/.curated/rh-mod-ig/` (`SKILL.md` + `reference.md` + examples) for multi-SD + canonical_base (ENCR recommendations as proving example, not hardcoded-only validation)
+- [x] T030 [US4] Multi-SD emit + snapshot in `src/rh_mod_skills/commands/formalize.py` from `logical_models[]` + `canonical_base`; path segments ≤ 64 still enforced
+- [x] T031 [US4] Update `src/rh_mod_skills/commands/ig.py` for multi-SD resource listing (one IG per tracking model)
+- [x] T032 [US4] Update verify coordinator / formalize verify coverage across multi-LM in `src/rh_mod_skills/commands/verify.py` and `formalize.py`
+- [x] T033 [US4] Update skills `skills/.curated/rh-mod-formalize/` and `skills/.curated/rh-mod-ig/` (`SKILL.md` + `reference.md` + examples) for multi-SD + canonical_base (ENCR recommendations as proving example, not hardcoded-only validation)
 
 **Checkpoint**: Full Epic A+B outcome deliverable
 
@@ -126,12 +126,12 @@
 
 ## Phase 7: Polish & cross-cutting
 
-- [ ] T034 [P] Update `AGENTS.md` Recent Changes to reflect implemented behavior (replace “CLI not implemented yet”)
-- [ ] T035 [P] Update `docs/WORKFLOW.md` / `docs/GETTING_STARTED.md` only where bindings/LM/formalize/IG docs would mislead (map vs bind; multi-LM)
-- [ ] T036 [P] Refresh in-repo example-project bindings/LM only if tests require — prefer re-annotate/re-specify in fixtures over compat loaders
-- [ ] T037 Confirm no migrate CLI / `--compat` / ConceptMap writers were added
-- [ ] T038 Run `uv run pytest` green; spot-check [quickstart.md](./quickstart.md) command sequence against CliRunner fixtures
-- [ ] T039 Mark `specs/014-entity-and-binding/spec.md` / README status Implemented when all US checkpoints pass
+- [x] T034 [P] Update `AGENTS.md` Recent Changes to reflect implemented behavior (replace “CLI not implemented yet”)
+- [x] T035 [P] Update `docs/WORKFLOW.md` / `docs/GETTING_STARTED.md` only where bindings/LM/formalize/IG docs would mislead (map vs bind; multi-LM)
+- [x] T036 [P] Refresh in-repo example-project bindings/LM only if tests require — prefer re-annotate/re-specify in fixtures over compat loaders
+- [x] T037 Confirm no migrate CLI / `--compat` / ConceptMap writers were added
+- [x] T038 Run `uv run pytest` green; spot-check [quickstart.md](./quickstart.md) command sequence against CliRunner fixtures
+- [x] T039 Mark `specs/014-entity-and-binding/spec.md` / README status Implemented when all US checkpoints pass
 
 ---
 
