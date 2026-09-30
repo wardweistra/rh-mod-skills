@@ -1,6 +1,6 @@
 # reason-mod-skills Development Guidelines
 
-Sibling of rh-skills. Last updated: 2026-09-29
+Sibling of rh-skills. Last updated: 2026-09-30
 
 ## Active Technologies
 
@@ -41,6 +41,7 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
+- 014-entity-and-binding: Speckit plan for mappings vs ValueSet split (Epic A) then multi-LM StructureDefinitions + references + one IG (Epic B); `canonical_base` + `{base}/StructureDefinition/{lm-id}`; ElementDefinition.mapping only; clean break / no legacy compat; CLI not implemented yet
 - 013-rh-mod-ig: `ig sync` stages a buildable stub (`definition.page` Home only, `input/includes/menu.xml`, create-if-missing `index.md`) plus snapshot JSON and pinned HL7 scripts; no Java / no publisher.jar; IG JSON rewritten each sync; skill owns publisher error triage
 - 012-rh-mod-verify: `rh-mod-skills verify [model]` is a read-only coordinator over ingest/extract/annotate/specify/formalize verify; coverage + unbound + `validator=not-run`; no tracking writes; status next stays verify
 - 011-rh-mod-formalize: `formalize plan|approve|implement|verify` writes FHIR R4 `StructureDefinition` (`kind=logical`), one ValueSet per bound element, and `computable/snapshot.yaml` (SHA-256); canonical last segment = model id; path name portions ≤ 64 (extract slugs); unknown cardinality → `0..1`; unknown datatype fails closed; no FHIR Python library or validator binary
