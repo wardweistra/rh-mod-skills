@@ -48,7 +48,7 @@ specs/014-entity-and-binding/
 ├── spec.md
 ├── README.md
 ├── checklists/requirements.md
-└── tasks.md                # NOT created by /speckit.plan — follow-up /speckit.tasks
+└── tasks.md                # Created by /speckit.tasks — Epic A then B
 ```
 
 ### Source Code (repository root) — intended touch set
