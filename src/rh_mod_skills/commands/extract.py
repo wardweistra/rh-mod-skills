@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 import unicodedata
 from collections import Counter, defaultdict
@@ -85,6 +86,7 @@ SHEET_KIND_ELEMENTS = "elements"
 SHEET_KIND_DOMAIN = "value-domain"
 ORIGIN_HINT = "hint"
 ORIGIN_REVIEWER = "reviewer"
+FHIR_PATH_SEGMENT_MAX = 64
 
 
 def _yaml() -> YAML:
@@ -123,11 +125,16 @@ def save_plan(model: str, data: dict) -> None:
         _yaml().dump(data, f)
 
 
-def slug_id(text: str) -> str:
+def slug_id(text: str, max_len: int = FHIR_PATH_SEGMENT_MAX) -> str:
     nfkd = unicodedata.normalize("NFKD", text or "")
     ascii_ = "".join(c for c in nfkd if not unicodedata.combining(c))
     s = re.sub(r"[^a-z0-9]+", "-", ascii_.lower()).strip("-")
-    return s or "entity"
+    if not s:
+        s = "entity"
+    if len(s) <= max_len:
+        return s
+    digest = hashlib.sha256((text or "").encode("utf-8")).hexdigest()[:8]
+    return f"{s[: max_len - 9]}-{digest}"
 
 
 def _pick_header(

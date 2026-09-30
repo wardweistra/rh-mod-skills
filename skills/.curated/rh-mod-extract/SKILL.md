@@ -72,3 +72,8 @@ rh-mod-skills extract verify <model>
 
 Implement copies the approved plan. After a role remap, plan must have been
 re-run so elements match those roles.
+
+Entity and element ids are slugged to ≤ 64 characters (FHIR path name portion).
+If the IG Publisher later reports a path portion over 64, rename on the extract
+plan, then re-extract → specify → formalize. Do not invent shorter ids in
+formalize JSON.

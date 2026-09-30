@@ -9,10 +9,11 @@ rh-mod-skills status encr
 rh-mod-skills formalize plan encr
 ```
 
-Open `models/encr/process/plans/formalize-plan.yaml`. Set `canonical` to the
-real StructureDefinition URL and confirm `version`. If `unknown_datatype` lists
+Open `models/encr/process/plans/formalize-plan.yaml`. Set `canonical` so the
+**last path segment is `encr`** (e.g. `https://encr.eu/fhir/StructureDefinition/encr`,
+not `…/recommendations`) and confirm `version`. If `unknown_datatype` lists
 paths, return to `rh-mod-specify` and type those elements first — implement
-will fail closed.
+will fail closed. Re-extract if a path name portion exceeds 64 characters.
 
 ```bash
 rh-mod-skills formalize approve encr

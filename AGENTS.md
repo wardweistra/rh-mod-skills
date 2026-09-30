@@ -41,7 +41,9 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
-- 011-rh-mod-formalize: `formalize plan|approve|implement|verify` writes FHIR R4 `StructureDefinition` (`kind=logical`), one ValueSet per bound element, and `computable/snapshot.yaml` (SHA-256); unknown cardinality → `0..1`; unknown datatype fails closed; no FHIR Python library or validator binary
+- 013-rh-mod-ig: `ig sync` stages a buildable stub (`definition.page` Home only, `input/includes/menu.xml`, create-if-missing `index.md`) plus snapshot JSON and pinned HL7 scripts; no Java / no publisher.jar; IG JSON rewritten each sync; skill owns publisher error triage
+- 012-rh-mod-verify: `rh-mod-skills verify [model]` is a read-only coordinator over ingest/extract/annotate/specify/formalize verify; coverage + unbound + `validator=not-run`; no tracking writes; status next stays verify
+- 011-rh-mod-formalize: `formalize plan|approve|implement|verify` writes FHIR R4 `StructureDefinition` (`kind=logical`), one ValueSet per bound element, and `computable/snapshot.yaml` (SHA-256); canonical last segment = model id; path name portions ≤ 64 (extract slugs); unknown cardinality → `0..1`; unknown datatype fails closed; no FHIR Python library or validator binary
 - 010-rh-mod-specify: `specify plan|approve|implement|verify` writes `logical-model.yaml` from annotate-complete inventory+bindings; types stay unknown unless recognized FHIR or reviewer-filled; no FHIR JSON
 - 009-annotate-codesystems: `annotate plan --system` accepts `icd-10-cm`, `rxnorm`, `ucum`, and `all` (cross-system search); default remains snomed; enrich expands those aliases to FHIR URIs
 - 008-annotate-review: `annotate export` writes static HTML from the plan; `annotate import --from` applies picks YAML (accept by rank, unbound/skip/replace); import sets draft and does not write `bindings.yaml`
