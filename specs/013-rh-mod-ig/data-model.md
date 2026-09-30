@@ -27,7 +27,12 @@ files:
 
 ## ImplementationGuide (rewritten each sync)
 
-R4 JSON: `resourceType=ImplementationGuide`, `fhirVersion=["4.0.1"]`, `packageId` and `url` from sidecar, `version` from snapshot, `definition.resource` references for each copied SD/VS.
+R4 JSON: `resourceType=ImplementationGuide`, `fhirVersion=["4.0.1"]`, `packageId` and `url` from sidecar, `version` from snapshot, `definition.resource` references for each copied SD/VS, `definition.page` Home only (`nameUrl: index.html`, `generation: markdown`). Do not add `toc.html` / `artifacts.html` as page children.
+
+## Publisher stub (create if missing)
+
+- `input/includes/menu.xml` — nav links to `index.html`, `toc.html`, `artifacts.html`
+- `input/pagecontent/index.md` — reviewer-owned after first write
 
 ## ig.ini (create if missing)
 

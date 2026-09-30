@@ -17,7 +17,7 @@ Sets `status: approved`.
 
 ### implement
 
-Fails if not approved; canonical missing or not http(s); version empty; any unknown datatype. Writes SD + ValueSets + snapshot. Appends `model_formalized`. Lists files on `models[].computable`. Does not mutate logical-model.yaml.
+Fails if not approved; canonical missing, not http(s), or last path segment ≠ model id; version empty; any unknown datatype; any FHIR path name portion > 64. Writes SD + ValueSets + snapshot. Appends `model_formalized`. Lists files on `models[].computable`. Does not mutate logical-model.yaml.
 
 ### verify
 

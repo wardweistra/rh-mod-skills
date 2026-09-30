@@ -35,4 +35,8 @@ Never overwrite.
 
 ## 5. No Java
 
-**Decision**: CLI never shells to `java` or downloads `publisher.jar`. Skill points at `_build.sh` (no-SUSHI).
+**Decision**: CLI never shells to `java` or downloads `publisher.jar`. Skill points at `_genonce.sh` / `_build.sh` (no-SUSHI) and triages publisher logs.
+
+## 6. Publisher stub
+
+**Decision**: CLI emits a buildable tree: Home-only `definition.page` (`index.html` / markdown), create-if-missing `input/includes/menu.xml` (nav to Home, TOC, Artifacts), create-if-missing `input/pagecontent/index.md`. Do not list `toc.html` / `artifacts.html` as page children (Publisher 2.3.x generates them). `fhir.base.template` 2026-03 security notice is advisory.

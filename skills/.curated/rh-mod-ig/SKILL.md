@@ -48,12 +48,17 @@ First word is the mode. Typical: `sync encr`.
 2. Run `rh-mod-skills ig sync <model>`.
 3. Open `models/<model>/ig/rh-mod.yaml`. If `package_id` or `url` is a guess,
    edit them; they will not be overwritten on later syncs.
-4. Then, **on the reviewer machine** (Java required; not this CLI):
+4. Do not hand-edit `ImplementationGuide-*.json`. The CLI emits Home
+   `definition.page`, `input/includes/menu.xml`, and `input/pagecontent/index.md`
+   (the last two only if missing). See [reference.md](reference.md) for the
+   publisher contract and error table.
+5. Then, **on the reviewer machine** (Java required; not this CLI):
 
 ```bash
 cd models/<model>/ig
 ./_updatePublisher.sh -y
-./_build.sh
+./_genonce.sh
+# ./_build.sh is equivalent
 ```
 
 `status` next stays `verify`. `validator=not-run` on `rh-mod-skills verify`

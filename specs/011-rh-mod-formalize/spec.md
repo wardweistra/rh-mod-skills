@@ -70,7 +70,8 @@ Formalize verify checks that the StructureDefinition kind is logical, differenti
 
 ### Edge Cases
 
-- Empty canonical or non-http canonical → implement fails.
+- Empty canonical, non-http canonical, or last URL segment ≠ model id → implement fails.
+- Path name portion (dot segment) longer than 64 characters → implement fails (re-extract slugs).
 - Re-implement overwrites `computable/` from the current approved plan.
 - Hyphens in element ids are allowed on logical-model paths.
 - FSH is not written (constitution: generated view, not this slice).
@@ -82,12 +83,12 @@ Formalize verify checks that the StructureDefinition kind is logical, differenti
 
 - **FR-001**: Canonical write owner is `rh-mod-skills formalize` (`plan`, `approve`, `implement`, `verify`). Skills MUST NOT write FHIR JSON or the snapshot manifest.
 - **FR-002**: `formalize plan <model>` MUST require `structured/logical-model.yaml`. MUST write `process/plans/formalize-plan.yaml` (`status: draft`) with proposed canonical URL, version, and counts. MUST NOT write `computable/`.
-- **FR-003**: `formalize approve` MUST set plan `status: approved`. Implement MUST fail if the plan is missing, not approved, canonical is missing/not an http(s) URI, or version is empty.
+- **FR-003**: `formalize approve` MUST set plan `status: approved`. Implement MUST fail if the plan is missing, not approved, canonical is missing/not an http(s) URI, canonical last path segment ≠ model id, or version is empty.
 - **FR-004**: Implement MUST fail closed if any logical-model element has `datatype: unknown`. MUST NOT invent types.
 - **FR-005**: Implement MUST treat `cardinality: unknown` as `0..1` (min 0, max 1).
 - **FR-006**: Implement MUST write FHIR R4 JSON: one `StructureDefinition` with `kind: logical` whose differential includes the model root, each entity as a backbone, and each element with type and cardinality; one `ValueSet` per bound element copying that element’s system/code/display; no ValueSet for unbound.
 - **FR-007**: Implement MUST write a snapshot manifest (canonical, version, relative file paths, SHA-256 checksums) under the model (process or computable — one documented path). MUST append `model_formalized`. MUST list computable files on tracking. MUST NOT write mapping.xlsx, FML, or StructureMap. MUST NOT mutate the logical model YAML.
-- **FR-008**: `formalize verify` MUST be non-destructive. Blocking: missing SD, kind ≠ logical, path coverage mismatch vs logical model, missing ValueSet for a bound element, checksum mismatch. Advisory: cardinality-default count; validator-not-run. MUST NOT append tracking events.
+- **FR-008**: `formalize verify` MUST be non-destructive. Blocking: missing SD, kind ≠ logical, path coverage mismatch vs logical model, missing ValueSet for a bound element, checksum mismatch, canonical last segment ≠ model id, path name portion > 64. Advisory: cardinality-default count; validator-not-run. MUST NOT append tracking events.
 - **FR-009**: After successful implement, `status` MUST report stage `formalized` and next `verify`.
 - **FR-010**: Curated skill `rh-mod-formalize` MUST tell the agent to plan, confirm canonical/version on the plan YAML, then approve → implement → verify. The skill MUST NOT write JSON itself.
 

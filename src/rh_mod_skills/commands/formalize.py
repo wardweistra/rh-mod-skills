@@ -29,6 +29,7 @@ from rh_mod_skills.common import (
 PLAN_NAME = "formalize-plan.yaml"
 SNAPSHOT_NAME = "snapshot.yaml"
 BASE_DEFINITION = "http://hl7.org/fhir/StructureDefinition/Base"
+FHIR_PATH_SEGMENT_MAX = 64
 
 
 def _yaml() -> YAML:
@@ -118,14 +119,38 @@ def valueset_url(canonical: str, vs_id: str) -> str:
     return f"{parent}/ValueSet/{vs_id}"
 
 
-def _validate_canonical(canonical: str) -> str:
+def _validate_canonical(canonical: str, model: str) -> str:
     url = (canonical or "").strip()
     if not (url.startswith("http://") or url.startswith("https://")):
         raise click.ClickException(
             "Formalize plan canonical must be an http(s) URI. "
             "Edit process/plans/formalize-plan.yaml then approve."
         )
+    last = url.rstrip("/").rsplit("/", 1)[-1]
+    if last != model:
+        raise click.ClickException(
+            f"Formalize plan canonical last segment must equal the model id {model!r} "
+            f"(IG Publisher requires StructureDefinition.url to match the differential root). "
+            f"Got {last!r}. Example: …/StructureDefinition/{model}."
+        )
     return url
+
+
+def long_path_segments(model: str, lm: dict) -> list[str]:
+    """FHIR path name portions (dot segments) must be ≤ 64 characters."""
+    paths = [model]
+    for ent in lm.get("entities") or []:
+        eid = ent.get("id") or "entity"
+        paths.append(f"{model}.{eid}")
+        for el in ent.get("elements") or []:
+            path = el.get("path") or eid
+            paths.append(f"{model}.{path}")
+    bad: list[str] = []
+    for full in paths:
+        for part in str(full).split("."):
+            if len(part) > FHIR_PATH_SEGMENT_MAX:
+                bad.append(f"{full} (segment {part!r} is {len(part)} chars)")
+    return bad
 
 
 def summarize_lm(lm: dict) -> tuple[list[str], int, int, int]:
@@ -315,7 +340,7 @@ def implement_cmd(model):
             f"Formalize plan is not approved (status={plan.get('status')!r}). "
             f"Run `rh-mod-skills formalize approve {model}` after review."
         )
-    canonical = _validate_canonical(str(plan.get("canonical") or ""))
+    canonical = _validate_canonical(str(plan.get("canonical") or ""), model)
     version = str(plan.get("version") or "").strip()
     if not version:
         raise click.ClickException("Formalize plan version is empty.")
@@ -328,6 +353,14 @@ def implement_cmd(model):
         raise click.ClickException(
             f"Cannot formalize with unknown datatype: {listed}{more}. "
             "Fix types on the specify plan and re-implement specify first."
+        )
+    too_long = long_path_segments(model, lm)
+    if too_long:
+        listed = "; ".join(too_long[:6])
+        more = "" if len(too_long) <= 6 else f" (+{len(too_long) - 6} more)"
+        raise click.ClickException(
+            f"Cannot formalize: FHIR path name portions must be ≤ {FHIR_PATH_SEGMENT_MAX} characters: "
+            f"{listed}{more}. Re-run extract so slugs are truncated, then specify again."
         )
 
     out_dir = computable_dir(model)
@@ -417,6 +450,14 @@ def verify_cmd(model):
         if sd.get("resourceType") != "StructureDefinition":
             click.echo("  blocking: resourceType is not StructureDefinition")
             blocking_n += 1
+        url = str(sd.get("url") or "")
+        last = url.rstrip("/").rsplit("/", 1)[-1] if url else ""
+        if last and last != model:
+            click.echo(
+                f"  blocking: StructureDefinition.url last segment is {last!r}, "
+                f"expected model id {model!r}"
+            )
+            blocking_n += 1
     else:
         sd = {}
         click.echo("structuredefinition: missing")
@@ -424,6 +465,11 @@ def verify_cmd(model):
 
     _unknown_dt, unknown_card, bound, _unbound = summarize_lm(lm)
     click.echo(f"cardinality-default-n={unknown_card} bound={bound} validator=not-run")
+
+    too_long = long_path_segments(model, lm)
+    for issue in too_long:
+        click.echo(f"  blocking: path name portion exceeds {FHIR_PATH_SEGMENT_MAX}: {issue}")
+        blocking_n += 1
 
     expected_leaf = {f"{model}.{el.get('path')}" for _e, el in iter_lm_elements(lm) if el.get("path")}
     expected_ent = {f"{model}.{ent.get('id')}" for ent in lm.get("entities") or [] if ent.get("id")}

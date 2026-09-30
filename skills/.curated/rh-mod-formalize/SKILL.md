@@ -54,7 +54,9 @@ First word is the mode. Typical: `plan encr`.
 2. Run `rh-mod-skills formalize plan <model>`.
 3. Open `models/<model>/process/plans/formalize-plan.yaml`:
    - Replace the example `canonical` with the real http(s) StructureDefinition URL
-     unless the reviewer explicitly accepts the example.org default.
+     unless the reviewer explicitly accepts the example.org default. The last
+     path segment MUST be the model id (e.g. `…/StructureDefinition/encr`), or
+     IG Publisher reports “Invalid path … must start with …”.
    - Set `version` (semver string). Empty version fails implement.
    - If `unknown_datatype` is non-empty, **stop**. Those paths must be typed on
      the specify plan and `specify implement` re-run first. Do not guess `string`.
@@ -70,8 +72,9 @@ rh-mod-skills formalize verify <model>
 rh-mod-skills status <model>
 ```
 
-Unknown datatype is blocking on implement. Cardinality defaults are advisory on
-verify. Missing StructureDefinition / ValueSet / checksum mismatch is blocking.
+Unknown datatype is blocking on implement. Canonical last segment ≠ model id
+and path name portions over 64 characters are blocking (re-extract slugs, then
+specify). Cardinality defaults are advisory on verify.
 
 ## Verify
 

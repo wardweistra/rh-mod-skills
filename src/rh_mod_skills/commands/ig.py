@@ -34,6 +34,13 @@ SCRIPT_NAMES = (
 )
 RAW_BASE = f"https://raw.githubusercontent.com/HL7/ig-publisher-scripts/{SCRIPTS_PIN}"
 IG_GITIGNORE = "output/\ntemp/\ninput-cache/\n*.jar\n"
+MENU_XML = (
+    '<ul xmlns="http://www.w3.org/1999/xhtml" class="nav navbar-nav">\n'
+    '  <li><a href="index.html">Home</a></li>\n'
+    '  <li><a href="toc.html">Table of Contents</a></li>\n'
+    '  <li><a href="artifacts.html">Artifact Index</a></li>\n'
+    "</ul>\n"
+)
 
 
 def ig_dir(name: str) -> Path:
@@ -106,7 +113,16 @@ def _ensure_scripts(root: Path, previous_pin: str | None) -> int:
 def _ensure_text(path: Path, contents: str) -> None:
     if path.exists():
         return
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(contents, encoding="utf-8")
+
+
+def default_index_md(model: str) -> str:
+    return (
+        f"# {fhir_name(model)}\n\n"
+        "Logical model staged by rh-mod-skills. Edit this page; "
+        "`ig sync` will not overwrite it.\n"
+    )
 
 
 def _ensure_sidecar(model: str, canonical: str) -> dict:
@@ -163,7 +179,14 @@ def build_implementation_guide(
         "status": "draft",
         "packageId": sidecar.get("package_id"),
         "fhirVersion": ["4.0.1"],
-        "definition": {"resource": entries},
+        "definition": {
+            "page": {
+                "nameUrl": "index.html",
+                "title": "Home",
+                "generation": "markdown",
+            },
+            "resource": entries,
+        },
     }
 
 
@@ -204,6 +227,8 @@ def sync_cmd(model):
     )
     _ensure_text(root / ".gitignore", IG_GITIGNORE)
     sidecar = _ensure_sidecar(model, canonical)
+    _ensure_text(root / "input" / "includes" / "menu.xml", MENU_XML)
+    _ensure_text(root / "input" / "pagecontent" / "index.md", default_index_md(model))
 
     consumer = consumer_root()
     copied: list[dict] = []

@@ -26,7 +26,8 @@ The CLI owns every durable write. Do not hand-author FHIR JSON.
 
 ## Plan fields
 
-- `canonical` — http(s) StructureDefinition URL (rh-map-skills pin)
+- `canonical` — http(s) StructureDefinition URL (rh-map-skills pin). Last path
+  segment MUST equal the model id (IG Publisher: url matches differential root).
 - `version` — non-empty string
 - `unknown_datatype` — paths; implement fails if this list is non-empty
 - `unknown_cardinality` — count defaulted to `0..1`
@@ -36,6 +37,8 @@ The CLI owns every durable write. Do not hand-author FHIR JSON.
 
 - `kind: logical`, `baseDefinition` Base, `type` = canonical URL
 - Root path = model id
+- Canonical URL last segment = model id
+- Each dotted path name portion ≤ 64 characters (extract slugs; implement fails closed)
 - Entities = `BackboneElement`
 - Leaf types = logical-model `datatype` (no guessing)
 - Unknown cardinality → min 0, max 1
@@ -51,6 +54,7 @@ and version. That is the rh-map-skills pin. Mapping workbooks are out of scope.
 ## Verify
 
 Blocking: missing SD, `kind` ≠ `logical`, differential path mismatch, missing
-ValueSet for a bound element, checksum mismatch.
+ValueSet for a bound element, checksum mismatch, canonical last segment ≠
+model id, path name portion > 64 characters.
 
 Advisory: `cardinality-default-n=…`, `validator=not-run`.

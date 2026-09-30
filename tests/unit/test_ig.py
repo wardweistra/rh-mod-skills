@@ -64,6 +64,15 @@ def test_sync_scaffolds_ig_tree(_fetch, tmp_consumer):
     refs = {e["reference"]["reference"] for e in ig_json["definition"]["resource"]}
     assert any(r.startswith("StructureDefinition/") for r in refs)
     assert any(r.startswith("ValueSet/") for r in refs)
+    page = ig_json["definition"]["page"]
+    assert page["nameUrl"] == "index.html"
+    assert page["generation"] == "markdown"
+    assert "page" not in page
+    assert (root / "input" / "includes" / "menu.xml").is_file()
+    assert "index.html" in (root / "input" / "includes" / "menu.xml").read_text()
+    assert "toc.html" in (root / "input" / "includes" / "menu.xml").read_text()
+    index_md = root / "input" / "pagecontent" / "index.md"
+    assert index_md.is_file()
     assert not (root / "publisher.jar").exists()
     assert not list(root.rglob("snapshot.yaml"))
     sidecar = load_yaml(root / "rh-mod.yaml")
@@ -88,6 +97,10 @@ def test_sync_idempotent_keeps_reviewer_files_and_drops_stale(fetch_script, tmp_
     extra = root / "input" / "pagecontent" / "notes.md"
     extra.parent.mkdir(parents=True, exist_ok=True)
     extra.write_text("keep me\n", encoding="utf-8")
+    index_md = root / "input" / "pagecontent" / "index.md"
+    index_md.write_text("# Reviewer home\n", encoding="utf-8")
+    menu = root / "input" / "includes" / "menu.xml"
+    menu.write_text(menu.read_text() + "<!-- reviewer -->\n", encoding="utf-8")
     vocab = root / "input" / "vocabulary"
     vs_files = list(vocab.glob("ValueSet-*.json"))
     assert vs_files
@@ -102,7 +115,12 @@ def test_sync_idempotent_keeps_reviewer_files_and_drops_stale(fetch_script, tmp_
     assert fetch_script.call_count == 0
     assert "# reviewer-template" in ini.read_text()
     assert extra.read_text() == "keep me\n"
+    assert index_md.read_text() == "# Reviewer home\n"
+    assert "<!-- reviewer -->" in menu.read_text()
     assert not (vocab / drop_name).is_file()
     ig_json = json.loads(next((root / "input").glob("ImplementationGuide-*.json")).read_text())
     refs = {e["reference"]["reference"] for e in ig_json["definition"]["resource"]}
     assert f"ValueSet/{dropped_id}" not in refs
+    page = ig_json["definition"]["page"]
+    assert page["nameUrl"] == "index.html"
+    assert "page" not in page

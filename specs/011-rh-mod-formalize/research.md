@@ -25,3 +25,7 @@
 ## 5. Cardinality / type
 
 **Decision**: `unknown` card → 0..1. `unknown` type → implement fails listing paths.
+
+## 6. Publisher constraints
+
+**Decision**: Canonical URL last path segment MUST equal the model id (IG Publisher: `StructureDefinition.url` matches differential root). Each dotted path name portion MUST be ≤ 64 characters; extract slugs cap at 64; implement fails closed on longer segments.

@@ -25,7 +25,8 @@ There is no `status check-changes`. Drift is `rh-mod-skills ingest verify <model
 | (no tracking / no models) | init | `rh-mod-skills init` |
 
 `Next` is computed by the CLI (inventory vs bindings for annotate vs specify).
-Do not recompute it from files and disagree with the CLI.
+Do not recompute it from files and disagree with the CLI. After `formalized`,
+`rh-mod-ig` is optional and does not change `Next`.
 
 ## Output shapes
 

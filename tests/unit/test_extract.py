@@ -7,7 +7,7 @@ from click.testing import CliRunner
 from ruamel.yaml import YAML
 
 from rh_mod_skills.cli import main
-from rh_mod_skills.commands.extract import extract
+from rh_mod_skills.commands.extract import FHIR_PATH_SEGMENT_MAX, extract, slug_id
 from rh_mod_skills.commands.init import init
 from rh_mod_skills.commands.ingest import ingest
 from rh_mod_skills.commands.status import status
@@ -480,3 +480,10 @@ def test_help_lists_extract():
     plan_help = CliRunner().invoke(main, ["extract", "plan", "--help"])
     assert plan_help.exit_code == 0
     assert "--rehint" in plan_help.output
+
+
+def test_slug_id_caps_fhir_path_segment():
+    s = slug_id("A" * 80)
+    assert len(s) <= FHIR_PATH_SEGMENT_MAX
+    assert len(s) == FHIR_PATH_SEGMENT_MAX
+

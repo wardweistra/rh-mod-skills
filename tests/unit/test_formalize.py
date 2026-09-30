@@ -219,6 +219,36 @@ def test_implement_fails_non_http_canonical(tmp_consumer):
     assert not comp.exists() or not list(comp.glob("*.json"))
 
 
+def test_implement_fails_canonical_last_segment(tmp_consumer):
+    runner, name = _specified(tmp_consumer, typed=True)
+    assert runner.invoke(formalize, ["plan", name]).exit_code == 0
+    plan_path = _formalize_plan_path(tmp_consumer, name)
+    plan = load_yaml(plan_path)
+    plan["canonical"] = "https://encr.eu/fhir/recommendations"
+    save_yaml(plan_path, plan)
+    assert runner.invoke(formalize, ["approve", name]).exit_code == 0
+    result = runner.invoke(formalize, ["implement", name])
+    assert result.exit_code != 0
+    assert "last segment" in result.output.lower() or name in result.output
+    comp = _computable(tmp_consumer, name)
+    assert not comp.exists() or not list(comp.glob("*.json"))
+
+
+def test_implement_fails_path_segment_over_64(tmp_consumer):
+    runner, name = _specified(tmp_consumer, typed=True)
+    assert runner.invoke(formalize, ["plan", name]).exit_code == 0
+    assert runner.invoke(formalize, ["approve", name]).exit_code == 0
+    lm_path = _lm_path(tmp_consumer, name)
+    lm = load_yaml(lm_path)
+    lm["entities"][0]["elements"][0]["path"] = "entity." + ("x" * 70)
+    save_yaml(lm_path, lm)
+    result = runner.invoke(formalize, ["implement", name])
+    assert result.exit_code != 0
+    assert "64" in result.output
+    comp = _computable(tmp_consumer, name)
+    assert not comp.exists() or not list(comp.glob("*.json"))
+
+
 def test_implement_writes_sd_valuesets_snapshot_and_status(tmp_consumer):
     runner, name = _specified(tmp_consumer, typed=True)
     assert runner.invoke(formalize, ["plan", name]).exit_code == 0
