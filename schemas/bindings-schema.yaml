@@ -14,10 +14,22 @@ structure:
           code: string
           display: string
           decision: string         # accept | replace
-      value_set: null              # reserved (US2); object or null
+      value_set:                   # null OR authored object (US2)
+        # null
+        # OR:
+        #   strength: example | preferred | extensible | required
+        #   concepts:
+        #     - system: string
+        #       code: string
+        #       display: string
       reason: string               # required if unbound
 
 key: path
+
+notes:
+  - status mapped ⇒ ≥1 mapping and/or authored value_set
+  - status unbound ⇒ empty mappings, value_set null, non-empty reason
+  - strength lives only on value_set, never on mapping rows
 
 forbidden:
   - root-level system/code/strength/display_term as the binding coding (1.0 shape)

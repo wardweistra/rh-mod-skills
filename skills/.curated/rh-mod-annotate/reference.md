@@ -4,15 +4,15 @@ CLI owns durable writes. This skill owns ReasonHub MCP search + enrich recording
 
 ## Map vs bind
 
-| Concept | Where it lives | Formalize effect (US1) |
-|---------|----------------|------------------------|
+| Concept | Where it lives | Formalize effect |
+|---------|----------------|------------------|
 | **Mapping** | `bindings[].mappings[]` (system/code/display/decision) | `StructureDefinition.mapping` + `ElementDefinition.mapping` |
-| **ValueSet binding** | `bindings[].value_set` (reserved; later) | ValueSet + `ElementDefinition.binding` only when authored |
+| **ValueSet binding** | `bindings[].value_set` (`strength` + `concepts[]`) | ValueSet + `ElementDefinition.binding` only when authored |
 | **Unbound** | `status: unbound` + `reason` | No mapping metadata, no VS |
 
 Accepting a code is a **mapping**, not inventing a ValueSet. Multiple systems on
-one path are normal (≤1 code per system URI). Strength does **not** live on
-mapping rows.
+one path are normal (≤1 code per system URI). Strength lives **only** on
+`value_set`, never on mapping rows.
 
 ## Commands
 
@@ -39,12 +39,25 @@ bindings:
         code: "76689-9"
         display: Sex assigned at birth
         decision: accept
-    value_set: null
+    value_set:
+      strength: preferred
+      concepts:
+        - system: http://loinc.org
+          code: "LA15170-6"
+          display: Male
+        - system: http://loinc.org
+          code: "LA15171-4"
+          display: Female
     reason: ""
 ```
+
+`value_set` may be `null` (mappings-only). Reviewers may author it on the annotate
+plan YAML before implement. `status: mapped` when mappings and/or `value_set`
+present; `unbound` requires empty mappings, `value_set: null`, and a reason.
 
 schema_version ≠ 2.0 or root-level `system`/`code`/`strength` → fail closed; **re-annotate**.
 
 ## Annotate-complete
 
-Every inventory path has `status: mapped` (≥1 mapping) or `unbound` (non-empty reason, empty mappings).
+Every inventory path has `status: mapped` (≥1 mapping and/or authored `value_set`)
+or `unbound` (non-empty reason, empty mappings, null `value_set`).

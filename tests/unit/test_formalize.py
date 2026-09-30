@@ -167,6 +167,7 @@ def test_plan_writes_draft_canonical_and_counts(tmp_consumer):
     assert any("dob" in p for p in unknown)
     assert any("pid" in p for p in unknown)
     assert plan["mapped"] == 1
+    assert plan.get("value_set_bound", 0) == 0
     assert plan["unbound"] == 2
     assert not list(_computable(tmp_consumer, name).glob("*.json"))
     assert not (_computable(tmp_consumer, name) / "snapshot.yaml").exists()
@@ -424,6 +425,80 @@ def test_us1_two_mappings_emit_ed_mapping_no_valueset(tmp_consumer):
     assert "http://snomed.info/sct" in uris
     verify = runner.invoke(formalize, ["verify", name])
     assert verify.exit_code == 0, verify.output
+
+
+def test_us2_value_set_emits_vs_and_binding(tmp_consumer):
+    runner, name = _specified(tmp_consumer, typed=True)
+    lm_path = _lm_path(tmp_consumer, name)
+    lm = load_yaml(lm_path)
+    sex_path = None
+    for ent in lm["entities"]:
+        for el in ent["elements"]:
+            if el["id"] == "sex":
+                sex_path = el["path"]
+                el["value_set"] = {
+                    "strength": "preferred",
+                    "concepts": [
+                        {
+                            "system": "http://loinc.org",
+                            "code": "LA15170-6",
+                            "display": "Male",
+                        },
+                        {
+                            "system": "http://loinc.org",
+                            "code": "LA15171-4",
+                            "display": "Female",
+                        },
+                    ],
+                }
+            else:
+                el["value_set"] = None
+    save_yaml(lm_path, lm)
+    assert runner.invoke(formalize, ["plan", name]).exit_code == 0
+    plan = load_yaml(_formalize_plan_path(tmp_consumer, name))
+    assert plan["value_set_bound"] == 1
+    assert plan["mapped"] == 1
+    assert plan["unbound"] == 2
+    assert runner.invoke(formalize, ["approve", name]).exit_code == 0
+    result = runner.invoke(formalize, ["implement", name])
+    assert result.exit_code == 0, result.output
+    comp = _computable(tmp_consumer, name)
+    vs_files = list(comp.glob("ValueSet-*.json"))
+    assert len(vs_files) == 1
+    vs = json.loads(vs_files[0].read_text(encoding="utf-8"))
+    assert vs["resourceType"] == "ValueSet"
+    concepts = vs["compose"]["include"][0]["concept"]
+    codes = {c["code"] for c in concepts}
+    assert codes == {"LA15170-6", "LA15171-4"}
+    sd = json.loads(next(comp.glob("StructureDefinition-*.json")).read_text(encoding="utf-8"))
+    row = next(el for el in sd["differential"]["element"] if el["path"] == f"{name}.{sex_path}")
+    assert row["binding"]["strength"] == "preferred"
+    assert row["binding"]["valueSet"] == vs["url"]
+    assert row.get("mapping")  # mappings still present
+    assert list(comp.glob("ConceptMap-*.json")) == []
+    verify = runner.invoke(formalize, ["verify", name])
+    assert verify.exit_code == 0, verify.output
+    assert "value_set_bound=1" in verify.output
+
+
+def test_us2_mappings_only_still_no_valueset(tmp_consumer):
+    runner, name = _specified(tmp_consumer, typed=True)
+    lm_path = _lm_path(tmp_consumer, name)
+    lm = load_yaml(lm_path)
+    for ent in lm["entities"]:
+        for el in ent["elements"]:
+            el["value_set"] = None
+    save_yaml(lm_path, lm)
+    assert runner.invoke(formalize, ["plan", name]).exit_code == 0
+    plan = load_yaml(_formalize_plan_path(tmp_consumer, name))
+    assert plan["value_set_bound"] == 0
+    assert runner.invoke(formalize, ["approve", name]).exit_code == 0
+    assert runner.invoke(formalize, ["implement", name]).exit_code == 0
+    comp = _computable(tmp_consumer, name)
+    assert list(comp.glob("ValueSet-*.json")) == []
+    sd = json.loads(next(comp.glob("StructureDefinition-*.json")).read_text(encoding="utf-8"))
+    for el in sd["differential"]["element"]:
+        assert "binding" not in el
 
 
 def test_us1_logical_model_1_0_fail_closed(tmp_consumer):

@@ -10,7 +10,7 @@ from pathlib import Path
 import click
 from ruamel.yaml import YAML
 
-from rh_mod_skills.commands.annotate import load_yaml_file
+from rh_mod_skills.commands.annotate import load_yaml_file, validate_value_set
 from rh_mod_skills.commands.extract import _assert_ingest_clean
 from rh_mod_skills.commands.specify import (
     CARD_RE,
@@ -216,6 +216,9 @@ def element_status(el: dict) -> str | None:
     mappings = el.get("mappings") or []
     if mappings:
         return "mapped"
+    vs = el.get("value_set")
+    if isinstance(vs, dict) and vs:
+        return "mapped"
     binding = el.get("binding") or {}
     if binding.get("status") == "bound":
         return "mapped"
@@ -224,10 +227,11 @@ def element_status(el: dict) -> str | None:
     return status
 
 
-def summarize_lm(lm: dict) -> tuple[list[str], int, int, int]:
+def summarize_lm(lm: dict) -> tuple[list[str], int, int, int, int]:
     unknown_dt: list[str] = []
     unknown_card = 0
     mapped = 0
+    value_set_bound = 0
     unbound = 0
     for _ent, el in iter_lm_elements(lm):
         path = el.get("path") or "?"
@@ -236,11 +240,14 @@ def summarize_lm(lm: dict) -> tuple[list[str], int, int, int]:
         if (el.get("cardinality") or "unknown") == "unknown":
             unknown_card += 1
         status = element_status(el)
+        vs = el.get("value_set")
+        if isinstance(vs, dict) and vs:
+            value_set_bound += 1
         if status == "mapped":
             mapped += 1
         elif status == "unbound":
             unbound += 1
-    return unknown_dt, unknown_card, mapped, unbound
+    return unknown_dt, unknown_card, mapped, value_set_bound, unbound
 
 
 def collect_mapping_identities(lm: dict) -> list[dict]:
@@ -259,13 +266,60 @@ def collect_mapping_identities(lm: dict) -> list[dict]:
     return list(by_id.values())
 
 
+def build_valueset(
+    model: str,
+    canonical: str,
+    version: str,
+    el: dict,
+    vs: dict,
+) -> tuple[str, dict]:
+    """Build a multi-concept ValueSet from authored value_set.concepts[]."""
+    path = el.get("path") or "element"
+    vs_id = fhir_id(f"{model}-{path.replace('.', '-')}")
+    url = valueset_url(canonical, vs_id)
+    by_system: dict[str, list[dict]] = {}
+    for concept in vs.get("concepts") or []:
+        system = concept.get("system")
+        code = concept.get("code")
+        if not system or code in (None, ""):
+            continue
+        by_system.setdefault(str(system), []).append(
+            {
+                "code": str(code),
+                "display": concept.get("display") or "",
+            }
+        )
+    if not by_system:
+        raise click.ClickException(
+            f"value_set on {path} has no valid concepts with system+code"
+        )
+    include = [
+        {"system": system, "concept": concepts}
+        for system, concepts in by_system.items()
+    ]
+    resource = {
+        "resourceType": "ValueSet",
+        "id": vs_id,
+        "url": url,
+        "version": version,
+        "name": fhir_name(vs_id.replace(".", "-")),
+        "status": "draft",
+        "compose": {"include": include},
+    }
+    return vs_id, resource
+
+
 def build_structure_definition(
     model: str,
     lm: dict,
     canonical: str,
     version: str,
     name: str,
+    vs_urls: dict[str, str] | None = None,
+    vs_strengths: dict[str, str] | None = None,
 ) -> dict:
+    vs_urls = vs_urls or {}
+    vs_strengths = vs_strengths or {}
     root = model
     elements = [
         {
@@ -316,7 +370,11 @@ def build_structure_definition(
                 )
             if ed_mappings:
                 row["mapping"] = ed_mappings
-            # US1: no ElementDefinition.binding / ValueSet from mappings-only
+            if path in vs_urls:
+                row["binding"] = {
+                    "strength": vs_strengths.get(path) or "example",
+                    "valueSet": vs_urls[path],
+                }
             elements.append(row)
     sd = {
         "resourceType": "StructureDefinition",
@@ -366,7 +424,7 @@ def plan_cmd(model):
     require_model(tracking, model)
     _assert_ingest_clean(tracking, model)
     lm = load_logical_model(model)
-    unknown_dt, unknown_card, mapped, unbound = summarize_lm(lm)
+    unknown_dt, unknown_card, mapped, value_set_bound, unbound = summarize_lm(lm)
     canonical_base = default_canonical_base(model)
     canonical = derive_structure_definition_url(canonical_base, model)
     data = {
@@ -379,6 +437,7 @@ def plan_cmd(model):
         "unknown_datatype": unknown_dt,
         "unknown_cardinality": unknown_card,
         "mapped": mapped,
+        "value_set_bound": value_set_bound,
         "unbound": unbound,
     }
     save_yaml_file(formalize_plan_path(model), data)
@@ -403,7 +462,7 @@ def approve_cmd(model):
 @formalize.command("implement")
 @click.argument("model")
 def implement_cmd(model):
-    """Write StructureDefinition (+ optional future ValueSets) and snapshot under computable/."""
+    """Write StructureDefinition, ValueSets (when authored), and snapshot under computable/."""
     tracking = require_tracking()
     require_model(tracking, model)
     _assert_ingest_clean(tracking, model)
@@ -419,7 +478,7 @@ def implement_cmd(model):
         raise click.ClickException("Formalize plan version is empty.")
     name = str(plan.get("name") or fhir_name(model))
     lm = load_logical_model(model)
-    unknown_dt, _unknown_card, _mapped, _unbound = summarize_lm(lm)
+    unknown_dt, _unknown_card, _mapped, _vs_bound, _unbound = summarize_lm(lm)
     if unknown_dt:
         listed = ", ".join(unknown_dt[:8])
         more = "" if len(unknown_dt) <= 8 else f" (+{len(unknown_dt) - 8} more)"
@@ -438,31 +497,48 @@ def implement_cmd(model):
 
     for _ent, el in iter_lm_elements(lm):
         status = element_status(el)
+        mappings = el.get("mappings") or []
+        vs = validate_value_set(el.get("path"), el.get("value_set"))
         if status == "mapped":
-            mappings = el.get("mappings") or []
-            if not mappings:
+            if mappings:
+                for m in mappings:
+                    if not m.get("system") or m.get("code") in (None, ""):
+                        raise click.ClickException(
+                            f"Mapped element {el.get('path')} has a mapping missing system/code."
+                        )
+            if not mappings and vs is None:
                 raise click.ClickException(
-                    f"Mapped element {el.get('path')} is missing mappings[]."
+                    f"Mapped element {el.get('path')} is missing mappings[] and value_set."
                 )
-            for m in mappings:
-                if not m.get("system") or m.get("code") in (None, ""):
-                    raise click.ClickException(
-                        f"Mapped element {el.get('path')} has a mapping missing system/code."
-                    )
-        # US1: do not emit ValueSet from mappings; value_set authoring is US2
 
     out_dir = computable_dir(model)
     out_dir.mkdir(parents=True, exist_ok=True)
-    # Remove stale singleton ValueSets from prior 1.0 formalize runs (mappings-only now).
     for stale in out_dir.glob("ValueSet-*.json"):
         stale.unlink()
     for stale in out_dir.glob("ConceptMap-*.json"):
         stale.unlink()
 
-    sd = build_structure_definition(model, lm, canonical, version, name)
+    vs_urls: dict[str, str] = {}
+    vs_strengths: dict[str, str] = {}
+    json_files: list[Path] = []
+    for _ent, el in iter_lm_elements(lm):
+        path = el.get("path")
+        vs = validate_value_set(path, el.get("value_set"))
+        if vs is None:
+            continue
+        vs_id, vs_resource = build_valueset(model, canonical, version, el, vs)
+        vs_path = out_dir / f"ValueSet-{vs_id}.json"
+        write_json(vs_path, vs_resource)
+        vs_urls[path] = vs_resource["url"]
+        vs_strengths[path] = vs["strength"]
+        json_files.append(vs_path)
+
+    sd = build_structure_definition(
+        model, lm, canonical, version, name, vs_urls=vs_urls, vs_strengths=vs_strengths
+    )
     sd_path = out_dir / f"StructureDefinition-{fhir_id(model)}.json"
     write_json(sd_path, sd)
-    json_files: list[Path] = [sd_path]
+    json_files.insert(0, sd_path)
 
     root = consumer_root()
     json_meta = [
@@ -486,6 +562,8 @@ def implement_cmd(model):
     )
     log_info(f"Wrote formalized logical model ({len(json_meta)} JSON file(s))")
     click.echo(f"  {sd_path}")
+    for p in json_files[1:]:
+        click.echo(f"  {p}")
     click.echo(f"  {snap_file}")
 
 
@@ -542,8 +620,11 @@ def verify_cmd(model):
         click.echo("structuredefinition: missing")
         blocking_n += 1
 
-    _unknown_dt, unknown_card, mapped, _unbound = summarize_lm(lm)
-    click.echo(f"cardinality-default-n={unknown_card} mapped={mapped} validator=not-run")
+    _unknown_dt, unknown_card, mapped, value_set_bound, _unbound = summarize_lm(lm)
+    click.echo(
+        f"cardinality-default-n={unknown_card} mapped={mapped} "
+        f"value_set_bound={value_set_bound} validator=not-run"
+    )
 
     too_long = long_path_segments(model, lm)
     for issue in too_long:
@@ -570,9 +651,14 @@ def verify_cmd(model):
             path = el.get("path")
             fpath = f"{model}.{path}" if path else None
             mappings = el.get("mappings") or []
-            value_set = el.get("value_set")
+            try:
+                value_set = validate_value_set(path, el.get("value_set"))
+            except click.ClickException as exc:
+                click.echo(f"  blocking: {exc}")
+                blocking_n += 1
+                value_set = None
             row = by_path.get(fpath or "") or {}
-            if mappings and value_set in (None, {}):
+            if mappings and value_set is None:
                 # mappings-only: must have ElementDefinition.mapping; must NOT have ValueSet/binding
                 ed_maps = row.get("mapping") or []
                 if len(ed_maps) != len(mappings):
@@ -597,6 +683,23 @@ def verify_cmd(model):
                 vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
                 if vs_file.is_file():
                     click.echo(f"  blocking: mappings-only path {path} must not have ValueSet")
+                    blocking_n += 1
+            if value_set is not None:
+                binding = row.get("binding") or {}
+                if not binding.get("valueSet"):
+                    click.echo(
+                        f"  blocking: value_set path {path} missing ElementDefinition.binding.valueSet"
+                    )
+                    blocking_n += 1
+                elif binding.get("strength") != value_set.get("strength"):
+                    click.echo(
+                        f"  blocking: value_set path {path} binding strength mismatch"
+                    )
+                    blocking_n += 1
+                vs_id = fhir_id(f"{model}-{(path or '').replace('.', '-')}")
+                vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
+                if not vs_file.is_file():
+                    click.echo(f"  blocking: value_set path {path} missing ValueSet file")
                     blocking_n += 1
             if list(computable_dir(model).glob("ConceptMap-*.json")):
                 click.echo("  blocking: ConceptMap resources are out of scope")

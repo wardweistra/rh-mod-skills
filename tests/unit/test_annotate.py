@@ -698,3 +698,128 @@ def test_us1_bindings_1_0_fail_closed_on_verify(tmp_consumer):
     verify = runner.invoke(annotate, ["verify", "nkr-breast"])
     assert verify.exit_code != 0
     assert "re-annotate" in verify.output.lower()
+
+
+SEX_VS = {
+    "strength": "preferred",
+    "concepts": [
+        {
+            "system": "http://loinc.org",
+            "code": "LA15170-6",
+            "display": "Male",
+        },
+        {
+            "system": "http://loinc.org",
+            "code": "LA15171-4",
+            "display": "Female",
+        },
+    ],
+}
+
+
+def test_us2_implement_persists_authored_value_set(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [
+                    {
+                        "system": "http://loinc.org",
+                        "code": "76689-9",
+                        "display": "Sex assigned at birth",
+                        "decision": "accept",
+                    }
+                ],
+                "value_set": SEX_VS,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code == 0, result.output
+    row = load_yaml(_bindings_path(tmp_consumer))["bindings"][0]
+    assert row["status"] == "mapped"
+    assert row["value_set"]["strength"] == "preferred"
+    assert len(row["value_set"]["concepts"]) == 2
+    assert "strength" not in row
+    assert "strength" not in row["mappings"][0]
+    verify = runner.invoke(annotate, ["verify", "nkr-breast"])
+    assert verify.exit_code == 0, verify.output
+    assert "vs_bound=1" in verify.output
+    assert "mapped=1" in verify.output
+
+
+def test_us2_unbound_forbids_value_set(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gebdat"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gebdat": {
+                "decision": "unbound",
+                "reason": "date / no terminology",
+                "value_set": SEX_VS,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code != 0
+    assert "value_set" in result.output.lower()
+
+
+def test_us2_value_set_only_counts_as_mapped(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [],
+                "value_set": SEX_VS,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code == 0, result.output
+    row = load_yaml(_bindings_path(tmp_consumer))["bindings"][0]
+    assert row["status"] == "mapped"
+    assert row["mappings"] == []
+    assert row["value_set"]["strength"] == "preferred"
+    verify = runner.invoke(annotate, ["verify", "nkr-breast"])
+    assert verify.exit_code == 0, verify.output
+    assert "vs_bound=1" in verify.output
+    assert "mapped=1" in verify.output
+
+
+def test_us2_invalid_value_set_strength_fails(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    bad = dict(SEX_VS)
+    bad["strength"] = "requiredish"
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "263495000",
+                        "display": "Gender",
+                        "decision": "accept",
+                    }
+                ],
+                "value_set": bad,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code != 0
+    assert "strength" in result.output.lower()

@@ -20,7 +20,7 @@ structure:
               code: string
               display: string
               decision: string
-          value_set: null           # reserved / copy from bindings; null ok
+          value_set:                # null OR authored {strength, concepts[]} from bindings
           reason: string            # required if unbound
           provenance:
             source: string

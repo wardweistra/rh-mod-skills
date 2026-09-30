@@ -18,6 +18,7 @@ from rh_mod_skills.commands.annotate import (
     load_inventory,
     load_yaml_file,
     validate_mapping_list,
+    validate_value_set,
 )
 from rh_mod_skills.commands.extract import _assert_ingest_clean, inventory_path
 from rh_mod_skills.common import (
@@ -129,11 +130,17 @@ def snapshot_from_binding(row: dict) -> dict:
             "value_set": None,
             "reason": (row.get("reason") or "").strip(),
         }
-    mappings = validate_mapping_list(row.get("path"), list(row.get("mappings") or []))
+    mappings_raw = list(row.get("mappings") or [])
+    vs = validate_value_set(row.get("path"), row.get("value_set"))
+    mappings = validate_mapping_list(row.get("path"), mappings_raw) if mappings_raw else []
+    if not mappings and vs is None:
+        raise click.ClickException(
+            f"mapped binding {row.get('path')!r} needs mappings and/or value_set"
+        )
     return {
         "status": "mapped",
         "mappings": mappings,
-        "value_set": row.get("value_set"),
+        "value_set": vs,
         "reason": row.get("reason") or "",
     }
 
@@ -336,16 +343,26 @@ def _verify_issues(inventory: dict, lm: dict) -> tuple[list[str], int, int]:
         status = el.get("status")
         if status == "mapped":
             mappings = el.get("mappings") or []
-            if not mappings:
-                blocking.append(f"mapped missing mappings: {path}")
-            else:
+            vs_raw = el.get("value_set")
+            try:
+                vs = validate_value_set(path, vs_raw)
+            except click.ClickException as exc:
+                blocking.append(str(exc))
+                vs = None
+            if mappings:
                 try:
                     validate_mapping_list(path, mappings)
                 except click.ClickException as exc:
                     blocking.append(str(exc))
+            if not mappings and vs is None:
+                blocking.append(f"mapped missing mappings and value_set: {path}")
         elif status == "unbound":
             if not (el.get("reason") or "").strip():
                 blocking.append(f"unbound missing reason: {path}")
+            if el.get("mappings"):
+                blocking.append(f"unbound with mappings: {path}")
+            if isinstance(el.get("value_set"), dict) and el.get("value_set"):
+                blocking.append(f"unbound with value_set: {path}")
         else:
             blocking.append(f"element status missing: {path}")
         if (el.get("datatype") or "unknown") == "unknown":

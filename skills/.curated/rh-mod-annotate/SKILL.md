@@ -47,9 +47,10 @@ Annotate is the L2 **concept-mapping** stage. Extract already owns inventory
 shape. This skill proposes codes; specify later fills datatypes.
 
 **Map vs bind**: Accepting LOINC and/or SNOMED on a path writes `mappings[]`.
-That is **not** a FHIR ValueSet. Strength and ValueSet authoring are a later
-stage. Formalize emits `ElementDefinition.mapping` for mappings-only paths —
-never a singleton ValueSet from a mapping.
+That is **not** a FHIR ValueSet. Optional ValueSet authoring is a separate plan
+field: `value_set: { strength, concepts[] }` (strength only there). Formalize
+emits `ElementDefinition.mapping` for mappings-only paths, and ValueSet +
+`ElementDefinition.binding` only when `value_set` is authored.
 
 FML / StructureMap / mapping.xlsx remain out of scope (rh-map-skills).
 
@@ -105,11 +106,13 @@ rh-mod-skills status <model>
 ```
 
 Implement writes `schema_version: "2.0"` with `status: mapped|unbound` and
-`mappings[]`. No root-level `system`/`code`/`strength`. `value_set` stays null
-in this stage. Duplicate system URIs fail closed. Legacy 1.0 bindings fail closed
-— message says **re-annotate**.
+`mappings[]`. No root-level `system`/`code`/`strength`. Authored `value_set` on
+the plan (strength + concepts) is persisted when present; mappings alone leave
+`value_set: null`. Duplicate system URIs fail closed. Legacy 1.0 bindings fail
+closed — message says **re-annotate**.
 
 ## Verify
 
-`annotate verify` reports `mapped` / `unbound` / `undecided`. Annotate-complete when
-every inventory path is `mapped` or `unbound`.
+`annotate verify` reports `mapped` / `vs_bound` / `unbound` / `undecided`.
+Annotate-complete when every inventory path is `mapped` (≥1 mapping and/or
+authored `value_set`) or `unbound` (reason; empty mappings; `value_set` null).

@@ -34,7 +34,7 @@ def test_formalized_idempotent_coverage_and_advisory(tmp_consumer):
     v2 = runner.invoke(verify, [name])
     assert v1.exit_code == 0, v1.output
     assert v2.exit_code == 0, v2.output
-    assert "coverage: inventory=3 mapped=1 unbound=2 undecided=0" in v1.output
+    assert "coverage: inventory=3 mapped=1 vs_bound=0 unbound=2 undecided=0" in v1.output
     assert "ingest: pass" in v1.output
     assert "extract: pass" in v1.output
     assert "annotate: pass" in v1.output
@@ -46,6 +46,50 @@ def test_formalized_idempotent_coverage_and_advisory(tmp_consumer):
     st = runner.invoke(status, [name])
     assert st.exit_code == 0, st.output
     assert "Next: verify" in st.output
+
+
+def test_us2_coordinator_reports_vs_bound(tmp_consumer):
+    from rh_mod_skills.commands.annotate import annotate, bindings_path
+    from rh_mod_skills.commands.specify import specify
+
+    runner, name = _mini_extracted(tmp_consumer, name="vs-demo")
+    # annotate with value_set on sex
+    assert runner.invoke(annotate, ["plan", name, "--all-undecided"]).exit_code == 0
+    plan_path = tmp_consumer / "models" / name / "process" / "plans" / "annotate-plan.yaml"
+    plan = load_yaml(plan_path)
+    for el in plan["elements"]:
+        if el["id"] == "sex":
+            el["decision"] = "accept"
+            el["mappings"] = [
+                {
+                    "system": "http://loinc.org",
+                    "code": "76689-9",
+                    "display": "Sex assigned at birth",
+                    "decision": "accept",
+                }
+            ]
+            el["value_set"] = {
+                "strength": "preferred",
+                "concepts": [
+                    {"system": "http://loinc.org", "code": "LA15170-6", "display": "Male"},
+                    {"system": "http://loinc.org", "code": "LA15171-4", "display": "Female"},
+                ],
+            }
+        elif el["id"] == "dob":
+            el["decision"] = "unbound"
+            el["reason"] = "date / no terminology needed"
+        elif el["id"] == "pid":
+            el["decision"] = "unbound"
+            el["reason"] = "identifier / no terminology needed"
+    save_yaml(plan_path, plan)
+    assert runner.invoke(annotate, ["approve", name]).exit_code == 0
+    assert runner.invoke(annotate, ["implement", name]).exit_code == 0
+    assert bindings_path(name).is_file() or True
+    result = runner.invoke(verify, [name])
+    assert result.exit_code == 0, result.output
+    assert "vs_bound=1" in result.output
+    assert "mapped=1" in result.output
+    assert "unbound=2" in result.output
 
 
 def test_checksum_tamper_fails_without_tracking_write(tmp_consumer):

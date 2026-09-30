@@ -32,7 +32,7 @@ The CLI owns every durable write. Do not hand-author FHIR JSON.
 - `version` — non-empty string
 - `unknown_datatype` — paths; implement fails if non-empty
 - `unknown_cardinality` — count defaulted to `0..1`
-- `mapped` / `unbound` — counts from LM element status/mappings
+- `mapped` / `value_set_bound` / `unbound` — counts from LM element status/mappings/`value_set`
 
 ## StructureDefinition rules
 
@@ -43,6 +43,8 @@ The CLI owns every durable write. Do not hand-author FHIR JSON.
 - Unknown cardinality → min 0, max 1
 - **Mappings**: emit `StructureDefinition.mapping` identities + `ElementDefinition.mapping`
   (`map` = code). Do **not** emit ValueSet or `ElementDefinition.binding` from mappings alone
+- **ValueSet**: emit multi-concept `ValueSet` + `ElementDefinition.binding`
+  (`strength` + `valueSet` URL) only when LM `value_set` is present
 - **No ConceptMap** resources
 - Unbound elements: no mapping entries, no VS
 
@@ -54,7 +56,7 @@ canonical, and version. Mapping workbooks are out of scope.
 ## Verify
 
 Blocking: missing SD, `kind` ≠ `logical`, differential path mismatch, mappings-only
-path with a ValueSet/binding, checksum mismatch, canonical last segment ≠ model id,
-path name portion > 64, ConceptMap present.
+path with a ValueSet/binding, `value_set` path missing VS/binding, checksum mismatch,
+canonical last segment ≠ model id, path name portion > 64, ConceptMap present.
 
-Advisory: `cardinality-default-n=…`, `validator=not-run`.
+Advisory: `cardinality-default-n=…`, `value_set_bound=…`, `validator=not-run`.
