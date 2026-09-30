@@ -34,7 +34,7 @@ def test_formalized_idempotent_coverage_and_advisory(tmp_consumer):
     v2 = runner.invoke(verify, [name])
     assert v1.exit_code == 0, v1.output
     assert v2.exit_code == 0, v2.output
-    assert "coverage: inventory=3 bound=1 unbound=2 undecided=0" in v1.output
+    assert "coverage: inventory=3 mapped=1 unbound=2 undecided=0" in v1.output
     assert "ingest: pass" in v1.output
     assert "extract: pass" in v1.output
     assert "annotate: pass" in v1.output

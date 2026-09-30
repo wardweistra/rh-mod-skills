@@ -1,10 +1,10 @@
 # L2 logical model written by `rh-mod-skills specify implement`
 # Path: models/<id>/structured/logical-model.yaml
-schema_version: "1.0"
+schema_version: "2.0"
 
 structure:
   model: string
-  entities:
+  entities:                        # Epic A single-tree layout
     - id: string
       title: string
       elements:
@@ -14,14 +14,14 @@ structure:
           datatype: string          # recognized FHIR type or "unknown"
           cardinality: string       # n..m / n..* or "unknown"
           issues: list              # unknown-datatype, unknown-cardinality
-          binding:
-            status: string          # bound | unbound
-            decision: string
-            strength: string
-            system: string
-            code: string
-            display: string
-            reason: string
+          status: string            # mapped | unbound (optional on draft)
+          mappings:                 # copy from bindings 2.0
+            - system: string
+              code: string
+              display: string
+              decision: string
+          value_set: null           # reserved / copy from bindings; null ok
+          reason: string            # required if unbound
           provenance:
             source: string
             sheet: string
@@ -30,8 +30,10 @@ structure:
               id: string
               category: string
               label: string
+  # logical_models: reserved for Epic B (multi-LM regroup); not required in Epic A
 
 forbidden:
+  - nested binding singleton (system/code/strength as sole coding)
   - StructureDefinition
   - invented codes
   - codebook letters F/A as datatype

@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import re
+from pathlib import Path
 
 import click
 from ruamel.yaml import YAML
 
 from rh_mod_skills.commands.annotate import (
+    assert_bindings_v2,
     bindings_path,
     decided_binding_paths,
     inventory_element_paths,
@@ -15,6 +17,7 @@ from rh_mod_skills.commands.annotate import (
     load_bindings,
     load_inventory,
     load_yaml_file,
+    validate_mapping_list,
 )
 from rh_mod_skills.commands.extract import _assert_ingest_clean, inventory_path
 from rh_mod_skills.common import (
@@ -116,31 +119,21 @@ def normalize_cardinality(raw) -> str:
     return "unknown"
 
 
-def snapshot_binding(row: dict) -> dict:
+def snapshot_from_binding(row: dict) -> dict:
+    """Copy bindings 2.0 fields onto the LM element (no nested binding singleton)."""
     status = row.get("status")
     if status == "unbound":
         return {
             "status": "unbound",
-            "decision": "unbound",
-            "strength": None,
-            "system": None,
-            "code": None,
-            "display": None,
+            "mappings": [],
+            "value_set": None,
             "reason": (row.get("reason") or "").strip(),
         }
-    system = row.get("system")
-    if isinstance(system, str):
-        system = system.strip() or None
-    code = row.get("code")
-    if code is not None:
-        code = str(code).strip()
+    mappings = validate_mapping_list(row.get("path"), list(row.get("mappings") or []))
     return {
-        "status": "bound",
-        "decision": row.get("decision"),
-        "strength": row.get("strength"),
-        "system": system,
-        "code": code,
-        "display": row.get("display_term") or row.get("display") or "",
+        "status": "mapped",
+        "mappings": mappings,
+        "value_set": row.get("value_set"),
         "reason": row.get("reason") or "",
     }
 
@@ -165,9 +158,10 @@ def _assert_annotate_complete(model: str) -> tuple[dict, dict]:
     bpath = bindings_path(model)
     if not bpath.is_file():
         raise click.ClickException(
-            f"No bindings at {bpath}. Finish annotate (every path bound or unbound) first."
+            f"No bindings at {bpath}. Finish annotate (every path mapped or unbound) first."
         )
-    bindings = load_bindings(model)
+    bindings = load_bindings(model, validate=True)
+    assert_bindings_v2(bindings)
     decided = decided_binding_paths(model)
     missing = [p for p in inv_paths if p not in decided]
     extra = sorted(decided - set(inv_paths))
@@ -194,6 +188,7 @@ def build_specify_plan(model: str, inventory: dict, bindings: dict) -> dict:
             row = by_path.get(path) or {}
             datatype = normalize_datatype(el.get("datatype") or el.get("type"))
             cardinality = normalize_cardinality(el.get("cardinality"))
+            snap = snapshot_from_binding(row)
             planned.append(
                 {
                     "id": el.get("id"),
@@ -202,7 +197,10 @@ def build_specify_plan(model: str, inventory: dict, bindings: dict) -> dict:
                     "datatype": datatype,
                     "cardinality": cardinality,
                     "issues": _issues(datatype, cardinality),
-                    "binding": snapshot_binding(row),
+                    "status": snap["status"],
+                    "mappings": snap["mappings"],
+                    "value_set": snap["value_set"],
+                    "reason": snap["reason"],
                     "provenance": el.get("provenance") or {},
                 }
             )
@@ -218,6 +216,7 @@ def build_specify_plan(model: str, inventory: dict, bindings: dict) -> dict:
 
 def logical_model_from_plan(plan: dict) -> dict:
     return {
+        "schema_version": "2.0",
         "model": plan.get("model"),
         "entities": list(plan.get("entities") or []),
     }
@@ -228,6 +227,25 @@ def _iter_lm_elements(data: dict) -> list[dict]:
     for ent in data.get("entities") or []:
         out.extend(ent.get("elements") or [])
     return out
+
+
+def assert_logical_model_v2(lm: dict) -> dict:
+    version = str(lm.get("schema_version") or "")
+    if version != "2.0":
+        raise click.ClickException(
+            f"logical-model schema_version must be '2.0' (got {version!r}); "
+            "re-specify — nested binding singleton (1.0) is not supported."
+        )
+    for el in _iter_lm_elements(lm):
+        binding = el.get("binding")
+        if isinstance(binding, dict) and any(
+            k in binding for k in ("system", "code", "strength")
+        ):
+            raise click.ClickException(
+                f"logical-model element {el.get('path')!r} has nested binding singleton; "
+                "re-specify for schema 2.0 (mappings[] on the element)."
+            )
+    return lm
 
 
 def _record_model_specified(tracking: dict, model_name: str, n: int, files: list[str]) -> None:
@@ -315,16 +333,21 @@ def _verify_issues(inventory: dict, lm: dict) -> tuple[list[str], int, int]:
         path = el.get("path")
         if not (el.get("provenance") or {}):
             blocking.append(f"missing provenance: {path}")
-        binding = el.get("binding") or {}
-        status = binding.get("status")
-        if status == "bound":
-            if not binding.get("system") or not binding.get("code"):
-                blocking.append(f"bound missing system/code: {path}")
+        status = el.get("status")
+        if status == "mapped":
+            mappings = el.get("mappings") or []
+            if not mappings:
+                blocking.append(f"mapped missing mappings: {path}")
+            else:
+                try:
+                    validate_mapping_list(path, mappings)
+                except click.ClickException as exc:
+                    blocking.append(str(exc))
         elif status == "unbound":
-            if not (binding.get("reason") or "").strip():
+            if not (el.get("reason") or "").strip():
                 blocking.append(f"unbound missing reason: {path}")
         else:
-            blocking.append(f"binding status missing: {path}")
+            blocking.append(f"element status missing: {path}")
         if (el.get("datatype") or "unknown") == "unknown":
             unknown_dt += 1
         if (el.get("cardinality") or "unknown") == "unknown":
@@ -359,8 +382,13 @@ def verify_cmd(model):
     if lpath.is_file():
         lm = load_yaml_file(lpath)
         click.echo("logical-model: present")
+        try:
+            assert_logical_model_v2(lm)
+        except click.ClickException as exc:
+            click.echo(f"  blocking: {exc}")
+            blocking_n += 1
     else:
-        lm = {"model": model, "entities": []}
+        lm = {"schema_version": "2.0", "model": model, "entities": []}
         click.echo("logical-model: missing")
         blocking_n += 1
 

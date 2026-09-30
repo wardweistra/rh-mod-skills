@@ -56,14 +56,14 @@ def test_sync_scaffolds_ig_tree(_fetch, tmp_consumer):
     vs = list((root / "input" / "vocabulary").glob("ValueSet-*.json"))
     igs = list((root / "input").glob("ImplementationGuide-*.json"))
     assert len(sd) == 1
-    assert len(vs) == 1
+    assert len(vs) == 0  # US1 mappings-only formalize emits no ValueSets
     assert len(igs) == 1
     ig_json = json.loads(igs[0].read_text(encoding="utf-8"))
     assert ig_json["resourceType"] == "ImplementationGuide"
     assert ig_json["fhirVersion"] == ["4.0.1"]
     refs = {e["reference"]["reference"] for e in ig_json["definition"]["resource"]}
     assert any(r.startswith("StructureDefinition/") for r in refs)
-    assert any(r.startswith("ValueSet/") for r in refs)
+    assert not any(r.startswith("ValueSet/") for r in refs)
     page = ig_json["definition"]["page"]
     assert page["nameUrl"] == "index.html"
     assert page["generation"] == "markdown"
@@ -102,14 +102,27 @@ def test_sync_idempotent_keeps_reviewer_files_and_drops_stale(fetch_script, tmp_
     menu = root / "input" / "includes" / "menu.xml"
     menu.write_text(menu.read_text() + "<!-- reviewer -->\n", encoding="utf-8")
     vocab = root / "input" / "vocabulary"
-    vs_files = list(vocab.glob("ValueSet-*.json"))
-    assert vs_files
-    drop_name = vs_files[0].name
-    dropped_id = json.loads(vs_files[0].read_text(encoding="utf-8"))["id"]
-    snap_path = tmp_consumer / "models" / name / "computable" / "snapshot.yaml"
-    snap = load_yaml(snap_path)
-    snap["files"] = [row for row in snap["files"] if not str(row["path"]).endswith(drop_name)]
-    save_yaml(snap_path, snap)
+    vocab.mkdir(parents=True, exist_ok=True)
+    stale = vocab / "ValueSet-stale-demo.json"
+    stale.write_text(
+        json.dumps(
+            {
+                "resourceType": "ValueSet",
+                "id": "stale-demo",
+                "url": "https://example.org/fhir/ValueSet/stale-demo",
+                "status": "draft",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    managed_path = root / "managed-files.yaml"
+    managed = load_yaml(managed_path)
+    managed["files"] = list(managed.get("files") or []) + [
+        "input/vocabulary/ValueSet-stale-demo.json"
+    ]
+    save_yaml(managed_path, managed)
     result = runner.invoke(ig, ["sync", name])
     assert result.exit_code == 0, result.output
     assert fetch_script.call_count == 0
@@ -117,10 +130,10 @@ def test_sync_idempotent_keeps_reviewer_files_and_drops_stale(fetch_script, tmp_
     assert extra.read_text() == "keep me\n"
     assert index_md.read_text() == "# Reviewer home\n"
     assert "<!-- reviewer -->" in menu.read_text()
-    assert not (vocab / drop_name).is_file()
+    assert not stale.is_file()
     ig_json = json.loads(next((root / "input").glob("ImplementationGuide-*.json")).read_text())
     refs = {e["reference"]["reference"] for e in ig_json["definition"]["resource"]}
-    assert f"ValueSet/{dropped_id}" not in refs
+    assert "ValueSet/stale-demo" not in refs
     page = ig_json["definition"]["page"]
     assert page["nameUrl"] == "index.html"
     assert "page" not in page

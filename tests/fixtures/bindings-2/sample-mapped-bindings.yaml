@@ -1,0 +1,25 @@
+schema_version: "2.0"
+model: map-demo
+bindings:
+  - path: table-1.sex-at-birth
+    id: sex-at-birth
+    display: Sex at birth
+    status: mapped
+    mappings:
+      - system: http://loinc.org
+        code: "76689-9"
+        display: Sex assigned at birth
+        decision: accept
+      - system: http://snomed.info/sct
+        code: "184100006"
+        display: Patient sex
+        decision: accept
+    value_set: null
+    reason: ""
+  - path: table-1.date-of-birth
+    id: date-of-birth
+    display: Date of birth
+    status: unbound
+    mappings: []
+    value_set: null
+    reason: identifier / no terminology needed

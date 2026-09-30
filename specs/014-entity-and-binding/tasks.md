@@ -15,8 +15,8 @@
 
 **Purpose**: Confirm design anchors and test layout before schema/CLI edits
 
-- [ ] T001 Confirm touch set from [plan.md](./plan.md) and create `tests/fixtures/bindings-2/` directory for synthetic mini consumers (mapped-only + later multi-LM)
-- [ ] T002 [P] Update `specs/014-entity-and-binding/README.md` status to note tasks ready / implementation not started
+- [x] T001 Confirm touch set from [plan.md](./plan.md) and create `tests/fixtures/bindings-2/` directory for synthetic mini consumers (mapped-only + later multi-LM)
+- [x] T002 [P] Update `specs/014-entity-and-binding/README.md` status to note tasks ready / implementation not started
 
 ---
 
@@ -24,10 +24,10 @@
 
 **Purpose**: Schema 2.0 + shared fail-closed loaders. **No user story until this completes.**
 
-- [ ] T003 Bump `schemas/bindings-schema.yaml` to `schema_version: "2.0"` with `status` (`mapped`|`unbound`), `mappings[]` (system/code/display/decision), optional `value_set` null/object, `reason`; forbid root-level singleton `system`/`code`/`strength`
-- [ ] T004 [P] Bump `schemas/logical-model-schema.yaml` to `schema_version: "2.0"` element snapshot fields `mappings` / `value_set` / `reason` (keep `entities[]` for Epic A; reserve/document `logical_models[]` for Epic B without requiring it yet)
-- [ ] T005 Add shared bindings 2.0 load/validate helpers (fail closed on 1.0 singleton rows with re-annotate message; duplicate system URI fails) used by annotate/specify/formalize — place next to existing loaders in `src/rh_mod_skills/` (e.g. extend `commands/annotate.py` helpers or a small shared module already used by stages)
-- [ ] T006 Run schema sync if the repo uses it (`make sync-schemas` or documented equivalent); ensure example-project / fixtures are not silently auto-migrated
+- [x] T003 Bump `schemas/bindings-schema.yaml` to `schema_version: "2.0"` with `status` (`mapped`|`unbound`), `mappings[]` (system/code/display/decision), optional `value_set` null/object, `reason`; forbid root-level singleton `system`/`code`/`strength`
+- [x] T004 [P] Bump `schemas/logical-model-schema.yaml` to `schema_version: "2.0"` element snapshot fields `mappings` / `value_set` / `reason` (keep `entities[]` for Epic A; reserve/document `logical_models[]` for Epic B without requiring it yet)
+- [x] T005 Add shared bindings 2.0 load/validate helpers (fail closed on 1.0 singleton rows with re-annotate message; duplicate system URI fails) used by annotate/specify/formalize — place next to existing loaders in `src/rh_mod_skills/` (e.g. extend `commands/annotate.py` helpers or a small shared module already used by stages)
+- [x] T006 Run schema sync if the repo uses it (`make sync-schemas` or documented equivalent); ensure example-project / fixtures are not silently auto-migrated
 
 **Checkpoint**: Schemas and fail-closed 1.0 detection exist; user stories can start
 
@@ -41,18 +41,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Tests in `tests/unit/test_annotate.py` (or new `tests/unit/test_annotate_mappings.py`): implement writes `schema_version: "2.0"` with two systems in `mappings[]`; no `value_set` from mappings; duplicate system fails; unbound clears mappings + requires reason; 1.0 singleton row rejected on verify/implement
-- [ ] T008 [P] [US1] Tests in `tests/unit/test_specify.py`: annotate-complete 2.0 → plan/LM element snapshots carry `mappings[]` (not root system/code/strength); incomplete/undecided still fails
-- [ ] T009 [P] [US1] Tests in `tests/unit/test_formalize.py`: mappings-only element → SD has `StructureDefinition.mapping` + `ElementDefinition.mapping`; no ValueSet/binding for that path; no ConceptMap; 1.0 LM/bindings fail closed
+- [x] T007 [P] [US1] Tests in `tests/unit/test_annotate.py` (or new `tests/unit/test_annotate_mappings.py`): implement writes `schema_version: "2.0"` with two systems in `mappings[]`; no `value_set` from mappings; duplicate system fails; unbound clears mappings + requires reason; 1.0 singleton row rejected on verify/implement
+- [x] T008 [P] [US1] Tests in `tests/unit/test_specify.py`: annotate-complete 2.0 → plan/LM element snapshots carry `mappings[]` (not root system/code/strength); incomplete/undecided still fails
+- [x] T009 [P] [US1] Tests in `tests/unit/test_formalize.py`: mappings-only element → SD has `StructureDefinition.mapping` + `ElementDefinition.mapping`; no ValueSet/binding for that path; no ConceptMap; 1.0 LM/bindings fail closed
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Update annotate plan/enrich/approve/implement/verify in `src/rh_mod_skills/commands/annotate.py` for `mappings[]` upsert-by-system; remove strength-on-coding; write bindings 2.0; status complete = every path `mapped`|`unbound`
-- [ ] T011 [US1] Update `src/rh_mod_skills/annotate_review.py` export/import so picks can accept multiple systems without coercing to one coding
-- [ ] T012 [US1] Update specify plan/implement/verify in `src/rh_mod_skills/commands/specify.py` to copy mapping/unbound snapshots into LM `entities[]` elements (`schema_version: "2.0"`)
-- [ ] T013 [US1] Update formalize in `src/rh_mod_skills/commands/formalize.py`: emit mapping identities + `ElementDefinition.mapping`; **stop** singleton-VS-from-mapping; introduce `canonical_base` on formalize plan (derive single SD URL `{canonical_base}/StructureDefinition/{model}` for Epic A one-SD path); drop sole “last segment == tracking id” check in favor of derived URL rules from research §8
-- [ ] T014 [US1] Update curated skill `skills/.curated/rh-mod-annotate/` (and specify/formalize skill notes as needed) for map-vs-bind; CLI still owns writes
-- [ ] T015 [US1] Add/adjust mini fixture under `tests/fixtures/bindings-2/` for mapped-only path used by US1 tests
+- [x] T010 [US1] Update annotate plan/enrich/approve/implement/verify in `src/rh_mod_skills/commands/annotate.py` for `mappings[]` upsert-by-system; remove strength-on-coding; write bindings 2.0; status complete = every path `mapped`|`unbound`
+- [x] T011 [US1] Update `src/rh_mod_skills/annotate_review.py` export/import so picks can accept multiple systems without coercing to one coding
+- [x] T012 [US1] Update specify plan/implement/verify in `src/rh_mod_skills/commands/specify.py` to copy mapping/unbound snapshots into LM `entities[]` elements (`schema_version: "2.0"`)
+- [x] T013 [US1] Update formalize in `src/rh_mod_skills/commands/formalize.py`: emit mapping identities + `ElementDefinition.mapping`; **stop** singleton-VS-from-mapping; introduce `canonical_base` on formalize plan (derive single SD URL `{canonical_base}/StructureDefinition/{model}` for Epic A one-SD path); drop sole “last segment == tracking id” check in favor of derived URL rules from research §8
+- [x] T014 [US1] Update curated skill `skills/.curated/rh-mod-annotate/` (and specify/formalize skill notes as needed) for map-vs-bind; CLI still owns writes
+- [x] T015 [US1] Add/adjust mini fixture under `tests/fixtures/bindings-2/` for mapped-only path used by US1 tests
 
 **Checkpoint**: MVP — multi-system meaning without fake ValueSets; legacy 1.0 fails closed
 

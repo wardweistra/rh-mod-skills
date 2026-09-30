@@ -118,8 +118,17 @@ def test_status_partial_bindings_next_annotate(tmp_consumer):
                 "bindings": [
                     {
                         "path": "patientgegevens.gesl",
-                        "status": "bound",
-                        "decision": "accept",
+                        "status": "mapped",
+                        "mappings": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "263495000",
+                                "display": "Gender",
+                                "decision": "accept",
+                            }
+                        ],
+                        "value_set": None,
+                        "reason": "",
                     }
                 ],
             },
@@ -169,12 +178,22 @@ def test_status_all_decided_next_specify(tmp_consumer):
     ) as f:
         y.dump(
             {
+                "schema_version": "2.0",
                 "model": "nkr-breast",
                 "bindings": [
                     {
                         "path": "patientgegevens.gesl",
-                        "status": "bound",
-                        "decision": "accept",
+                        "status": "mapped",
+                        "mappings": [
+                            {
+                                "system": "http://snomed.info/sct",
+                                "code": "263495000",
+                                "display": "Gender",
+                                "decision": "accept",
+                            }
+                        ],
+                        "value_set": None,
+                        "reason": "",
                     }
                 ],
             },

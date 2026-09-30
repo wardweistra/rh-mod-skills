@@ -120,11 +120,14 @@ def test_plan_writes_all_paths_and_normalizes_types(tmp_consumer):
     assert els["dob"]["datatype"] == "unknown"
     assert els["pid"]["datatype"] == "unknown"
     assert "unknown-datatype" in els["dob"]["issues"]
-    assert els["sex"]["binding"]["status"] == "bound"
-    assert els["sex"]["binding"]["code"] == "76689-9"
-    assert els["sex"]["binding"]["system"] == "http://loinc.org"
-    assert els["dob"]["binding"]["status"] == "unbound"
-    assert els["dob"]["binding"]["reason"]
+    assert els["sex"]["status"] == "mapped"
+    assert "binding" not in els["sex"]
+    assert els["sex"]["mappings"][0]["code"] == "76689-9"
+    assert els["sex"]["mappings"][0]["system"] == "http://loinc.org"
+    assert els["sex"]["value_set"] is None
+    assert els["dob"]["status"] == "unbound"
+    assert els["dob"]["mappings"] == []
+    assert els["dob"]["reason"]
     assert els["sex"]["provenance"]
     assert not _lm_path(tmp_consumer, name).exists()
     assert (tmp_consumer / "models" / name / "structured" / "inventory.yaml").read_text() == inv_before
@@ -164,7 +167,9 @@ def test_implement_writes_logical_model_and_status(tmp_consumer):
     by_id = {el["id"]: el for ent in lm["entities"] for el in ent["elements"]}
     assert by_id["dob"]["datatype"] == "date"
     assert by_id["dob"]["cardinality"] == "0..1"
-    assert by_id["sex"]["binding"]["code"] == "76689-9"
+    assert lm["schema_version"] == "2.0"
+    assert by_id["sex"]["mappings"][0]["code"] == "76689-9"
+    assert "binding" not in by_id["sex"]
     assert (tmp_consumer / "models" / name / "structured" / "inventory.yaml").read_text() == inv_before
     assert (tmp_consumer / "models" / name / "structured" / "bindings.yaml").read_text() == bind_before
     tracking = load_yaml(tmp_consumer / "tracking.yaml")

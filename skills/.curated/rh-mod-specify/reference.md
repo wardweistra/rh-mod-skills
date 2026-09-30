@@ -31,7 +31,14 @@ Not types: `F`, `A`, `unknown`, free-text codebook codes.
 
 Cardinality: `n..m` or `n..*` or `unknown`.
 
-## Binding snapshot
+## Binding / mapping snapshot
 
-Each element carries the annotate row (one coding or unbound+reason). Specify
-does not add a second code system.
+Each element carries annotate 2.0 fields on the element itself (not a nested
+singleton `binding`):
+
+- `status`: `mapped` | `unbound`
+- `mappings[]`: system/code/display/decision (may be empty when unbound)
+- `value_set`: null until ValueSet authoring (later)
+- `reason`: required when unbound
+
+Specify copies snapshots; it does not invent codes or ValueSets.

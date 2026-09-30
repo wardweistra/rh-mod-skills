@@ -2,7 +2,7 @@
 
 One feature, two epics: (A) concept mappings vs ValueSet bindings; (B) multi-entity logical models + references + one IG.
 
-**Status**: Spec + plan + tasks drafted (2026-09-30). Next: implement Epic A (US1 MVP) before Epic B. No product CLI in this Speckit slice.
+**Status**: Tasks ready; Foundational + US1 (T001–T015) in implementation on `cursor/entity-mapping-specs-bdd1`. US2–US4 not started.
 
 **Artifacts**: `spec.md`, `plan.md`, `research.md`, `data-model.md`, `contracts/cli-schema.md`, `quickstart.md`, `tasks.md`, `checklists/requirements.md`
 

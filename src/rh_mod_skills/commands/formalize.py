@@ -12,7 +12,11 @@ from ruamel.yaml import YAML
 
 from rh_mod_skills.commands.annotate import load_yaml_file
 from rh_mod_skills.commands.extract import _assert_ingest_clean
-from rh_mod_skills.commands.specify import CARD_RE, logical_model_path
+from rh_mod_skills.commands.specify import (
+    CARD_RE,
+    assert_logical_model_v2,
+    logical_model_path,
+)
 from rh_mod_skills.common import (
     append_model_event,
     append_root_event,
@@ -30,6 +34,7 @@ PLAN_NAME = "formalize-plan.yaml"
 SNAPSHOT_NAME = "snapshot.yaml"
 BASE_DEFINITION = "http://hl7.org/fhir/StructureDefinition/Base"
 FHIR_PATH_SEGMENT_MAX = 64
+DEFAULT_CANONICAL_HOST = "https://example.org/fhir"
 
 
 def _yaml() -> YAML:
@@ -77,7 +82,8 @@ def load_logical_model(model: str) -> dict:
         raise click.ClickException(
             f"No logical model at {path}. Run `rh-mod-skills specify implement {model}` first."
         )
-    return load_yaml_file(path)
+    data = load_yaml_file(path)
+    return assert_logical_model_v2(data)
 
 
 def fhir_name(model: str) -> str:
@@ -93,6 +99,13 @@ def fhir_id(text: str, max_len: int = 64) -> str:
         return s
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:8]
     return f"{s[: max_len - 9]}-{digest}"
+
+
+def mapping_identity(system: str) -> str:
+    """Stable StructureDefinition.mapping identity slug from a system URI."""
+    s = re.sub(r"^https?://", "", str(system or "").strip(), flags=re.I)
+    s = re.sub(r"[^A-Za-z0-9]+", "-", s).strip("-").lower()
+    return fhir_id(s or "system")
 
 
 def min_max(cardinality: str | None) -> tuple[int, str]:
@@ -119,21 +132,64 @@ def valueset_url(canonical: str, vs_id: str) -> str:
     return f"{parent}/ValueSet/{vs_id}"
 
 
-def _validate_canonical(canonical: str, model: str) -> str:
-    url = (canonical or "").strip()
-    if not (url.startswith("http://") or url.startswith("https://")):
+def default_canonical_base(model: str) -> str:
+    return f"{DEFAULT_CANONICAL_HOST}/{model}"
+
+
+def derive_structure_definition_url(canonical_base: str, model_id: str) -> str:
+    base = (canonical_base or "").strip().rstrip("/")
+    return f"{base}/StructureDefinition/{model_id}"
+
+
+def _validate_http_uri(url: str, field: str) -> str:
+    cleaned = (url or "").strip().rstrip("/")
+    if not (cleaned.startswith("http://") or cleaned.startswith("https://")):
         raise click.ClickException(
-            "Formalize plan canonical must be an http(s) URI. "
+            f"Formalize plan {field} must be an http(s) URI. "
             "Edit process/plans/formalize-plan.yaml then approve."
         )
-    last = url.rstrip("/").rsplit("/", 1)[-1]
+    return cleaned
+
+
+def resolve_plan_canonical(plan: dict, model: str) -> tuple[str, str]:
+    """Return (canonical_base, StructureDefinition url) for Epic A single-SD."""
+    base_raw = plan.get("canonical_base")
+    explicit = (plan.get("canonical") or "").strip()
+    if base_raw is not None and str(base_raw).strip():
+        base = _validate_http_uri(str(base_raw), "canonical_base")
+        derived = derive_structure_definition_url(base, model)
+        last = derived.rsplit("/", 1)[-1]
+        if last != model:
+            raise click.ClickException(
+                f"Derived StructureDefinition URL last segment must equal model id {model!r} "
+                f"(got {last!r}). Example canonical_base: {default_canonical_base(model)}"
+            )
+        if explicit and explicit.rstrip("/") != derived:
+            raise click.ClickException(
+                f"Formalize plan canonical must equal "
+                f"{{canonical_base}}/StructureDefinition/{{model}} ({derived!r}); "
+                f"got {explicit!r}."
+            )
+        return base, derived
+    if not explicit:
+        raise click.ClickException(
+            "Formalize plan needs canonical_base (preferred) or canonical. "
+            f"Example canonical_base: {default_canonical_base(model)}"
+        )
+    url = _validate_http_uri(explicit, "canonical")
+    last = url.rsplit("/", 1)[-1]
     if last != model:
         raise click.ClickException(
             f"Formalize plan canonical last segment must equal the model id {model!r} "
             f"(IG Publisher requires StructureDefinition.url to match the differential root). "
-            f"Got {last!r}. Example: …/StructureDefinition/{model}."
+            f"Got {last!r}. Prefer canonical_base "
+            f"{default_canonical_base(model)!r} → …/StructureDefinition/{model}."
         )
-    return url
+    if "/StructureDefinition/" in url:
+        base = url.split("/StructureDefinition/", 1)[0]
+    else:
+        base = url.rsplit("/", 1)[0]
+    return base, url
 
 
 def long_path_segments(model: str, lm: dict) -> list[str]:
@@ -153,10 +209,25 @@ def long_path_segments(model: str, lm: dict) -> list[str]:
     return bad
 
 
+def element_status(el: dict) -> str | None:
+    status = el.get("status")
+    if status in ("mapped", "unbound"):
+        return status
+    mappings = el.get("mappings") or []
+    if mappings:
+        return "mapped"
+    binding = el.get("binding") or {}
+    if binding.get("status") == "bound":
+        return "mapped"
+    if binding.get("status") == "unbound":
+        return "unbound"
+    return status
+
+
 def summarize_lm(lm: dict) -> tuple[list[str], int, int, int]:
     unknown_dt: list[str] = []
     unknown_card = 0
-    bound = 0
+    mapped = 0
     unbound = 0
     for _ent, el in iter_lm_elements(lm):
         path = el.get("path") or "?"
@@ -164,41 +235,28 @@ def summarize_lm(lm: dict) -> tuple[list[str], int, int, int]:
             unknown_dt.append(path)
         if (el.get("cardinality") or "unknown") == "unknown":
             unknown_card += 1
-        status = (el.get("binding") or {}).get("status")
-        if status == "bound":
-            bound += 1
+        status = element_status(el)
+        if status == "mapped":
+            mapped += 1
         elif status == "unbound":
             unbound += 1
-    return unknown_dt, unknown_card, bound, unbound
+    return unknown_dt, unknown_card, mapped, unbound
 
 
-def build_valueset(model: str, canonical: str, version: str, el: dict) -> tuple[str, dict]:
-    path = el.get("path") or "element"
-    vs_id = fhir_id(f"{model}-{path.replace('.', '-')}")
-    binding = el.get("binding") or {}
-    url = valueset_url(canonical, vs_id)
-    vs = {
-        "resourceType": "ValueSet",
-        "id": vs_id,
-        "url": url,
-        "version": version,
-        "name": fhir_name(vs_id.replace(".", "-")),
-        "status": "draft",
-        "compose": {
-            "include": [
-                {
-                    "system": binding.get("system"),
-                    "concept": [
-                        {
-                            "code": str(binding.get("code")),
-                            "display": binding.get("display") or "",
-                        }
-                    ],
-                }
-            ]
-        },
-    }
-    return vs_id, vs
+def collect_mapping_identities(lm: dict) -> list[dict]:
+    """StructureDefinition.mapping entries for every distinct system URI."""
+    by_id: dict[str, dict] = {}
+    for _ent, el in iter_lm_elements(lm):
+        for m in el.get("mappings") or []:
+            system = m.get("system")
+            if not system:
+                continue
+            ident = mapping_identity(str(system))
+            by_id.setdefault(
+                ident,
+                {"identity": ident, "uri": str(system), "name": ident},
+            )
+    return list(by_id.values())
 
 
 def build_structure_definition(
@@ -207,7 +265,6 @@ def build_structure_definition(
     canonical: str,
     version: str,
     name: str,
-    vs_urls: dict[str, str],
 ) -> dict:
     root = model
     elements = [
@@ -245,14 +302,23 @@ def build_structure_definition(
                 "max": str(hi),
                 "type": [{"code": el.get("datatype")}],
             }
-            binding = el.get("binding") or {}
-            if binding.get("status") == "bound" and path in vs_urls:
-                row["binding"] = {
-                    "strength": binding.get("strength") or "example",
-                    "valueSet": vs_urls[path],
-                }
+            ed_mappings = []
+            for m in el.get("mappings") or []:
+                system = m.get("system")
+                code = m.get("code")
+                if not system or code in (None, ""):
+                    continue
+                ed_mappings.append(
+                    {
+                        "identity": mapping_identity(str(system)),
+                        "map": str(code),
+                    }
+                )
+            if ed_mappings:
+                row["mapping"] = ed_mappings
+            # US1: no ElementDefinition.binding / ValueSet from mappings-only
             elements.append(row)
-    return {
+    sd = {
         "resourceType": "StructureDefinition",
         "id": fhir_id(model),
         "url": canonical,
@@ -266,6 +332,10 @@ def build_structure_definition(
         "derivation": "specialization",
         "differential": {"element": elements},
     }
+    identities = collect_mapping_identities(lm)
+    if identities:
+        sd["mapping"] = identities
+    return sd
 
 
 def _record_model_formalized(tracking: dict, model_name: str, files: list[str]) -> None:
@@ -291,21 +361,24 @@ def formalize():
 @formalize.command("plan")
 @click.argument("model")
 def plan_cmd(model):
-    """Write a draft formalize plan (canonical URL + version)."""
+    """Write a draft formalize plan (canonical_base + version)."""
     tracking = require_tracking()
     require_model(tracking, model)
     _assert_ingest_clean(tracking, model)
     lm = load_logical_model(model)
-    unknown_dt, unknown_card, bound, unbound = summarize_lm(lm)
+    unknown_dt, unknown_card, mapped, unbound = summarize_lm(lm)
+    canonical_base = default_canonical_base(model)
+    canonical = derive_structure_definition_url(canonical_base, model)
     data = {
         "model": model,
         "status": "draft",
-        "canonical": f"http://example.org/fhir/StructureDefinition/{model}",
+        "canonical_base": canonical_base,
+        "canonical": canonical,
         "version": "0.1.0",
         "name": fhir_name(model),
         "unknown_datatype": unknown_dt,
         "unknown_cardinality": unknown_card,
-        "bound": bound,
+        "mapped": mapped,
         "unbound": unbound,
     }
     save_yaml_file(formalize_plan_path(model), data)
@@ -330,7 +403,7 @@ def approve_cmd(model):
 @formalize.command("implement")
 @click.argument("model")
 def implement_cmd(model):
-    """Write StructureDefinition, ValueSets, and snapshot under computable/."""
+    """Write StructureDefinition (+ optional future ValueSets) and snapshot under computable/."""
     tracking = require_tracking()
     require_model(tracking, model)
     _assert_ingest_clean(tracking, model)
@@ -340,13 +413,13 @@ def implement_cmd(model):
             f"Formalize plan is not approved (status={plan.get('status')!r}). "
             f"Run `rh-mod-skills formalize approve {model}` after review."
         )
-    canonical = _validate_canonical(str(plan.get("canonical") or ""), model)
+    canonical_base, canonical = resolve_plan_canonical(plan, model)
     version = str(plan.get("version") or "").strip()
     if not version:
         raise click.ClickException("Formalize plan version is empty.")
     name = str(plan.get("name") or fhir_name(model))
     lm = load_logical_model(model)
-    unknown_dt, _unknown_card, _bound, _unbound = summarize_lm(lm)
+    unknown_dt, _unknown_card, _mapped, _unbound = summarize_lm(lm)
     if unknown_dt:
         listed = ", ".join(unknown_dt[:8])
         more = "" if len(unknown_dt) <= 8 else f" (+{len(unknown_dt) - 8} more)"
@@ -363,28 +436,33 @@ def implement_cmd(model):
             f"{listed}{more}. Re-run extract so slugs are truncated, then specify again."
         )
 
+    for _ent, el in iter_lm_elements(lm):
+        status = element_status(el)
+        if status == "mapped":
+            mappings = el.get("mappings") or []
+            if not mappings:
+                raise click.ClickException(
+                    f"Mapped element {el.get('path')} is missing mappings[]."
+                )
+            for m in mappings:
+                if not m.get("system") or m.get("code") in (None, ""):
+                    raise click.ClickException(
+                        f"Mapped element {el.get('path')} has a mapping missing system/code."
+                    )
+        # US1: do not emit ValueSet from mappings; value_set authoring is US2
+
     out_dir = computable_dir(model)
     out_dir.mkdir(parents=True, exist_ok=True)
-    vs_urls: dict[str, str] = {}
-    json_files: list[Path] = []
-    for _ent, el in iter_lm_elements(lm):
-        binding = el.get("binding") or {}
-        if binding.get("status") != "bound":
-            continue
-        if not binding.get("system") or binding.get("code") in (None, ""):
-            raise click.ClickException(
-                f"Bound element {el.get('path')} is missing system/code."
-            )
-        vs_id, vs = build_valueset(model, canonical, version, el)
-        vs_path = out_dir / f"ValueSet-{vs_id}.json"
-        write_json(vs_path, vs)
-        vs_urls[el.get("path")] = vs["url"]
-        json_files.append(vs_path)
+    # Remove stale singleton ValueSets from prior 1.0 formalize runs (mappings-only now).
+    for stale in out_dir.glob("ValueSet-*.json"):
+        stale.unlink()
+    for stale in out_dir.glob("ConceptMap-*.json"):
+        stale.unlink()
 
-    sd = build_structure_definition(model, lm, canonical, version, name, vs_urls)
+    sd = build_structure_definition(model, lm, canonical, version, name)
     sd_path = out_dir / f"StructureDefinition-{fhir_id(model)}.json"
     write_json(sd_path, sd)
-    json_files.append(sd_path)
+    json_files: list[Path] = [sd_path]
 
     root = consumer_root()
     json_meta = [
@@ -392,6 +470,7 @@ def implement_cmd(model):
     ]
     snap = {
         "model": model,
+        "canonical_base": canonical_base,
         "canonical": canonical,
         "version": version,
         "kind": "logical",
@@ -463,8 +542,8 @@ def verify_cmd(model):
         click.echo("structuredefinition: missing")
         blocking_n += 1
 
-    _unknown_dt, unknown_card, bound, _unbound = summarize_lm(lm)
-    click.echo(f"cardinality-default-n={unknown_card} bound={bound} validator=not-run")
+    _unknown_dt, unknown_card, mapped, _unbound = summarize_lm(lm)
+    click.echo(f"cardinality-default-n={unknown_card} mapped={mapped} validator=not-run")
 
     too_long = long_path_segments(model, lm)
     for issue in too_long:
@@ -479,15 +558,50 @@ def verify_cmd(model):
         for path in sorted(expected - actual):
             click.echo(f"  blocking: differential missing path {path}")
             blocking_n += 1
+        sd_map_ids = {
+            m.get("identity") for m in (sd.get("mapping") or []) if m.get("identity")
+        }
+        by_path = {
+            el.get("path"): el
+            for el in (sd.get("differential") or {}).get("element") or []
+            if el.get("path")
+        }
         for _ent, el in iter_lm_elements(lm):
-            binding = el.get("binding") or {}
-            if binding.get("status") != "bound":
-                continue
-            vs_id = fhir_id(f"{model}-{(el.get('path') or '').replace('.', '-')}")
-            vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
-            if not vs_file.is_file():
-                click.echo(f"  blocking: missing ValueSet for {el.get('path')}")
+            path = el.get("path")
+            fpath = f"{model}.{path}" if path else None
+            mappings = el.get("mappings") or []
+            value_set = el.get("value_set")
+            row = by_path.get(fpath or "") or {}
+            if mappings and value_set in (None, {}):
+                # mappings-only: must have ElementDefinition.mapping; must NOT have ValueSet/binding
+                ed_maps = row.get("mapping") or []
+                if len(ed_maps) != len(mappings):
+                    click.echo(
+                        f"  blocking: ElementDefinition.mapping count mismatch for {path}"
+                    )
+                    blocking_n += 1
+                for m in mappings:
+                    ident = mapping_identity(str(m.get("system") or ""))
+                    if ident not in sd_map_ids:
+                        click.echo(
+                            f"  blocking: missing StructureDefinition.mapping identity {ident} "
+                            f"for {path}"
+                        )
+                        blocking_n += 1
+                if row.get("binding"):
+                    click.echo(
+                        f"  blocking: mappings-only path {path} must not have ElementDefinition.binding"
+                    )
+                    blocking_n += 1
+                vs_id = fhir_id(f"{model}-{(path or '').replace('.', '-')}")
+                vs_file = computable_dir(model) / f"ValueSet-{vs_id}.json"
+                if vs_file.is_file():
+                    click.echo(f"  blocking: mappings-only path {path} must not have ValueSet")
+                    blocking_n += 1
+            if list(computable_dir(model).glob("ConceptMap-*.json")):
+                click.echo("  blocking: ConceptMap resources are out of scope")
                 blocking_n += 1
+                break
 
     snap_file = snapshot_path(model)
     if snap_file.is_file():

@@ -267,10 +267,13 @@ def test_import_unbound_skip_replace(tmp_consumer):
     assert by_id["gebdat"]["decision"] == "unbound"
     assert by_id["gebdat"]["reason"] == "identifier / no terminology needed"
     assert by_id["gebdat"]["chosen"]["code"] is None
+    assert by_id["gebdat"]["mappings"] == []
     assert by_id["incdat"]["decision"] == "reject"
     assert by_id["gesl"]["decision"] == "replace"
     assert by_id["gesl"]["chosen"]["code"] == "407376001"
     assert by_id["gesl"]["chosen"]["display"] == "Male"
+    assert by_id["gesl"]["mappings"][0]["code"] == "407376001"
+    assert by_id["gesl"]["mappings"][0]["decision"] == "replace"
     assert not _bindings_path(tmp_consumer).exists()
 
 
@@ -374,6 +377,11 @@ def test_import_then_approve_implement_binds_picked_code(tmp_consumer):
     result = runner.invoke(annotate, ["implement", "nkr-breast"])
     assert result.exit_code == 0, result.output
     row = load_yaml(_bindings_path(tmp_consumer))["bindings"][0]
-    assert row["code"] == "734000001"
-    assert row["display_term"] == "Biological sex"
-    assert row["decision"] == "accept"
+    assert row["status"] == "mapped"
+    assert row["mappings"][0]["code"] == "734000001"
+    assert row["mappings"][0]["display"] == "Biological sex"
+    assert row["mappings"][0]["decision"] == "accept"
+    plan = load_yaml(_plan_path(tmp_consumer))
+    el = plan["elements"][0]
+    assert el["mappings"][0]["code"] == "734000001"
+    assert el["mappings"][0]["system"] == "http://snomed.info/sct"

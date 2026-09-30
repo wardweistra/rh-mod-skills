@@ -158,13 +158,15 @@ def test_plan_writes_draft_canonical_and_counts(tmp_consumer):
     plan = load_yaml(_formalize_plan_path(tmp_consumer, name))
     assert plan["status"] == "draft"
     assert str(plan["canonical"]).startswith("http")
+    assert str(plan["canonical_base"]).startswith("http")
+    assert plan["canonical"] == f"{plan['canonical_base'].rstrip('/')}/StructureDefinition/{name}"
     assert str(plan["version"])
     assert plan["unknown_cardinality"] >= 1
     unknown = list(plan["unknown_datatype"])
     assert unknown
     assert any("dob" in p for p in unknown)
     assert any("pid" in p for p in unknown)
-    assert plan["bound"] == 1
+    assert plan["mapped"] == 1
     assert plan["unbound"] == 2
     assert not list(_computable(tmp_consumer, name).glob("*.json"))
     assert not (_computable(tmp_consumer, name) / "snapshot.yaml").exists()
@@ -209,6 +211,7 @@ def test_implement_fails_non_http_canonical(tmp_consumer):
     assert runner.invoke(formalize, ["plan", name]).exit_code == 0
     plan_path = _formalize_plan_path(tmp_consumer, name)
     plan = load_yaml(plan_path)
+    plan["canonical_base"] = "urn:example:encr"
     plan["canonical"] = "urn:example:encr"
     save_yaml(plan_path, plan)
     assert runner.invoke(formalize, ["approve", name]).exit_code == 0
@@ -224,6 +227,7 @@ def test_implement_fails_canonical_last_segment(tmp_consumer):
     assert runner.invoke(formalize, ["plan", name]).exit_code == 0
     plan_path = _formalize_plan_path(tmp_consumer, name)
     plan = load_yaml(plan_path)
+    plan.pop("canonical_base", None)
     plan["canonical"] = "https://encr.eu/fhir/recommendations"
     save_yaml(plan_path, plan)
     assert runner.invoke(formalize, ["approve", name]).exit_code == 0
@@ -249,7 +253,7 @@ def test_implement_fails_path_segment_over_64(tmp_consumer):
     assert not comp.exists() or not list(comp.glob("*.json"))
 
 
-def test_implement_writes_sd_valuesets_snapshot_and_status(tmp_consumer):
+def test_implement_writes_sd_mappings_snapshot_and_status(tmp_consumer):
     runner, name = _specified(tmp_consumer, typed=True)
     assert runner.invoke(formalize, ["plan", name]).exit_code == 0
     assert runner.invoke(formalize, ["approve", name]).exit_code == 0
@@ -269,7 +273,7 @@ def test_implement_writes_sd_valuesets_snapshot_and_status(tmp_consumer):
     by_path = {el["path"]: el for el in sd["differential"]["element"]}
     assert name in by_path
     lm = load_yaml(lm_path)
-    bound_paths = []
+    mapped_paths = []
     unknown_card_paths = []
     for ent in lm["entities"]:
         epath = f"{name}.{ent['id']}"
@@ -284,20 +288,22 @@ def test_implement_writes_sd_valuesets_snapshot_and_status(tmp_consumer):
                 assert row["max"] == "1"
             if el["id"] == "sex":
                 assert row["max"] == "*"
-                assert row["binding"]["valueSet"]
-                bound_paths.append(el["path"])
+                assert "binding" not in row
+                assert row["mapping"]
+                assert any(m["map"] == "76689-9" for m in row["mapping"])
+                mapped_paths.append(el["path"])
             else:
                 assert "binding" not in row
+                assert "mapping" not in row
 
-    vs_files = list(comp.glob("ValueSet-*.json"))
-    assert len(vs_files) == len(bound_paths) == 1
-    vs = json.loads(vs_files[0].read_text(encoding="utf-8"))
-    assert vs["resourceType"] == "ValueSet"
-    concept = vs["compose"]["include"][0]["concept"][0]
-    assert concept["code"] == "76689-9"
+    assert list(comp.glob("ValueSet-*.json")) == []
+    assert mapped_paths
+    assert sd.get("mapping")
+    assert any(m.get("uri") == "http://loinc.org" for m in sd["mapping"])
 
     snap = load_yaml(comp / "snapshot.yaml")
     assert snap["kind"] == "logical"
+    assert snap.get("canonical_base")
     json_names = {p.name for p in comp.glob("*.json")}
     listed = {row["path"].rsplit("/", 1)[-1] for row in snap["files"]}
     assert listed == json_names
@@ -308,6 +314,7 @@ def test_implement_writes_sd_valuesets_snapshot_and_status(tmp_consumer):
     assert not list((tmp_consumer / "models" / name).rglob("mapping.xlsx"))
     assert not list(comp.glob("*.map"))
     assert not list(comp.glob("StructureMap*"))
+    assert not list(comp.glob("ConceptMap*"))
     assert unknown_card_paths
 
     tracking = load_yaml(tmp_consumer / "tracking.yaml")
@@ -370,3 +377,88 @@ def test_verify_kind_not_logical_fails(tmp_consumer):
     result = runner.invoke(formalize, ["verify", name])
     assert result.exit_code != 0
     assert "kind" in result.output.lower() or "logical" in result.output.lower()
+
+
+def test_us1_two_mappings_emit_ed_mapping_no_valueset(tmp_consumer):
+    runner, name = _specified(tmp_consumer, typed=True)
+    lm_path = _lm_path(tmp_consumer, name)
+    lm = load_yaml(lm_path)
+    for ent in lm["entities"]:
+        for el in ent["elements"]:
+            if el["id"] == "sex":
+                el["mappings"] = [
+                    {
+                        "system": "http://loinc.org",
+                        "code": "76689-9",
+                        "display": "Sex assigned at birth",
+                        "decision": "accept",
+                    },
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "184100006",
+                        "display": "Patient sex",
+                        "decision": "accept",
+                    },
+                ]
+                el["value_set"] = None
+    save_yaml(lm_path, lm)
+    assert runner.invoke(formalize, ["plan", name]).exit_code == 0
+    assert runner.invoke(formalize, ["approve", name]).exit_code == 0
+    result = runner.invoke(formalize, ["implement", name])
+    assert result.exit_code == 0, result.output
+    comp = _computable(tmp_consumer, name)
+    assert list(comp.glob("ValueSet-*.json")) == []
+    assert list(comp.glob("ConceptMap-*.json")) == []
+    sd = json.loads(next(comp.glob("StructureDefinition-*.json")).read_text(encoding="utf-8"))
+    sex_path = None
+    for ent in lm["entities"]:
+        for el in ent["elements"]:
+            if el["id"] == "sex":
+                sex_path = f"{name}.{el['path']}"
+    row = next(el for el in sd["differential"]["element"] if el["path"] == sex_path)
+    assert "binding" not in row
+    maps = {m["map"] for m in row["mapping"]}
+    assert maps == {"76689-9", "184100006"}
+    uris = {m["uri"] for m in sd["mapping"]}
+    assert "http://loinc.org" in uris
+    assert "http://snomed.info/sct" in uris
+    verify = runner.invoke(formalize, ["verify", name])
+    assert verify.exit_code == 0, verify.output
+
+
+def test_us1_logical_model_1_0_fail_closed(tmp_consumer):
+    runner, name = _mini_extracted(tmp_consumer)
+    _annotate_complete(runner, tmp_consumer, name)
+    lm_path = _lm_path(tmp_consumer, name)
+    lm_path.parent.mkdir(parents=True, exist_ok=True)
+    save_yaml(
+        lm_path,
+        {
+            "schema_version": "1.0",
+            "model": name,
+            "entities": [
+                {
+                    "id": "mini",
+                    "title": "Mini",
+                    "elements": [
+                        {
+                            "id": "sex",
+                            "path": "mini.sex",
+                            "datatype": "code",
+                            "cardinality": "0..1",
+                            "binding": {
+                                "status": "bound",
+                                "system": "http://loinc.org",
+                                "code": "76689-9",
+                                "strength": "example",
+                            },
+                            "provenance": {"source": "x"},
+                        }
+                    ],
+                }
+            ],
+        },
+    )
+    result = runner.invoke(formalize, ["plan", name])
+    assert result.exit_code != 0
+    assert "2.0" in result.output or "re-specify" in result.output.lower()
