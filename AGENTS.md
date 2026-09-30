@@ -59,4 +59,13 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 - 001-rh-mod-framework: `init`, `status`, consumer-root tracking, `models/<id>/` layout
 
 <!-- MANUAL ADDITIONS START -->
+
+## Cursor Cloud specific instructions
+
+- Use `uv` and the Python 3.13 it installs (`uv python install 3.13`). The image `python3` is 3.12, which does not satisfy `requires-python` in `pyproject.toml`. Run project commands with `uv run`.
+- Bootstrap and checks: `uv sync --all-groups`, `uv run rh-mod-skills --help`, `uv run pytest`. This repo has no dev server or other long-running process.
+- Proving consumer: `cd example-project && uv run --project .. rh-mod-skills status`.
+- `make check-schemas` diffs `schemas/` against `src/rh_mod_skills/schemas/` and fails on a clean tree because `schemas/README.md` is not copied into the package. `uv run pytest` is the suite that covers the CLI.
+- ReasonHub MCP and a filled-in `.env` are optional. `init`, `ingest`, `status`, and the unit tests run without them.
+
 <!-- MANUAL ADDITIONS END -->
