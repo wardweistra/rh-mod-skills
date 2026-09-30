@@ -66,16 +66,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [P] [US2] Tests in `tests/unit/test_annotate.py` / mappings test module: implement persists authored `value_set`; unbound still forbids mappings+value_set; strength only on `value_set`
-- [ ] T017 [P] [US2] Tests in `tests/unit/test_formalize.py`: `value_set` present → ValueSet + ElementDefinition.binding; mappings-only still no VS; verify counts mapped vs value_set-bound vs unbound
-- [ ] T018 [P] [US2] Tests in `tests/unit/test_verify.py` (coordinator): MUST report mapped vs VS-bound vs unbound counts (advisory OK if non-blocking)
+- [x] T016 [P] [US2] Tests in `tests/unit/test_annotate.py` / mappings test module: implement persists authored `value_set`; unbound still forbids mappings+value_set; strength only on `value_set`
+- [x] T017 [P] [US2] Tests in `tests/unit/test_formalize.py`: `value_set` present → ValueSet + ElementDefinition.binding; mappings-only still no VS; verify counts mapped vs value_set-bound vs unbound
+- [x] T018 [P] [US2] Tests in `tests/unit/test_verify.py` (coordinator): MUST report mapped vs VS-bound vs unbound counts (advisory OK if non-blocking)
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Extend annotate plan/implement/verify (+ export/import if needed) in `src/rh_mod_skills/commands/annotate.py` and `annotate_review.py` for optional `value_set` authoring; keep status `mapped` for mappings-only; annotate-complete when every path is `mapped` or `unbound` or has authored `value_set` (do not require renaming status to `decided`)
-- [ ] T020 [US2] Specify copies `value_set` snapshots in `src/rh_mod_skills/commands/specify.py`
-- [ ] T021 [US2] Formalize builds multi-concept ValueSet + binding only when `value_set` present in `src/rh_mod_skills/commands/formalize.py`; plan counts include value_set-bound
-- [ ] T022 [US2] Update `src/rh_mod_skills/commands/verify.py` and skills (`rh-mod-annotate`, `rh-mod-formalize`) so mapped vs VS-bound vs unbound are distinct
+- [x] T019 [US2] Extend annotate plan/implement/verify (+ export/import if needed) in `src/rh_mod_skills/commands/annotate.py` and `annotate_review.py` for optional `value_set` authoring; keep status `mapped` for mappings-only; annotate-complete when every path is `mapped` or `unbound` or has authored `value_set` (do not require renaming status to `decided`)
+- [x] T020 [US2] Specify copies `value_set` snapshots in `src/rh_mod_skills/commands/specify.py`
+- [x] T021 [US2] Formalize builds multi-concept ValueSet + binding only when `value_set` present in `src/rh_mod_skills/commands/formalize.py`; plan counts include value_set-bound
+- [x] T022 [US2] Update `src/rh_mod_skills/commands/verify.py` and skills (`rh-mod-annotate`, `rh-mod-formalize`) so mapped vs VS-bound vs unbound are distinct
 
 **Checkpoint**: Epic A complete (mappings-first + optional VS)
 
