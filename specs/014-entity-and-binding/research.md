@@ -144,11 +144,11 @@ logical_models:
 
 ## 11. Constitution IV (strength on mappings)
 
-**Decision**: Interpret “terminology bindings MUST record … binding strength” as applying to **ValueSet bindings** (`value_set.strength`). Concept mappings record system/code/display/decision without strength. Unbound still requires reason. Report mapped vs VS-bound vs unbound distinctly in verify.
+**Decision**: Constitution **1.2.0** (Ward-approved) states concept mappings MUST record system/code/display/decision without binding strength; ValueSet bindings MUST record strength + domain; verify distinguishes mapped / VS-bound / unbound.
 
 **Rationale**: Avoids fake strengths on meaning-only mappings; aligns with locked split.
 
-**Alternatives considered**: Keep dummy `example` on every mapping (rejected — recreates the conflation).
+**Alternatives considered**: Keep dummy `example` on every mapping (rejected — recreates the conflation); silent reinterpretation of IV without amendment (rejected by Speckit analyze).
 
 ---
 

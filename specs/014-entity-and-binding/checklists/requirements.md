@@ -32,5 +32,5 @@
 ## Notes
 
 - Clarifications Session 2026-09-30 encodes eight locked Ward decisions; no further clarify questions asked.
-- Deferred to `/speckit.plan`: exact storage key for `canonical_base`; task split Epic A then B; schema_version bump mechanics.
+- `canonical_base` lives on the formalize plan; Epic A then B sequencing is in tasks.md; schema_version `"2.0"` clean break.
 - FHIR resource names (`StructureDefinition`, `ElementDefinition.mapping`, ValueSet) appear as domain artifacts reviewers already use — treated as domain vocabulary, not stack choice.

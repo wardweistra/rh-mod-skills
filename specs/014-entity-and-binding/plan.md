@@ -29,7 +29,7 @@ Evolve annotate → specify → formalize → `ig sync` so that (Epic A) concept
 | I. CLI boundary | Pass | annotate/specify/formalize/ig remain sole writers; skills edit plan YAML only |
 | II. Plan → implement → verify | Pass | Existing gated stages; no new ungated write path (ig sync stays ungated as today) |
 | III. Spec-linked validation | Pass | Spec stories + this plan; tasks (follow-up) must cover schema/CLI/verify contracts |
-| IV. Provenance / binding integrity | Pass* | `inventory_path` + provenance retained; mappings record system/code/display/decision; **strength applies to ValueSet bindings only** (research §11) — mapped vs VS-bound vs unbound reported separately |
+| IV. Provenance / binding integrity | Pass | Constitution 1.2.0: concept mappings (system/code/display/decision) vs ValueSet bindings (strength + domain); verify distinguishes mapped / VS-bound / unbound |
 | V. Minimal surface | Pass | Extend existing command groups/schemas; no parallel annotate2; no migrate CLI |
 
 Post-design: same pass. No fhir.resources. No ConceptMap in v1.
@@ -88,4 +88,4 @@ tests/fixtures/…                          # mini mapped + multi-LM fixtures
 
 ## Complexity Tracking
 
-> No constitution violations requiring justification. Strength-on-ValueSet-only is an interpretation of IV documented in research §11, not a principle waiver.
+> No constitution violations. IV clarified in constitution 1.2.0 (Ward-approved).

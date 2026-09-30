@@ -16,7 +16,7 @@
 **Purpose**: Confirm design anchors and test layout before schema/CLI edits
 
 - [x] T001 Confirm touch set from [plan.md](./plan.md) and create `tests/fixtures/bindings-2/` directory for synthetic mini consumers (mapped-only + later multi-LM)
-- [x] T002 [P] Update `specs/014-entity-and-binding/README.md` status to note tasks ready / implementation not started
+- [x] T002 [P] Update `specs/014-entity-and-binding/README.md` status (done / no-op if already current)
 
 ---
 
@@ -26,7 +26,7 @@
 
 - [x] T003 Bump `schemas/bindings-schema.yaml` to `schema_version: "2.0"` with `status` (`mapped`|`unbound`), `mappings[]` (system/code/display/decision), optional `value_set` null/object, `reason`; forbid root-level singleton `system`/`code`/`strength`
 - [x] T004 [P] Bump `schemas/logical-model-schema.yaml` to `schema_version: "2.0"` element snapshot fields `mappings` / `value_set` / `reason` (keep `entities[]` for Epic A; reserve/document `logical_models[]` for Epic B without requiring it yet)
-- [x] T005 Add shared bindings 2.0 load/validate helpers (fail closed on 1.0 singleton rows with re-annotate message; duplicate system URI fails) used by annotate/specify/formalize — place next to existing loaders in `src/rh_mod_skills/` (e.g. extend `commands/annotate.py` helpers or a small shared module already used by stages)
+- [x] T005 Add shared bindings 2.0 load/validate helpers in `src/rh_mod_skills/commands/annotate.py` (extend existing loaders; specify/formalize import them — no new parallel module). Fail closed on 1.0 singleton rows with re-annotate message; duplicate system URI fails.
 - [x] T006 Run schema sync if the repo uses it (`make sync-schemas` or documented equivalent); ensure example-project / fixtures are not silently auto-migrated
 
 **Checkpoint**: Schemas and fail-closed 1.0 detection exist; user stories can start
@@ -51,7 +51,7 @@
 - [x] T011 [US1] Update `src/rh_mod_skills/annotate_review.py` export/import so picks can accept multiple systems without coercing to one coding
 - [x] T012 [US1] Update specify plan/implement/verify in `src/rh_mod_skills/commands/specify.py` to copy mapping/unbound snapshots into LM `entities[]` elements (`schema_version: "2.0"`)
 - [x] T013 [US1] Update formalize in `src/rh_mod_skills/commands/formalize.py`: emit mapping identities + `ElementDefinition.mapping`; **stop** singleton-VS-from-mapping; introduce `canonical_base` on formalize plan (derive single SD URL `{canonical_base}/StructureDefinition/{model}` for Epic A one-SD path); drop sole “last segment == tracking id” check in favor of derived URL rules from research §8
-- [x] T014 [US1] Update curated skill `skills/.curated/rh-mod-annotate/` (and specify/formalize skill notes as needed) for map-vs-bind; CLI still owns writes
+- [x] T014 [US1] Update curated skill `skills/.curated/rh-mod-annotate/` (`SKILL.md` + `reference.md` + examples) for map-vs-bind; brief `reference.md` notes in specify/formalize skills as needed; CLI still owns writes
 - [x] T015 [US1] Add/adjust mini fixture under `tests/fixtures/bindings-2/` for mapped-only path used by US1 tests
 
 **Checkpoint**: MVP — multi-system meaning without fake ValueSets; legacy 1.0 fails closed
@@ -68,11 +68,11 @@
 
 - [ ] T016 [P] [US2] Tests in `tests/unit/test_annotate.py` / mappings test module: implement persists authored `value_set`; unbound still forbids mappings+value_set; strength only on `value_set`
 - [ ] T017 [P] [US2] Tests in `tests/unit/test_formalize.py`: `value_set` present → ValueSet + ElementDefinition.binding; mappings-only still no VS; verify counts mapped vs value_set-bound vs unbound
-- [ ] T018 [P] [US2] Tests in `tests/unit/test_verify.py` (coordinator) if counts surface there — mapped / VS-bound / unbound advisory or reported fields
+- [ ] T018 [P] [US2] Tests in `tests/unit/test_verify.py` (coordinator): MUST report mapped vs VS-bound vs unbound counts (advisory OK if non-blocking)
 
 ### Implementation for User Story 2
 
-- [ ] T019 [US2] Extend annotate plan/implement/verify (+ export/import if needed) in `src/rh_mod_skills/commands/annotate.py` and `annotate_review.py` for optional `value_set` authoring; annotate-complete allows decided = mappings and/or value_set (research §4 — collapse `mapped`→`decided` if doing in one pass)
+- [ ] T019 [US2] Extend annotate plan/implement/verify (+ export/import if needed) in `src/rh_mod_skills/commands/annotate.py` and `annotate_review.py` for optional `value_set` authoring; keep status `mapped` for mappings-only; annotate-complete when every path is `mapped` or `unbound` or has authored `value_set` (do not require renaming status to `decided`)
 - [ ] T020 [US2] Specify copies `value_set` snapshots in `src/rh_mod_skills/commands/specify.py`
 - [ ] T021 [US2] Formalize builds multi-concept ValueSet + binding only when `value_set` present in `src/rh_mod_skills/commands/formalize.py`; plan counts include value_set-bound
 - [ ] T022 [US2] Update `src/rh_mod_skills/commands/verify.py` and skills (`rh-mod-annotate`, `rh-mod-formalize`) so mapped vs VS-bound vs unbound are distinct
@@ -95,8 +95,8 @@
 ### Implementation for User Story 3
 
 - [ ] T025 [US3] Finalize `schemas/logical-model-schema.yaml` for required `logical_models[]`, `inventory_path`, `reference.target`, optional `root`
-- [ ] T026 [US3] Implement specify plan regroup surface + implement/verify in `src/rh_mod_skills/commands/specify.py` (CLI persists; no extract clinical regroup)
-- [ ] T027 [US3] Update `skills/.curated/rh-mod-specify/` to propose Patient/diagnosis/hospital-style splits and Reference edges onto the plan YAML only
+- [ ] T026 [US3] Implement specify plan regroup surface + implement/verify in `src/rh_mod_skills/commands/specify.py` (CLI persists; no extract clinical regroup). Default when reviewer does nothing: one `logical_models[]` entry with `id` = tracking model id and inventory entities as Backbone children under that LM.
+- [ ] T027 [US3] Update `skills/.curated/rh-mod-specify/` (`SKILL.md` + `reference.md` + examples) to propose Patient/diagnosis/hospital-style splits and Reference edges onto the plan YAML only
 
 **Checkpoint**: L2 multi-entity graph ready; formalize still may be single-SD until US4
 
@@ -118,7 +118,7 @@
 - [ ] T030 [US4] Multi-SD emit + snapshot in `src/rh_mod_skills/commands/formalize.py` from `logical_models[]` + `canonical_base`; path segments ≤ 64 still enforced
 - [ ] T031 [US4] Update `src/rh_mod_skills/commands/ig.py` for multi-SD resource listing (one IG per tracking model)
 - [ ] T032 [US4] Update verify coordinator / formalize verify coverage across multi-LM in `src/rh_mod_skills/commands/verify.py` and `formalize.py`
-- [ ] T033 [US4] Update skills `skills/.curated/rh-mod-formalize/` and `skills/.curated/rh-mod-ig/` for multi-SD + canonical_base (ENCR recommendations as proving example, not hardcoded-only validation)
+- [ ] T033 [US4] Update skills `skills/.curated/rh-mod-formalize/` and `skills/.curated/rh-mod-ig/` (`SKILL.md` + `reference.md` + examples) for multi-SD + canonical_base (ENCR recommendations as proving example, not hardcoded-only validation)
 
 **Checkpoint**: Full Epic A+B outcome deliverable
 

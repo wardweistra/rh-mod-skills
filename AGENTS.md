@@ -41,7 +41,8 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
-- 014-entity-and-binding: Speckit plan for mappings vs ValueSet split (Epic A) then multi-LM StructureDefinitions + references + one IG (Epic B); `canonical_base` + `{base}/StructureDefinition/{lm-id}`; ElementDefinition.mapping only; clean break / no legacy compat; CLI not implemented yet
+- 014-entity-and-binding: US1 shipped — bindings/LM schema 2.0 `mappings[]`; formalize `ElementDefinition.mapping` (no singleton VS); `canonical_base` on formalize plan; clean break on 1.0. US2 value_set / US3 multi-LM / US4 multi-SD+IG still open
+- Constitution 1.2.0: Principle IV distinguishes concept mappings (no strength) from ValueSet bindings (strength + domain); verify reports mapped / VS-bound / unbound
 - 013-rh-mod-ig: `ig sync` stages a buildable stub (`definition.page` Home only, `input/includes/menu.xml`, create-if-missing `index.md`) plus snapshot JSON and pinned HL7 scripts; no Java / no publisher.jar; IG JSON rewritten each sync; skill owns publisher error triage
 - 012-rh-mod-verify: `rh-mod-skills verify [model]` is a read-only coordinator over ingest/extract/annotate/specify/formalize verify; coverage + unbound + `validator=not-run`; no tracking writes; status next stays verify
 - 011-rh-mod-formalize: `formalize plan|approve|implement|verify` writes FHIR R4 `StructureDefinition` (`kind=logical`), one ValueSet per bound element, and `computable/snapshot.yaml` (SHA-256); canonical last segment = model id; path name portions ≤ 64 (extract slugs); unknown cardinality → `0..1`; unknown datatype fails closed; no FHIR Python library or validator binary

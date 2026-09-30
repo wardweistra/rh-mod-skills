@@ -1,24 +1,16 @@
 <!--
 Sync Impact Report
-Version change: 1.0.0 → 1.1.0 (MINOR: Delivery Constraints expanded to include PDF table projections as a first-class L1 tabular form; flattening to Markdown remains forbidden. No principle titles renamed.)
-Modified principles: none (I–V unchanged)
+Version change: 1.1.0 → 1.2.0 (MINOR: Principle IV expanded to distinguish concept mappings from ValueSet bindings; strength required only for ValueSet bindings. Aligns with 014 entity-and-binding.)
+Modified principles: IV. Provenance and Binding Integrity (expanded; title unchanged)
 Added sections: none
 Removed sections: none
 Templates requiring updates:
-  ✅ .specify/templates/plan-template.md (Constitution Check now names rh-mod-skills)
-  ✅ .specify/templates/spec-template.md (no mandated-section change; reviewed)
-  ✅ .specify/templates/tasks-template.md (no new task type; reviewed)
-  ✅ .specify/templates/commands/*.md (n/a — no command templates with L1 format list)
-  ✅ AGENTS.md
-  ✅ README.md
-  ✅ docs/GETTING_STARTED.md
-  ✅ docs/WORKFLOW.md
-  ✅ DEVELOPER.md
-  ✅ tests/fixtures/l1/README.md
-  ✅ specs/002-rh-mod-ingest/{spec.md,research.md,README.md,checklists/requirements.md}
-  ✅ specs/003-rh-mod-extract/{spec.md,README.md}
-  ✅ specs/001-rh-mod-framework/research.md (historical note pointing at 004)
-Follow-up TODOs: none deferred. OCR remains out of scope until a later spec.
+  ✅ .specify/templates/plan-template.md (Constitution Check still names principles I–V; no wording change required)
+  ✅ .specify/templates/spec-template.md (no mandated-section change)
+  ✅ .specify/templates/tasks-template.md (no new task type)
+  ✅ AGENTS.md (014 Recent Changes notes mappings vs ValueSet)
+  ⚠ docs/WORKFLOW.md / GETTING_STARTED.md — update when US1 docs polish lands if they still describe singleton bindings
+Follow-up TODOs: none. Product design for 014 unchanged (Ward locked).
 -->
 
 # RH Mod Skills Constitution
@@ -65,12 +57,24 @@ untrusted data, declare an injection boundary before analysis, and preserve
 traceability from each logical-model element back to its source path (file,
 sheet, column, or documentation fragment). Material conflicts in names, types,
 or value lists MUST be surfaced explicitly rather than silently collapsed.
-Terminology bindings MUST record system, code, display, binding strength, and
-reviewer decision. Validation and reporting flows MUST distinguish blocking
-errors from advisory warnings.
+
+Terminology decisions on an element MUST separate two concerns:
+
+- **Concept mappings** (what the field means in one or more code systems)
+  MUST record system, code, display, and reviewer decision for each mapping.
+  Concept mappings MUST NOT require or invent a FHIR binding strength.
+- **ValueSet bindings** (what codes may appear in an instance) MUST record
+  binding strength (`example` | `preferred` | `extensible` | `required`) and
+  the authored value domain when a ValueSet binding is present.
+
+Validation and reporting flows MUST distinguish **mapped** (has concept
+mapping(s)), **VS-bound** (has a ValueSet binding), and **unbound** (neither,
+with a required reason), and MUST distinguish blocking errors from advisory
+warnings.
 
 Rationale: a FHIR logical model is only useful downstream if paths, types, and
-codes are attributable and reviewable.
+codes are attributable and reviewable. Conflating meaning (mapping) with
+allowed values (ValueSet binding) produces dishonest singleton ValueSets.
 
 ### V. Minimal Surface Area
 The project MUST prefer extending existing `rh-mod-skills` primitives, schemas,
@@ -134,4 +138,4 @@ Amendments MUST:
 2. classify the version bump as MAJOR, MINOR, or PATCH;
 3. update dependent templates and docs in the same change.
 
-**Version**: 1.1.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-09-13
+**Version**: 1.2.0 | **Ratified**: 2026-09-11 | **Last Amended**: 2026-09-30

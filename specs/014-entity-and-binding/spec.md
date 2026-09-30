@@ -103,7 +103,7 @@ Formalize emits one `StructureDefinition` (`kind=logical`) per logical model id.
 ### Edge Cases
 
 - Reviewer does nothing on a **new** specify plan: single logical model with Backbone-style grouping remains allowed (fresh default, not a legacy compat loader for old LM files).
-- Duplicate mapping systems on one path (two SNOMED codes): fail closed or last-wins — must be deterministic and documented in plan; default prefer fail closed.
+- Duplicate mapping systems on one path (two SNOMED codes): fail closed (deterministic; no last-wins).
 - `reference.target` names a missing LM id: specify verify / formalize implement fail closed.
 - Canonical base missing or not http(s): formalize implement fails closed.
 - Path name portions still ≤ 64 characters (existing formalize rule).
@@ -141,7 +141,7 @@ Formalize emits one `StructureDefinition` (`kind=logical`) per logical model id.
 
 - **FR-X01**: Unit of work remains one consumer `models/<tracking-id>/` (constitution). Do not require splitting into multiple tracking models for v1.
 - **FR-X02**: No FML, StructureMap, or mapping.xlsx writes. No FHIR Python library or validator binary requirement.
-- **FR-X03**: Product code implementation is out of **this** Speckit specify/clarify slice; normative requirements here feed later plan/tasks.
+- **FR-X03**: Speckit governance artifacts (`spec.md` / `plan.md` / `tasks.md`) remain authoritative for acceptance; implementation follows tasks in dependency order (Epic A US1 before later stories).
 
 ### Key Entities
 
@@ -168,9 +168,11 @@ Formalize emits one `StructureDefinition` (`kind=logical`) per logical model id.
 - Approach narrative in the Project store is authoritative for intent; this spec is authoritative for acceptance once planned/implemented.
 - ENCR recommendations is the external proving consumer; in-repo fixtures may use a smaller multi-LM demo.
 - Single-LM “reviewer does nothing” remains a valid **new-plan** default, not a loader for pre-feature `logical-model.yaml` shapes.
-- Exact config key/file for `canonical_base` (formalize plan field vs tracking vs model sidecar) is deferred to `/speckit.plan` as long as FR-B06 holds.
-- Duplicate same-system mappings fail closed (assumption for plan unless tasks choose otherwise).
-- Schema version may bump to a breaking `"2.0"` without a compat loader.
+- `canonical_base` is a reviewable field on `process/plans/formalize-plan.yaml` (http(s)); implement derives `{canonical_base}/StructureDefinition/{logical-model-id}` (Epic A: lm-id = tracking model id).
+- Bindings status enum: US1 uses `mapped` | `unbound`. US2 keeps `mapped` for mappings-only rows and treats a path with `value_set` (with or without mappings) as annotate-complete decided work without requiring a rename to `decided` unless a later task collapses the synonym.
+- Duplicate same-system mappings fail closed.
+- Schema version bumps to breaking `"2.0"` without a compat loader.
+- Product CLI for US1+ is in scope for implementation tasks (historical Speckit-only constraint retired).
 
 ## Out of Scope
 
@@ -181,4 +183,4 @@ Formalize emits one `StructureDefinition` (`kind=logical`) per logical model id.
 - Extract-stage clinical entity regrouping
 - Legacy compatibility shims / migrate CLI / `--compat` flags
 - Auto-inferring clinical entities or FHIR types from labels
-- Product CLI implementation in this specify/clarify pass (specs only)
+- ConceptMap resources and ValueSet authoring UX beyond what tasks schedule (US2+)
