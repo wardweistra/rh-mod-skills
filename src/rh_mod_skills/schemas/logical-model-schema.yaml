@@ -3,37 +3,50 @@
 schema_version: "2.0"
 
 structure:
-  model: string
-  entities:                        # Epic A single-tree layout
-    - id: string
+  model: string                    # tracking model id
+  logical_models:                  # required; one or more LMs
+    - id: string                   # SD id / URL last segment
       title: string
-      elements:
+      root: boolean                # optional; at most one true
+      entities:                    # Backbone groups under this LM
         - id: string
-          display: string
-          path: string
-          datatype: string          # recognized FHIR type or "unknown"
-          cardinality: string       # n..m / n..* or "unknown"
-          issues: list              # unknown-datatype, unknown-cardinality
-          status: string            # mapped | unbound (optional on draft)
-          mappings:                 # copy from bindings 2.0
-            - system: string
-              code: string
+          title: string
+          elements:
+            - id: string
               display: string
-              decision: string
-          value_set:                # null OR authored {strength, concepts[]} from bindings
-          reason: string            # required if unbound
-          provenance:
-            source: string
-            sheet: string
-            row: integer
-            columns:
-              id: string
-              category: string
-              label: string
-  # logical_models: reserved for Epic B (multi-LM regroup); not required in Epic A
+              path: string         # path under this LM (may differ from inventory)
+              inventory_path: string  # required; exactly-once claim of inventory path
+              datatype: string     # recognized FHIR type or "unknown"; Reference allowed
+              cardinality: string  # n..m / n..* or "unknown"
+              issues: list         # plan-only: unknown-datatype, unknown-cardinality
+              status: string       # mapped | unbound
+              mappings:            # copy from bindings 2.0
+                - system: string
+                  code: string
+                  display: string
+                  decision: string
+              value_set:           # null OR {strength, concepts[]}
+              reason: string       # required if unbound
+              reference:           # required when datatype is Reference
+                target: string     # another logical_models[].id
+              provenance:
+                source: string
+                sheet: string
+                row: integer
+                columns:
+                  id: string
+                  category: string
+                  label: string
+
+notes:
+  - Default specify plan: one LM with id = tracking model id; inventory entities as Backbone children
+  - Reviewer may split/regroup on the specify plan only (not extract)
+  - Every inventory path claimed exactly once via inventory_path
+  - Reference.target must resolve to another LM id in the same file
 
 forbidden:
   - nested binding singleton (system/code/strength as sole coding)
   - StructureDefinition
   - invented codes
   - codebook letters F/A as datatype
+  - top-level entities[] without logical_models[] (Epic B)
