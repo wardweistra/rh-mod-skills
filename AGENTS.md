@@ -47,7 +47,7 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 - 012-rh-mod-verify: `rh-mod-skills verify [model]` is a read-only coordinator over ingest/extract/annotate/specify/formalize verify; coverage + unbound + `validator=not-run`; no tracking writes; status next stays verify
 - 011-rh-mod-formalize: `formalize plan|approve|implement|verify` writes FHIR R4 `StructureDefinition` (`kind=logical`), one ValueSet per bound element, and `computable/snapshot.yaml` (SHA-256); canonical last segment = model id; path name portions ≤ 64 (extract slugs); unknown cardinality → `0..1`; unknown datatype fails closed; no FHIR Python library or validator binary
 - 010-rh-mod-specify: `specify plan|approve|implement|verify` writes `logical-model.yaml` from annotate-complete inventory+bindings; types stay unknown unless recognized FHIR or reviewer-filled; no FHIR JSON
-- 009-annotate-codesystems: `annotate plan --system` accepts `icd-10-cm`, `rxnorm`, `ucum`, and `all` (cross-system search); default remains snomed; enrich expands those aliases to FHIR URIs
+- 009-annotate-codesystems: `annotate plan --system` accepts `icd-10-cm`, `rxnorm`, `ucum`, and `all` (cross-system search); default is `all`; enrich expands those aliases to FHIR URIs
 - 008-annotate-review: `annotate export` writes static HTML from the plan; `annotate import --from` applies picks YAML (accept by rank, unbound/skip/replace); import sets draft and does not write `bindings.yaml`
 - 007-ingest-status-skills: curated `rh-mod-ingest` and `rh-mod-status` (SKILL.md + reference.md + examples); CLI unchanged
 - Constitution 1.1.0: L1 tabular ingest is Excel, CSV, and PDF table projections (same YAML). Markdown-only L1 remains forbidden. OCR out of scope.

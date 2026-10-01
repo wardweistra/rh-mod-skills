@@ -283,7 +283,7 @@ def _assert_annotate_ready(tracking: dict, model: str) -> dict:
 
 
 def _validate_systems(systems: tuple[str, ...]) -> list[str]:
-    aliases = list(systems) or ["snomed"]
+    aliases = list(systems) or ["all"]
     out = []
     for alias in aliases:
         try:
@@ -484,7 +484,7 @@ def annotate():
     "--system",
     "systems",
     multiple=True,
-    help="Candidate code system alias (snomed, loinc, icd-10, icd-10-cm, rxnorm, ucum, all). Repeatable. Default: snomed.",
+    help="Candidate code system alias (snomed, loinc, icd-10, icd-10-cm, rxnorm, ucum, all). Repeatable. Default: all.",
 )
 def plan_cmd(model, elements, all_undecided, systems):
     """Write a draft annotate plan. Does not call ReasonHub; record MCP hits with enrich."""

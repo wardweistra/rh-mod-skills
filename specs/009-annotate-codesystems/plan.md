@@ -5,7 +5,7 @@
 
 ## Summary
 
-Extend annotate `--system` and `--candidate` aliases to ReasonHub’s remaining searchable systems (RxNorm, UCUM, ICD-10-CM) plus a plan-only `all` search mode. Keep SNOMED as default. Keep `icd-10`. CLI still does not search; skill maps plan names to MCP tools. No new commands.
+Extend annotate `--system` and `--candidate` aliases to ReasonHub’s remaining searchable systems (RxNorm, UCUM, ICD-10-CM) plus a plan-only `all` search mode. Default `--system` is `all`. Keep `icd-10`. CLI still does not search; skill maps plan names to MCP tools. No new commands.
 
 ## Technical Context
 

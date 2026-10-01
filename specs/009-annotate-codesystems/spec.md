@@ -4,7 +4,7 @@
 **Created**: 2026-09-28  
 **Status**: Implemented  
 **Depends On**: [005 — rh-mod-annotate](../005-rh-mod-annotate/)  
-**Input**: Wire the remaining ReasonHub-searchable code systems into annotate so a reviewer can ask for RxNorm, UCUM, ICD-10-CM, or a cross-system search the same way they already ask for SNOMED or LOINC. Default stays SNOMED. The CLI still does not search; it records system names on the plan and expands aliases when recording candidates.
+**Input**: Wire the remaining ReasonHub-searchable code systems into annotate so a reviewer can ask for RxNorm, UCUM, ICD-10-CM, or a cross-system search the same way they already ask for SNOMED or LOINC. Default `--system` is `all` (cross-system search). The CLI still does not search; it records system names on the plan and expands aliases when recording candidates.
 
 ## Clarifications
 
@@ -12,7 +12,7 @@
 
 - Q: Which systems to add? → A: The lookup service’s searchable set beyond SNOMED and LOINC: RxNorm, UCUM, ICD-10-CM, plus a cross-system search mode (`all`). Existing `icd-10` alias remains for plans that already use it.
 - Q: Is `all` a code system? → A: No. It is a search-across-all hint on the plan. Recorded candidate rows still carry a concrete system URI from the hit (never a fake `all` URI).
-- Q: Does default change? → A: No. Omitting `--system` still means SNOMED CT.
+- Q: Does default change? → A: Yes (post-009 follow-up). Omitting `--system` means `all` (cross-system search).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -29,7 +29,7 @@ An informaticist annotating a medication or unit field runs annotate plan with `
 1. **Given** an extracted model, **When** annotate plan runs with `--system rxnorm` (or `ucum`, or `icd-10-cm`), **Then** the plan `systems` list contains that name and status is draft.
 2. **Given** `--system snomed --system rxnorm`, **When** plan runs, **Then** both names are recorded in order.
 3. **Given** `--system not-a-system`, **When** plan runs, **Then** it fails closed and writes no plan.
-4. **Given** no `--system`, **When** plan runs, **Then** `systems` is still `[snomed]`.
+4. **Given** no `--system`, **When** plan runs, **Then** `systems` is `[all]`.
 
 ---
 
@@ -78,7 +78,7 @@ For a field whose system is unknown, the reviewer plans with `--system all`. The
 
 ### Functional Requirements
 
-- **FR-001**: `annotate plan --system` MUST accept `snomed`, `loinc`, `icd-10`, `icd-10-cm`, `rxnorm`, `ucum`, and `all` (repeatable). Default when omitted remains `snomed`.
+- **FR-001**: `annotate plan --system` MUST accept `snomed`, `loinc`, `icd-10`, `icd-10-cm`, `rxnorm`, `ucum`, and `all` (repeatable). Default when omitted is `all`.
 - **FR-002**: Unknown `--system` names MUST fail closed and MUST NOT write a plan.
 - **FR-003**: `annotate enrich --candidate` MUST expand aliases `snomed`, `loinc`, `icd-10`, `icd-10-cm`, `rxnorm`, `ucum` to their canonical FHIR URIs. `http…` systems MUST be stored as given.
 - **FR-004**: Alias `all` MUST NOT expand to a candidate system URI. A candidate whose system is `all` MUST fail.

@@ -9,7 +9,7 @@ rh-mod-skills annotate implement <model> [--replace]
 rh-mod-skills annotate verify <model>
 ```
 
-`--system` values: `snomed` (default if omitted), `loinc`, `icd-10`. Repeatable. Recorded on the plan for the skill; plan does not search.
+`--system` values: `snomed`, `loinc`, `icd-10` (and later aliases from 009); default if omitted is `all`. Repeatable. Recorded on the plan for the skill; plan does not search.
 
 ### plan
 
