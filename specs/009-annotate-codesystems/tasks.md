@@ -6,11 +6,11 @@
 ## Phase 1: Foundational
 
 - [x] T001 Expand alias table in `src/rh_mod_skills/terminology.py` (`icd-10-cm`, `rxnorm`, `ucum`; `all` is plan-only and not a URI)
-- [x] T002 Accept new `--system` values in `src/rh_mod_skills/commands/annotate.py`; keep default `snomed`; unknown still fails
+- [x] T002 Accept new `--system` values in `src/rh_mod_skills/commands/annotate.py`; default `all`; unknown still fails
 
 ## Phase 2: User Story 1 — Plan names (P1)
 
-- [x] T003 [US1] Tests: `--system rxnorm|ucum|icd-10-cm` recorded; combinable; unknown fails; default snomed
+- [x] T003 [US1] Tests: `--system rxnorm|ucum|icd-10-cm` recorded; combinable; unknown fails; default all
 - [x] T004 [US1] Help text lists the new aliases
 
 ## Phase 3: User Story 2 — Enrich aliases (P1)

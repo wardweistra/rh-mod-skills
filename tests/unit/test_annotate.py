@@ -149,7 +149,7 @@ def test_plan_gesl_empty_candidates(tmp_consumer):
     assert result.exit_code == 0, result.output
     plan = load_yaml(_plan_path(tmp_consumer))
     assert plan["status"] == "draft"
-    assert plan["systems"] == ["snomed"]
+    assert plan["systems"] == ["all"]
     assert len(plan["elements"]) == 1
     el = plan["elements"][0]
     assert el["id"] == "gesl"
