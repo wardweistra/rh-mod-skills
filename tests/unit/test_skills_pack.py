@@ -8,12 +8,13 @@ CURATED = ROOT / "skills" / ".curated"
 FULL_PACKS = (
     "rh-mod-ingest",
     "rh-mod-status",
+    "rh-mod-annotate",
     "rh-mod-specify",
     "rh-mod-formalize",
     "rh-mod-verify",
     "rh-mod-ig",
 )
-SKILL_ONLY = ("rh-mod-extract", "rh-mod-annotate")
+SKILL_ONLY = ("rh-mod-extract",)
 
 
 def _frontmatter_name(path: Path) -> str | None:
@@ -29,7 +30,7 @@ def _frontmatter_name(path: Path) -> str | None:
     return None
 
 
-def test_ingest_and_status_are_full_packs():
+def test_curated_full_packs():
     for name in FULL_PACKS:
         pack = CURATED / name
         skill = pack / "SKILL.md"
@@ -41,7 +42,7 @@ def test_ingest_and_status_are_full_packs():
         assert _frontmatter_name(skill) == name
 
 
-def test_extract_and_annotate_remain_skill_md_only():
+def test_extract_remains_skill_md_only():
     for name in SKILL_ONLY:
         pack = CURATED / name
         assert (pack / "SKILL.md").is_file()

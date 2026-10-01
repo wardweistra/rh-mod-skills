@@ -1,0 +1,112 @@
+# Mini multi-LM fixture for specify/formalize US3–US4 tests.
+# Patient + Hospital with a Reference edge; inventory_path claims are unique.
+schema_version: "2.0"
+model: recommendations
+logical_models:
+  - id: encr-patient
+    title: Patient
+    root: true
+    entities:
+      - id: demographics
+        title: Demographics
+        elements:
+          - id: birth-date
+            path: birth-date
+            inventory_path: table-1.date-of-birth
+            display: Date of birth
+            datatype: date
+            cardinality: 0..1
+            status: unbound
+            mappings: []
+            value_set: null
+            reason: identifier / no terminology needed
+            provenance:
+              source: mini
+              sheet: table-1
+              row: 1
+          - id: sex-at-birth
+            path: sex-at-birth
+            inventory_path: table-1.sex-at-birth
+            display: Sex at birth
+            datatype: code
+            cardinality: 0..1
+            status: mapped
+            mappings:
+              - system: http://loinc.org
+                code: "76689-9"
+                display: Sex assigned at birth
+                decision: accept
+            value_set:
+              strength: preferred
+              concepts:
+                - system: http://loinc.org
+                  code: "LA15170-6"
+                  display: Male
+                - system: http://loinc.org
+                  code: "LA15171-4"
+                  display: Female
+            reason: ""
+            provenance:
+              source: mini
+              sheet: table-1
+              row: 2
+          - id: managing-hospital
+            path: managing-hospital
+            inventory_path: table-1.managing-hospital
+            display: Managing hospital
+            datatype: Reference
+            cardinality: 0..1
+            reference:
+              target: encr-hospital
+            status: unbound
+            mappings: []
+            value_set: null
+            reason: organizational reference
+            provenance:
+              source: mini
+              sheet: table-1
+              row: 3
+  - id: encr-diagnosis
+    title: Diagnosis
+    entities:
+      - id: tumour
+        title: Tumour
+        elements:
+          - id: topography
+            path: topography
+            inventory_path: table-1.topography
+            display: Topography
+            datatype: code
+            cardinality: 0..1
+            status: mapped
+            mappings:
+              - system: http://snomed.info/sct
+                code: "123037004"
+                display: Body structure
+                decision: accept
+            value_set: null
+            reason: ""
+            provenance:
+              source: mini
+              sheet: table-1
+              row: 4
+  - id: encr-hospital
+    title: Hospital
+    entities:
+      - id: org
+        title: Organization
+        elements:
+          - id: name
+            path: name
+            inventory_path: table-1.hospital-name
+            display: Hospital name
+            datatype: string
+            cardinality: 0..1
+            status: unbound
+            mappings: []
+            value_set: null
+            reason: free text name
+            provenance:
+              source: mini
+              sheet: table-1
+              row: 5

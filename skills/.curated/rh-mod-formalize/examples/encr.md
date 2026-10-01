@@ -1,27 +1,30 @@
-# Example: formalize specified ENCR
+# Example: formalize multi-LM ENCR recommendations
 
 ```bash
 cd ~/fhir-specs/r4/ENCR
-rh-mod-skills status encr
+rh-mod-skills status recommendations
 # Stage: specified
 # Next: formalize
 
-rh-mod-skills formalize plan encr
+rh-mod-skills formalize plan recommendations
 ```
 
-Open `models/encr/process/plans/formalize-plan.yaml`. Set `canonical` so the
-**last path segment is `encr`** (e.g. `https://encr.eu/fhir/StructureDefinition/encr`,
-not `…/recommendations`) and confirm `version`. If `unknown_datatype` lists
-paths, return to `rh-mod-specify` and type those elements first — implement
-will fail closed. Re-extract if a path name portion exceeds 64 characters.
+Open `models/recommendations/process/plans/formalize-plan.yaml`. Set:
+
+```yaml
+canonical_base: https://encr.eu/fhir/recommendations
+version: "0.1.0"
+```
+
+Expect derived URLs for `encr-patient`, `encr-diagnosis`, `encr-hospital` (lm-ids
+from specify regroup). If `unknown_datatype` lists paths, return to specify first.
 
 ```bash
-rh-mod-skills formalize approve encr
-rh-mod-skills formalize implement encr
-rh-mod-skills formalize verify encr
-rh-mod-skills status encr
-# Next: verify
+rh-mod-skills formalize approve recommendations
+rh-mod-skills formalize implement recommendations
+rh-mod-skills formalize verify recommendations
 ```
 
-Expect `models/encr/computable/StructureDefinition-encr.json` with `kind: logical`,
-one ValueSet per bound element, and `snapshot.yaml`. No `mapping.xlsx`.
+Expect three `StructureDefinition-*.json` files, ValueSets only for authored
+`value_set` elements, `snapshot.yaml` listing all files + `canonical_base`, and
+**zero** ConceptMap resources.

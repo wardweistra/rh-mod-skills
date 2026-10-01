@@ -20,3 +20,19 @@ rh-mod-skills specify verify encr
 rh-mod-skills status encr
 # Next: formalize
 ```
+
+Optional regroup on the plan (before approve):
+
+```yaml
+logical_models:
+  - id: encr-patient
+    title: Patient
+    root: true
+    entities: [...]
+  - id: encr-hospital
+    title: Hospital
+    entities: [...]
+```
+
+Every inventory path exactly once via `inventory_path`. Use `datatype: Reference`
+with `reference.target: encr-hospital` for cross-LM links.

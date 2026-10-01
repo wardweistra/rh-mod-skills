@@ -156,7 +156,7 @@ def test_plan_gesl_empty_candidates(tmp_consumer):
     assert el["path"] == "patientgegevens.gesl"
     assert el["query"] == "Geslacht"
     assert el["decision"] == "pending"
-    assert el["strength"] == "example"
+    assert el["mappings"] == []
     assert el["candidates"] == []
     assert _inventory_path(tmp_consumer).read_text() == before_inv
     assert "annotate_planned" in _model_event_types(tmp_consumer)
@@ -223,14 +223,19 @@ def test_accept_gesl_only(tmp_consumer):
     result = runner.invoke(annotate, ["implement", "nkr-breast"])
     assert result.exit_code == 0, result.output
     bindings = load_yaml(_bindings_path(tmp_consumer))
+    assert bindings["schema_version"] == "2.0"
     assert len(bindings["bindings"]) == 1
     row = bindings["bindings"][0]
     assert row["path"] == "patientgegevens.gesl"
-    assert row["status"] == "bound"
-    assert row["decision"] == "accept"
-    assert row["strength"] == "example"
-    assert row["code"] == GESL_CODE
-    assert row["system"] == GESL_SYSTEM
+    assert row["status"] == "mapped"
+    assert row["value_set"] is None
+    assert "system" not in row
+    assert "code" not in row
+    assert "strength" not in row
+    assert len(row["mappings"]) == 1
+    assert row["mappings"][0]["code"] == GESL_CODE
+    assert row["mappings"][0]["system"] == GESL_SYSTEM
+    assert row["mappings"][0]["decision"] == "accept"
     logical = tmp_consumer / "models" / "nkr-breast" / "structured" / "logical-model.yaml"
     assert not logical.exists()
     assert not list((tmp_consumer / "models" / "nkr-breast" / "computable").glob("*"))
@@ -244,7 +249,7 @@ def test_accept_gesl_only(tmp_consumer):
     assert "Next: annotate" in st.output
     verify = runner.invoke(annotate, ["verify", "nkr-breast"])
     assert verify.exit_code == 0, verify.output
-    assert "bound=1" in verify.output
+    assert "mapped=1" in verify.output
     assert "unbound=0" in verify.output
     assert "undecided=152" in verify.output
 
@@ -277,16 +282,17 @@ def test_unbound_replace_and_skip(tmp_consumer):
     result = runner.invoke(annotate, ["implement", "nkr-breast"])
     assert result.exit_code == 0, result.output
     rows = {b["path"]: b for b in load_yaml(_bindings_path(tmp_consumer))["bindings"]}
-    assert rows["patientgegevens.gesl"]["code"] == "407376001"
-    assert rows["patientgegevens.gesl"]["display_term"] == "Male"
-    assert rows["patientgegevens.gesl"]["decision"] == "replace"
+    assert rows["patientgegevens.gesl"]["status"] == "mapped"
+    assert rows["patientgegevens.gesl"]["mappings"][0]["code"] == "407376001"
+    assert rows["patientgegevens.gesl"]["mappings"][0]["display"] == "Male"
+    assert rows["patientgegevens.gesl"]["mappings"][0]["decision"] == "replace"
     assert rows["patientgegevens.gebdat"]["status"] == "unbound"
+    assert rows["patientgegevens.gebdat"]["mappings"] == []
     assert rows["patientgegevens.gebdat"]["reason"] == "identifier / no terminology needed"
-    assert "263495000" not in rows["patientgegevens.gesl"]["code"]
     verify = runner.invoke(annotate, ["verify", "nkr-breast"])
     assert verify.exit_code == 0, verify.output
     assert "unbound=1" in verify.output
-    assert "bound=1" in verify.output
+    assert "mapped=1" in verify.output
 
 
 def test_reject_and_pending_not_written(tmp_consumer):
@@ -348,7 +354,7 @@ def test_verify_idempotent(tmp_consumer):
     v2 = runner.invoke(annotate, ["verify", "nkr-breast"])
     assert v1.exit_code == 0, v1.output
     assert v2.exit_code == 0, v2.output
-    assert "bound=1" in v1.output and "bound=1" in v2.output
+    assert "mapped=1" in v1.output and "mapped=1" in v2.output
     assert "undecided=152" in v1.output
     assert (tmp_consumer / "tracking.yaml").read_text() == before
 
@@ -389,7 +395,7 @@ def test_merge_by_path_and_replace_flag(tmp_consumer):
     runner.invoke(annotate, ["approve", "nkr-breast"])
     runner.invoke(annotate, ["implement", "nkr-breast"])
     rows = {b["path"]: b for b in load_yaml(_bindings_path(tmp_consumer))["bindings"]}
-    assert rows["patientgegevens.gesl"]["code"] == "407376001"
+    assert rows["patientgegevens.gesl"]["mappings"][0]["code"] == "407376001"
     assert rows["patientgegevens.gebdat"]["status"] == "unbound"
 
     runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
@@ -416,7 +422,7 @@ def test_pending_does_not_delete_existing(tmp_consumer):
     rows = load_yaml(_bindings_path(tmp_consumer))["bindings"]
     assert len(rows) == 1
     assert rows[0]["path"] == "patientgegevens.gesl"
-    assert rows[0]["status"] == "bound"
+    assert rows[0]["status"] == "mapped"
 
 
 def test_no_inventory_guides_extract(tmp_consumer):
@@ -581,7 +587,239 @@ def test_encr_one_table1_element(tmp_consumer):
     assert _inventory_path(tmp_consumer, "encr-standard-dataset").read_text() == before
     verify = runner.invoke(annotate, ["verify", "encr-standard-dataset"])
     assert verify.exit_code == 0, verify.output
-    assert "bound=1" in verify.output
+    assert "mapped=1" in verify.output
     assert "undecided=24" in verify.output
     st = runner.invoke(status, ["encr-standard-dataset"])
     assert "Next: annotate" in st.output
+
+
+LOINC_SEX = "http://loinc.org|76689-9|Sex assigned at birth"
+SNOMED_SEX = "http://snomed.info/sct|184100006|Patient sex"
+BINDINGS2 = Path(__file__).resolve().parents[1] / "fixtures" / "bindings-2"
+
+
+def test_us1_two_mappings_no_value_set(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [
+                    {
+                        "system": "http://loinc.org",
+                        "code": "76689-9",
+                        "display": "Sex assigned at birth",
+                        "decision": "accept",
+                    },
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "184100006",
+                        "display": "Patient sex",
+                        "decision": "accept",
+                    },
+                ],
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code == 0, result.output
+    bindings = load_yaml(_bindings_path(tmp_consumer))
+    assert bindings["schema_version"] == "2.0"
+    row = bindings["bindings"][0]
+    assert row["status"] == "mapped"
+    assert row["value_set"] is None
+    systems = {m["system"] for m in row["mappings"]}
+    assert systems == {"http://loinc.org", "http://snomed.info/sct"}
+    assert "strength" not in row
+    sample = load_yaml(BINDINGS2 / "sample-mapped-bindings.yaml")
+    assert sample["schema_version"] == "2.0"
+    assert len(sample["bindings"][0]["mappings"]) == 2
+
+
+def test_us1_duplicate_system_fails_implement(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "263495000",
+                        "display": "Gender",
+                        "decision": "accept",
+                    },
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "184100006",
+                        "display": "Patient sex",
+                        "decision": "accept",
+                    },
+                ],
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code != 0
+    assert "duplicate" in result.output.lower()
+
+
+def test_us1_bindings_1_0_fail_closed_on_verify(tmp_consumer):
+    runner = _extract_nkr()
+    path = _bindings_path(tmp_consumer)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    save_yaml(
+        path,
+        {
+            "schema_version": "1.0",
+            "model": "nkr-breast",
+            "bindings": [
+                {
+                    "path": "patientgegevens.gesl",
+                    "id": "gesl",
+                    "display": "Geslacht",
+                    "status": "bound",
+                    "decision": "accept",
+                    "strength": "example",
+                    "system": GESL_SYSTEM,
+                    "code": GESL_CODE,
+                    "display_term": "Gender",
+                    "reason": "",
+                }
+            ],
+        },
+    )
+    verify = runner.invoke(annotate, ["verify", "nkr-breast"])
+    assert verify.exit_code != 0
+    assert "re-annotate" in verify.output.lower()
+
+
+SEX_VS = {
+    "strength": "preferred",
+    "concepts": [
+        {
+            "system": "http://loinc.org",
+            "code": "LA15170-6",
+            "display": "Male",
+        },
+        {
+            "system": "http://loinc.org",
+            "code": "LA15171-4",
+            "display": "Female",
+        },
+    ],
+}
+
+
+def test_us2_implement_persists_authored_value_set(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [
+                    {
+                        "system": "http://loinc.org",
+                        "code": "76689-9",
+                        "display": "Sex assigned at birth",
+                        "decision": "accept",
+                    }
+                ],
+                "value_set": SEX_VS,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code == 0, result.output
+    row = load_yaml(_bindings_path(tmp_consumer))["bindings"][0]
+    assert row["status"] == "mapped"
+    assert row["value_set"]["strength"] == "preferred"
+    assert len(row["value_set"]["concepts"]) == 2
+    assert "strength" not in row
+    assert "strength" not in row["mappings"][0]
+    verify = runner.invoke(annotate, ["verify", "nkr-breast"])
+    assert verify.exit_code == 0, verify.output
+    assert "vs_bound=1" in verify.output
+    assert "mapped=1" in verify.output
+
+
+def test_us2_unbound_forbids_value_set(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gebdat"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gebdat": {
+                "decision": "unbound",
+                "reason": "date / no terminology",
+                "value_set": SEX_VS,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code != 0
+    assert "value_set" in result.output.lower()
+
+
+def test_us2_value_set_only_counts_as_mapped(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [],
+                "value_set": SEX_VS,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code == 0, result.output
+    row = load_yaml(_bindings_path(tmp_consumer))["bindings"][0]
+    assert row["status"] == "mapped"
+    assert row["mappings"] == []
+    assert row["value_set"]["strength"] == "preferred"
+    verify = runner.invoke(annotate, ["verify", "nkr-breast"])
+    assert verify.exit_code == 0, verify.output
+    assert "vs_bound=1" in verify.output
+    assert "mapped=1" in verify.output
+
+
+def test_us2_invalid_value_set_strength_fails(tmp_consumer):
+    runner = _extract_nkr()
+    runner.invoke(annotate, ["plan", "nkr-breast", "--element", "gesl"])
+    bad = dict(SEX_VS)
+    bad["strength"] = "requiredish"
+    _set_decisions(
+        _plan_path(tmp_consumer),
+        {
+            "gesl": {
+                "decision": "accept",
+                "mappings": [
+                    {
+                        "system": "http://snomed.info/sct",
+                        "code": "263495000",
+                        "display": "Gender",
+                        "decision": "accept",
+                    }
+                ],
+                "value_set": bad,
+            }
+        },
+    )
+    assert runner.invoke(annotate, ["approve", "nkr-breast"]).exit_code == 0
+    result = runner.invoke(annotate, ["implement", "nkr-breast"])
+    assert result.exit_code != 0
+    assert "strength" in result.output.lower()

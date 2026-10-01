@@ -53,15 +53,16 @@ First word is the mode. Typical: `plan encr`.
    `specify`, stop — there is no logical model yet.
 2. Run `rh-mod-skills formalize plan <model>`.
 3. Open `models/<model>/process/plans/formalize-plan.yaml`:
-   - Replace the example `canonical` with the real http(s) StructureDefinition URL
-     unless the reviewer explicitly accepts the example.org default. The last
-     path segment MUST be the model id (e.g. `…/StructureDefinition/encr`), or
-     IG Publisher reports “Invalid path … must start with …”.
+   - Set `canonical_base` to an http(s) URI (preferred). Implement derives
+     `{canonical_base}/StructureDefinition/{lm-id}` for each logical model.
+     Example proving base: `https://encr.eu/fhir/recommendations`.
+   - `canonical` is the root/primary LM URL (must match that derivation).
    - Set `version` (semver string). Empty version fails implement.
    - If `unknown_datatype` is non-empty, **stop**. Those paths must be typed on
      the specify plan and `specify implement` re-run first. Do not guess `string`.
    - `unknown_cardinality` is a count of elements that will become `0..1`. Tell
      the reviewer; do not invent `1..1` / `0..*` here.
+   - Plan counts: `mapped`, `value_set_bound`, `unbound`.
 
 ## Implement
 
@@ -72,9 +73,10 @@ rh-mod-skills formalize verify <model>
 rh-mod-skills status <model>
 ```
 
-Unknown datatype is blocking on implement. Canonical last segment ≠ model id
-and path name portions over 64 characters are blocking (re-extract slugs, then
-specify). Cardinality defaults are advisory on verify.
+One `StructureDefinition-<lm-id>.json` per LM. ValueSets only when `value_set`
+is authored. Mappings emit `ElementDefinition.mapping` (no ConceptMap).
+Unknown datatype is blocking. Path name portions over 64 characters are
+blocking. Cardinality defaults are advisory on verify.
 
 ## Verify
 

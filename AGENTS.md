@@ -1,6 +1,6 @@
 # reason-mod-skills Development Guidelines
 
-Sibling of rh-skills. Last updated: 2026-09-29
+Sibling of rh-skills. Last updated: 2026-09-30
 
 ## Active Technologies
 
@@ -41,6 +41,8 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 
 ## Recent Changes
 
+- 014-entity-and-binding: Implemented — bindings/LM schema 2.0 `mappings[]` + optional `value_set`; specify `logical_models[]` (regroup + Reference); formalize N StructureDefinitions under configurable `canonical_base` + ValueSets only when authored; `ig sync` one IG lists all SDs; no ConceptMap / no legacy compat
+- Constitution 1.2.0: Principle IV distinguishes concept mappings (no strength) from ValueSet bindings (strength + domain); verify reports mapped / VS-bound / unbound
 - 013-rh-mod-ig: `ig sync` stages a buildable stub (`definition.page` Home only, `input/includes/menu.xml`, create-if-missing `index.md`) plus snapshot JSON and pinned HL7 scripts; no Java / no publisher.jar; IG JSON rewritten each sync; skill owns publisher error triage
 - 012-rh-mod-verify: `rh-mod-skills verify [model]` is a read-only coordinator over ingest/extract/annotate/specify/formalize verify; coverage + unbound + `validator=not-run`; no tracking writes; status next stays verify
 - 011-rh-mod-formalize: `formalize plan|approve|implement|verify` writes FHIR R4 `StructureDefinition` (`kind=logical`), one ValueSet per bound element, and `computable/snapshot.yaml` (SHA-256); canonical last segment = model id; path name portions ≤ 64 (extract slugs); unknown cardinality → `0..1`; unknown datatype fails closed; no FHIR Python library or validator binary
@@ -58,4 +60,13 @@ FHIR Mapping Language, StructureMap, and Excel mapping workbooks belong in rh-ma
 - 001-rh-mod-framework: `init`, `status`, consumer-root tracking, `models/<id>/` layout
 
 <!-- MANUAL ADDITIONS START -->
+
+## Cursor Cloud specific instructions
+
+- Use `uv` and the Python 3.13 it installs (`uv python install 3.13`). The image `python3` is 3.12, which does not satisfy `requires-python` in `pyproject.toml`. Run project commands with `uv run`.
+- Bootstrap and checks: `uv sync --all-groups`, `uv run rh-mod-skills --help`, `uv run pytest`. This repo has no dev server or other long-running process.
+- Proving consumer: `cd example-project && uv run --project .. rh-mod-skills status`.
+- `make check-schemas` diffs `schemas/` against `src/rh_mod_skills/schemas/` and fails on a clean tree because `schemas/README.md` is not copied into the package. `uv run pytest` is the suite that covers the CLI.
+- ReasonHub MCP and a filled-in `.env` are optional. `init`, `ingest`, `status`, and the unit tests run without them.
+
 <!-- MANUAL ADDITIONS END -->

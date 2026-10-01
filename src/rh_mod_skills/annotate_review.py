@@ -71,6 +71,22 @@ def _empty_chosen() -> dict:
     return {"system": None, "code": None, "display": None}
 
 
+def _upsert_mapping(element: dict, mapping: dict) -> None:
+    """Keep ≤1 mapping per system URI on the plan element."""
+    system = mapping.get("system")
+    existing = list(element.get("mappings") or [])
+    out = [m for m in existing if m.get("system") != system]
+    out.append(
+        {
+            "system": mapping.get("system"),
+            "code": str(mapping.get("code")),
+            "display": mapping.get("display") or "",
+            "decision": mapping.get("decision") or ACCEPT,
+        }
+    )
+    element["mappings"] = out
+
+
 def _pick_int(raw) -> int | None:
     if raw is None or raw == "":
         return None
@@ -161,12 +177,29 @@ def apply_picks(plan: dict, picks: dict, model: str) -> None:
         element["decision"] = patch["decision"]
         if "reason" in patch:
             element["reason"] = patch["reason"]
+        if "mappings" not in element or element.get("mappings") is None:
+            element["mappings"] = []
         if patch["decision"] == ACCEPT:
             element["chosen"] = patch["pick_chosen"]
+            _upsert_mapping(
+                element,
+                {
+                    **patch["pick_chosen"],
+                    "decision": ACCEPT,
+                },
+            )
         elif patch["decision"] == REPLACE:
             element["chosen"] = patch["pick_chosen"]
+            _upsert_mapping(
+                element,
+                {
+                    **patch["pick_chosen"],
+                    "decision": REPLACE,
+                },
+            )
         elif patch["decision"] == UNBOUND:
             element["chosen"] = _empty_chosen()
+            element["mappings"] = []
     plan["status"] = "draft"
 
 

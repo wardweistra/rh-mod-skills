@@ -30,6 +30,10 @@ BINDINGS_NAME = "bindings.yaml"
 ALL_UNDECIDED_WARN = 25
 DURABLE_DECISIONS = {"accept", "replace", "unbound"}
 SKIP_DECISIONS = {"pending", "reject"}
+MAPPED_STATUSES = ("mapped", "unbound")
+VALUE_SET_STRENGTHS = ("example", "preferred", "extensible", "required")
+LEGACY_ROOT_KEYS = ("system", "code", "strength", "display_term")
+RE_ANNOTATE_MSG = "re-annotate"
 
 
 def _yaml() -> YAML:
@@ -84,11 +88,160 @@ def load_inventory(model: str) -> dict:
     return load_yaml_file(path)
 
 
-def load_bindings(model: str) -> dict:
+def validate_mapping_list(path: str | None, mappings: list) -> list[dict]:
+    """Normalize mappings[]; fail closed on duplicate system URI or missing system/code."""
+    if not isinstance(mappings, list):
+        raise click.ClickException(f"mappings must be a list for {path}")
+    seen: set[str] = set()
+    out: list[dict] = []
+    for i, raw in enumerate(mappings):
+        if not isinstance(raw, dict):
+            raise click.ClickException(f"mapping row {i} on {path} must be a mapping")
+        if raw.get("strength") is not None and "strength" in raw:
+            raise click.ClickException(
+                f"mapping on {path} must not carry strength (strength belongs on value_set only)"
+            )
+        system = raw.get("system")
+        if isinstance(system, str):
+            system = system.strip() or None
+        code = raw.get("code")
+        if code is not None:
+            code = str(code).strip()
+        if not system or not code:
+            raise click.ClickException(
+                f"mapped missing system/code on {path} (mapping index {i})"
+            )
+        if system in seen:
+            raise click.ClickException(
+                f"duplicate system URI in mappings for {path}: {system}"
+            )
+        seen.add(system)
+        out.append(
+            {
+                "system": system,
+                "code": code,
+                "display": raw.get("display") or "",
+                "decision": raw.get("decision") or "accept",
+            }
+        )
+    return out
+
+
+def validate_value_set(path: str | None, vs) -> dict | None:
+    """Normalize authored value_set; None/null is OK. Strength only lives here."""
+    if vs is None:
+        return None
+    if not isinstance(vs, dict):
+        raise click.ClickException(f"value_set on {path} must be an object or null")
+    if vs == {}:
+        raise click.ClickException(
+            f"value_set on {path} is empty; omit it or provide strength + concepts[]"
+        )
+    strength = vs.get("strength")
+    if strength not in VALUE_SET_STRENGTHS:
+        raise click.ClickException(
+            f"value_set on {path} requires strength in "
+            f"{'|'.join(VALUE_SET_STRENGTHS)} (got {strength!r})"
+        )
+    concepts = vs.get("concepts")
+    if not isinstance(concepts, list) or not concepts:
+        raise click.ClickException(
+            f"value_set on {path} requires ≥1 concept with system+code"
+        )
+    out_concepts: list[dict] = []
+    for i, raw in enumerate(concepts):
+        if not isinstance(raw, dict):
+            raise click.ClickException(f"value_set concept {i} on {path} must be a mapping")
+        system = raw.get("system")
+        if isinstance(system, str):
+            system = system.strip() or None
+        code = raw.get("code")
+        if code is not None:
+            code = str(code).strip()
+        if not system or not code:
+            raise click.ClickException(
+                f"value_set concept {i} on {path} missing system/code"
+            )
+        out_concepts.append(
+            {
+                "system": system,
+                "code": code,
+                "display": raw.get("display") or "",
+            }
+        )
+    return {"strength": strength, "concepts": out_concepts}
+
+
+def _has_value_set(vs) -> bool:
+    return isinstance(vs, dict) and bool(vs)
+
+
+def validate_binding_row(row: dict) -> None:
+    """Fail closed on bindings 1.0 singleton shape or invalid 2.0 row."""
+    path = row.get("path")
+    for key in LEGACY_ROOT_KEYS:
+        if key in row:
+            raise click.ClickException(
+                f"Binding row {path!r} uses bindings 1.0 singleton field {key!r}; "
+                f"{RE_ANNOTATE_MSG} for schema_version 2.0 (mappings[])."
+            )
+    status = row.get("status")
+    if status not in MAPPED_STATUSES:
+        raise click.ClickException(
+            f"Binding row {path!r} has invalid status {status!r}; "
+            f"expected mapped|unbound — {RE_ANNOTATE_MSG}."
+        )
+    mappings = row.get("mappings")
+    if mappings is None:
+        mappings = []
+    if not isinstance(mappings, list):
+        raise click.ClickException(f"mappings must be a list for {path}")
+    vs_raw = row.get("value_set")
+    if status == "unbound":
+        if mappings:
+            raise click.ClickException(
+                f"unbound row {path!r} must have empty mappings[]"
+            )
+        if _has_value_set(vs_raw):
+            raise click.ClickException(
+                f"unbound row {path!r} must have value_set null"
+            )
+        if not (row.get("reason") or "").strip():
+            raise click.ClickException(f"unbound missing reason: {path}")
+        return
+    # mapped: mappings and/or authored value_set
+    vs = validate_value_set(path, vs_raw)
+    if mappings:
+        validate_mapping_list(path, mappings)
+    if not mappings and not vs:
+        raise click.ClickException(
+            f"mapped row {path!r} requires ≥1 mapping and/or authored value_set"
+        )
+
+
+def assert_bindings_v2(data: dict) -> dict:
+    """Require schema_version 2.0 and valid rows. Message mentions re-annotate on 1.0."""
+    version = str(data.get("schema_version") or "")
+    if version != "2.0":
+        raise click.ClickException(
+            f"bindings schema_version must be '2.0' (got {version!r}); "
+            f"{RE_ANNOTATE_MSG} — bindings 1.0 singleton system/code/strength is not supported."
+        )
+    for row in data.get("bindings") or []:
+        if not isinstance(row, dict):
+            raise click.ClickException("each bindings[] row must be a mapping")
+        validate_binding_row(row)
+    return data
+
+
+def load_bindings(model: str, *, validate: bool = True) -> dict:
     path = bindings_path(model)
     if not path.is_file():
-        return {"model": model, "bindings": []}
-    return load_yaml_file(path)
+        return {"schema_version": "2.0", "model": model, "bindings": []}
+    data = load_yaml_file(path)
+    if validate:
+        assert_bindings_v2(data)
+    return data
 
 
 def inventory_elements(inventory: dict) -> list[dict]:
@@ -114,7 +267,7 @@ def decided_binding_paths(model_name: str) -> set[str]:
     return {
         b["path"]
         for b in data.get("bindings") or []
-        if b.get("path") and b.get("status") in ("bound", "unbound")
+        if b.get("path") and b.get("status") in MAPPED_STATUSES
     }
 
 
@@ -156,7 +309,7 @@ def resolve_elements(
         decided = {
             b.get("path")
             for b in bindings.get("bindings") or []
-            if b.get("status") in ("bound", "unbound")
+            if b.get("status") in MAPPED_STATUSES
         }
         selected = [el for el in all_els if el.get("path") not in decided]
         if not selected:
@@ -217,68 +370,94 @@ def _chosen_dict(el: dict) -> dict:
     }
 
 
+def _term_from_accept_or_replace(el: dict, decision: str) -> dict:
+    chosen = _chosen_dict(el)
+    if decision == "replace":
+        if not chosen.get("code") or not chosen.get("system"):
+            raise click.ClickException(
+                f"Element {el.get('path')} is replace but chosen system/code is missing."
+            )
+        return {
+            "system": chosen["system"],
+            "code": str(chosen["code"]),
+            "display": chosen.get("display") or "",
+        }
+    if decision == "accept":
+        if chosen.get("code") and chosen.get("system"):
+            return {
+                "system": chosen["system"],
+                "code": str(chosen["code"]),
+                "display": chosen.get("display") or "",
+            }
+        candidates = el.get("candidates") or []
+        if not candidates:
+            raise click.ClickException(
+                f"Element {el.get('path')} is accept but has no candidates and no chosen code."
+            )
+        first = candidates[0]
+        return {
+            "system": first.get("system"),
+            "code": str(first.get("code")),
+            "display": first.get("display") or "",
+        }
+    raise click.ClickException(f"Cannot bind decision {decision!r} for {el.get('path')}")
+
+
 def _binding_row(el: dict) -> dict:
     decision = el.get("decision") or "pending"
-    chosen = _chosen_dict(el)
+    plan_vs = validate_value_set(el.get("path"), el.get("value_set"))
     if decision == "unbound":
         reason = (el.get("reason") or "").strip()
         if not reason:
             raise click.ClickException(
                 f"Element {el.get('path')} is unbound but has no reason."
             )
+        if plan_vs is not None:
+            raise click.ClickException(
+                f"Element {el.get('path')} is unbound but has value_set; clear value_set first."
+            )
         return {
             "path": el["path"],
             "id": el.get("id"),
             "display": el.get("display"),
             "status": "unbound",
-            "decision": "unbound",
-            "strength": None,
-            "system": None,
-            "code": None,
-            "display_term": None,
+            "mappings": [],
+            "value_set": None,
             "reason": reason,
         }
-    if decision == "replace":
-        if not chosen.get("code") or not chosen.get("system"):
-            raise click.ClickException(
-                f"Element {el.get('path')} is replace but chosen system/code is missing."
-            )
-        term = {
-            "system": chosen["system"],
-            "code": str(chosen["code"]),
-            "display": chosen.get("display") or "",
-        }
-    elif decision == "accept":
-        if chosen.get("code") and chosen.get("system"):
-            term = {
-                "system": chosen["system"],
-                "code": str(chosen["code"]),
-                "display": chosen.get("display") or "",
-            }
-        else:
-            candidates = el.get("candidates") or []
-            if not candidates:
-                raise click.ClickException(
-                    f"Element {el.get('path')} is accept but has no candidates and no chosen code."
-                )
-            first = candidates[0]
-            term = {
-                "system": first.get("system"),
-                "code": str(first.get("code")),
-                "display": first.get("display") or "",
-            }
-    else:
+    if decision not in ("accept", "replace"):
         raise click.ClickException(f"Cannot bind decision {decision!r} for {el.get('path')}")
+
+    plan_mappings = el.get("mappings")
+    if isinstance(plan_mappings, list) and plan_mappings:
+        mappings = validate_mapping_list(el.get("path"), plan_mappings)
+    elif plan_vs is not None:
+        # value_set-only (or value_set with empty mappings): still annotate-complete as mapped
+        mappings = []
+    else:
+        term = _term_from_accept_or_replace(el, decision)
+        mappings = [
+            {
+                "system": term["system"],
+                "code": term["code"],
+                "display": term["display"],
+                "decision": decision,
+            }
+        ]
+        validate_mapping_list(el.get("path"), mappings)
+
+    if not mappings and plan_vs is None:
+        raise click.ClickException(
+            f"Element {el.get('path')} needs mappings and/or authored value_set"
+        )
+
     return {
         "path": el["path"],
         "id": el.get("id"),
         "display": el.get("display"),
-        "status": "bound",
-        "decision": decision,
-        "strength": el.get("strength") or "example",
-        "system": term["system"],
-        "code": term["code"],
-        "display_term": term["display"],
+        "status": "mapped",
+        "mappings": mappings,
+        "value_set": plan_vs,
         "reason": el.get("reason") or "",
     }
 
@@ -299,7 +478,7 @@ def annotate():
 @click.option(
     "--all-undecided",
     is_flag=True,
-    help="Include every inventory element that is not yet bound or unbound.",
+    help="Include every inventory element that is not yet mapped or unbound.",
 )
 @click.option(
     "--system",
@@ -314,7 +493,13 @@ def plan_cmd(model, elements, all_undecided, systems):
     tracking = require_tracking()
     inventory = _assert_annotate_ready(tracking, model)
     aliases = _validate_systems(systems)
-    bindings = load_bindings(model)
+    bindings = load_bindings(model, validate=False)
+    if bindings_path(model).is_file():
+        try:
+            assert_bindings_v2(bindings)
+        except click.ClickException:
+            # Allow planning over legacy files so reviewers can re-annotate; do not count as decided.
+            bindings = {"model": model, "bindings": []}
     selected = resolve_elements(inventory, elements, all_undecided, bindings)
     if all_undecided and len(selected) > ALL_UNDECIDED_WARN:
         log_warn(
@@ -332,9 +517,10 @@ def plan_cmd(model, elements, all_undecided, systems):
                 "display": el.get("display"),
                 "query": query,
                 "decision": "pending",
-                "strength": "example",
                 "reason": "",
                 "chosen": {"system": None, "code": None, "display": None},
+                "mappings": [],
+                "value_set": None,
                 "candidates": [],
             }
         )
@@ -393,7 +579,7 @@ def enrich_cmd(model, element, raw_candidates, lookup_query, lookup_notes):
             "Annotate plan is already approved. Re-run `annotate plan` for a new draft before enriching."
         )
     inventory = _assert_annotate_ready(tracking, model)
-    resolved = resolve_elements(inventory, (element,), False, load_bindings(model))
+    resolved = resolve_elements(inventory, (element,), False, load_bindings(model, validate=False))
     target_path = resolved[0]["path"]
     match = None
     for el in plan.get("elements") or []:
@@ -420,6 +606,8 @@ def enrich_cmd(model, element, raw_candidates, lookup_query, lookup_notes):
         match["query"] = lookup_query
     if lookup_notes is not None:
         match["lookup_notes"] = lookup_notes
+    if "mappings" not in match:
+        match["mappings"] = []
     save_plan(model, plan)
     log_info(f"Recorded {len(parsed)} candidate(s) for {target_path}")
     click.echo(f"  {annotate_plan_path(model)}")
@@ -478,7 +666,10 @@ def implement_cmd(model, replace):
             f"Run `rh-mod-skills annotate approve {model}` after review."
         )
 
-    existing = [] if replace else list(load_bindings(model).get("bindings") or [])
+    if replace or not bindings_path(model).is_file():
+        existing: list = []
+    else:
+        existing = list(load_bindings(model, validate=True).get("bindings") or [])
     by_path = {b.get("path"): b for b in existing if b.get("path")}
     applied = []
     for el in plan.get("elements") or []:
@@ -490,42 +681,76 @@ def implement_cmd(model, replace):
                 f"Unknown decision {decision!r} for {el.get('path')}"
             )
         row = _binding_row(el)
+        validate_binding_row(row)
         by_path[row["path"]] = row
         applied.append(row)
 
-    out = {"model": model, "bindings": list(by_path.values())}
+    out = {
+        "schema_version": "2.0",
+        "model": model,
+        "bindings": list(by_path.values()),
+    }
+    assert_bindings_v2(out)
     save_yaml_file(bindings_path(model), out)
     files = [BINDINGS_NAME]
 
-    parts = [f"{r['path']} ({r['decision']})" for r in applied] or ["(none)"]
-    summary = "Bindings: " + ", ".join(parts)
+    parts = []
+    for r in applied:
+        label = r.get("status") or "?"
+        parts.append(f"{r['path']} ({label})")
+    summary = "Bindings: " + (", ".join(parts) or "(none)")
     locked_update_tracking(lambda t, s=summary, f=files: _record_element_bound(t, model, s, f))
     log_info(summary)
     if files:
         click.echo(f"  {bindings_path(model)}")
 
 
-def _verify_counts(inventory: dict, bindings: dict) -> tuple[int, int, int, list[str]]:
+def _verify_counts(inventory: dict, bindings: dict) -> tuple[int, int, int, int, list[str]]:
+    """Return mapped, vs_bound, unbound, undecided, blocking issues."""
     inv_paths = {el["path"] for el in inventory_elements(inventory) if el.get("path")}
-    bound = 0
+    mapped = 0
+    vs_bound = 0
     unbound = 0
     blocking: list[str] = []
     seen: set[str] = set()
     for row in bindings.get("bindings") or []:
         path = row.get("path")
+        try:
+            validate_binding_row(row)
+        except click.ClickException as exc:
+            blocking.append(str(exc))
+            if path:
+                seen.add(path)
+            continue
         status = row.get("status")
-        if status == "bound":
-            bound += 1
+        mappings = row.get("mappings") or []
+        vs = row.get("value_set")
+        if _has_value_set(vs):
+            vs_bound += 1
+        if status == "mapped":
+            if mappings:
+                mapped += 1
+            elif not _has_value_set(vs):
+                blocking.append(
+                    f"mapped without mappings and without value_set: {path}"
+                )
+            else:
+                # value_set-only still counts as decided mapped; vs_bound already tallied
+                mapped += 1
             if path not in inv_paths:
-                blocking.append(f"bound path not in inventory: {path}")
+                blocking.append(f"mapped path not in inventory: {path}")
         elif status == "unbound":
             unbound += 1
-            if not (row.get("reason") or "").strip():
-                blocking.append(f"unbound missing reason: {path}")
+            if mappings or _has_value_set(vs):
+                blocking.append(
+                    f"unbound with value_set or mappings: {path}"
+                )
+            if path not in inv_paths:
+                blocking.append(f"unbound path not in inventory: {path}")
         if path:
             seen.add(path)
     undecided = len(inv_paths - seen)
-    return bound, unbound, undecided, blocking
+    return mapped, vs_bound, unbound, undecided, blocking
 
 
 @annotate.command("verify")
@@ -556,12 +781,20 @@ def verify_cmd(model):
     if bpath.is_file():
         bindings = load_yaml_file(bpath)
         click.echo("bindings: present")
+        try:
+            assert_bindings_v2(bindings)
+        except click.ClickException as exc:
+            click.echo(f"  blocking: {exc}")
+            blocking_n += 1
+            bindings = {"model": model, "bindings": []}
     else:
-        bindings = {"model": model, "bindings": []}
+        bindings = {"schema_version": "2.0", "model": model, "bindings": []}
         click.echo("bindings: missing")
 
-    bound, unbound, undecided, issues = _verify_counts(inventory, bindings)
-    click.echo(f"bound={bound} unbound={unbound} undecided={undecided}")
+    mapped, vs_bound, unbound, undecided, issues = _verify_counts(inventory, bindings)
+    click.echo(
+        f"mapped={mapped} vs_bound={vs_bound} unbound={unbound} undecided={undecided}"
+    )
     for issue in issues:
         click.echo(f"  blocking: {issue}")
         blocking_n += 1

@@ -33,10 +33,16 @@ def _coverage_line(name: str) -> str | None:
     if not inventory_path(name).is_file():
         return None
     inventory = load_inventory(name)
-    bindings = load_bindings(name)
-    bound, unbound, undecided, _issues = _verify_counts(inventory, bindings)
+    try:
+        bindings = load_bindings(name, validate=True)
+    except click.ClickException:
+        bindings = {"model": name, "bindings": []}
+    mapped, vs_bound, unbound, undecided, _issues = _verify_counts(inventory, bindings)
     n = len(inventory_element_paths(name))
-    return f"coverage: inventory={n} bound={bound} unbound={unbound} undecided={undecided}"
+    return (
+        f"coverage: inventory={n} mapped={mapped} vs_bound={vs_bound} "
+        f"unbound={unbound} undecided={undecided}"
+    )
 
 
 def _run_stage(group, model: str) -> tuple[bool, str]:

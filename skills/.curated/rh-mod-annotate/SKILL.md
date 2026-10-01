@@ -1,14 +1,14 @@
 ---
 name: "rh-mod-annotate"
 description: >
-  Bind extracted inventory elements to terminology codes via ReasonHub MCP.
-  CLI writes the plan, review HTML, picks import, and bindings; this skill
-  runs MCP search and records hits with `rh-mod-skills annotate enrich`.
+  Map extracted inventory elements to terminology codes via ReasonHub MCP.
+  CLI writes the plan, review HTML, picks import, and bindings 2.0 (mappings[]);
+  this skill runs MCP search and records hits with `annotate enrich`.
   Modes: plan · enrich · export · import · implement · verify.
 compatibility: "rh-mod-skills >= 0.1.0"
 metadata:
   author: "RH Mod Skills"
-  version: "1.0.0"
+  version: "2.0.0"
   source: "skills/.curated/rh-mod-annotate/SKILL.md"
   lifecycle_stage: "l2-semi-structured"
   reads_from:
@@ -43,9 +43,16 @@ metadata:
 
 # rh-mod-annotate
 
-Annotate is the L2 terminology-binding stage. Extract already owns inventory
-shape. This skill proposes codes; specify later fills datatypes. Mapping (FML,
-StructureMap, mapping.xlsx) is out of scope.
+Annotate is the L2 **concept-mapping** stage. Extract already owns inventory
+shape. This skill proposes codes; specify later fills datatypes.
+
+**Map vs bind**: Accepting LOINC and/or SNOMED on a path writes `mappings[]`.
+That is **not** a FHIR ValueSet. Optional ValueSet authoring is a separate plan
+field: `value_set: { strength, concepts[] }` (strength only there). Formalize
+emits `ElementDefinition.mapping` for mappings-only paths, and ValueSet +
+`ElementDefinition.binding` only when `value_set` is authored.
+
+FML / StructureMap / mapping.xlsx remain out of scope (rh-map-skills).
 
 **MCP ownership**: this skill/agent performs ReasonHub searches. The CLI does
 not look up codes. `annotate enrich` only records `--candidate` rows you already
@@ -66,10 +73,10 @@ First word is the mode. Typical: `plan nkr-breast --element gesl`.
 
 1. Confirm extract is done (`inventory.yaml` present). If not, tell the user to run extract.
 2. Run `rh-mod-skills annotate plan <model> --element …` (or `--all-undecided`).
-3. Plan writes empty `candidates: []`. Query defaults to inventory display (Dutch for NKR). Do not translate the label as a substitute for binding.
-4. For each planned element, MCP search with `top_k=5` (or the plan `query` if the reviewer edited it). If `systems` includes `all`, call `search_all_codesystems` once. Otherwise call the tool for each named system: `search_snomed`, `search_loinc`, `search_rxnorm`, `search_ucum`, `search_icd10` (`icd-10` and `icd-10-cm`). Default when `systems` is omitted/snomed-only: `search_snomed`.
-5. Map MCP hits to FHIR system URIs. Copy `system`, `code`, and `display` exactly from the hit (especially for `all`). Do not transform `distance`. Aliases on `--candidate`: `snomed`, `loinc`, `icd-10`, `icd-10-cm` (`http://hl7.org/fhir/sid/icd-10-cm`), `rxnorm` (`http://www.nlm.nih.gov/research/umls/rxnorm`), `ucum` (`http://unitsofmeasure.org`). Never record `all` as a candidate system.
-6. Record via CLI (at most five `--candidate` flags). Omit `--candidate` when MCP returned zero hits:
+3. Plan writes empty `candidates: []` and `mappings: []`. Query defaults to inventory display. Do not translate the label as a substitute for a mapping.
+4. For each planned element, MCP search with `top_k=5` (or the plan `query` if the reviewer edited it). If `systems` includes `all`, call `search_all_codesystems` once. Otherwise call the tool for each named system. Default: `search_snomed`.
+5. Map MCP hits to FHIR system URIs. Copy `system`, `code`, and `display` exactly. Aliases on `--candidate`: `snomed`, `loinc`, `icd-10`, `icd-10-cm`, `rxnorm`, `ucum`. Never record `all` as a candidate system.
+6. Record via CLI (at most five `--candidate` flags):
 
 ```bash
 rh-mod-skills annotate enrich <model> --element <id-or-path> \
@@ -77,27 +84,19 @@ rh-mod-skills annotate enrich <model> --element <id-or-path> \
   --lookup-query '<query used>'
 ```
 
-7. Stop if any MCP call fails. Do not guess codes from `*dat` names or local value-domain lists.
+7. Stop if any MCP call fails. Do not invent codes.
 
 ## Review (export / import)
 
-After enrich, generate the review page with the CLI. Do **not** write `annotate-review.html` or `annotate-picks.yaml` yourself.
-
 ```bash
 rh-mod-skills annotate export <model>
-```
-
-Tell the reviewer to open `models/<model>/process/plans/annotate-review.html`, pick a candidate (or unbound / skip / replace), and download picks YAML. Then import:
-
-```bash
 rh-mod-skills annotate import <model> --from <picks.yaml>
 ```
 
-Import updates the annotate plan only (`decision` / `chosen` / `reason`) and sets `status: draft`. It does not write `bindings.yaml`. If the plan was approved, import un-approves it.
+Import upserts into plan `mappings[]` by system URI (≤1 per system). Unbound clears
+mappings and requires `reason`. Import does not write `bindings.yaml`.
 
 ## Implement
-
-After import (or after the reviewer edited plan decisions), approve then implement:
 
 ```bash
 rh-mod-skills annotate approve <model>
@@ -106,8 +105,14 @@ rh-mod-skills annotate verify <model>
 rh-mod-skills status <model>
 ```
 
-`accept` with empty candidates fails. `replace` needs reviewer `chosen`. `unbound` needs `reason`. `reject`/`pending` skip the bindings row.
+Implement writes `schema_version: "2.0"` with `status: mapped|unbound` and
+`mappings[]`. No root-level `system`/`code`/`strength`. Authored `value_set` on
+the plan (strength + concepts) is persisted when present; mappings alone leave
+`value_set: null`. Duplicate system URIs fail closed. Legacy 1.0 bindings fail
+closed — message says **re-annotate**.
 
 ## Verify
 
-`annotate verify` is read-only. Next stays `annotate` until every inventory path is bound or unbound.
+`annotate verify` reports `mapped` / `vs_bound` / `unbound` / `undecided`.
+Annotate-complete when every inventory path is `mapped` (≥1 mapping and/or
+authored `value_set`) or `unbound` (reason; empty mappings; `value_set` null).

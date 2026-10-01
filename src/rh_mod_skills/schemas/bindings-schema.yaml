@@ -1,6 +1,6 @@
 # L2 bindings written by `rh-mod-skills annotate implement`
 # Path: models/<id>/structured/bindings.yaml
-schema_version: "1.0"
+schema_version: "2.0"
 
 structure:
   model: string
@@ -8,16 +8,30 @@ structure:
     - path: string                 # inventory path (unique key)
       id: string
       display: string              # inventory display (untrusted)
-      status: string               # bound | unbound
-      decision: string             # accept | replace | unbound
-      strength: string             # example | preferred | extensible | required | null if unbound
-      system: string               # FHIR system URI; null if unbound
-      code: string
-      display_term: string         # terminology display
+      status: string               # mapped | unbound
+      mappings:                    # 0..*; ≤1 code per system URI; no strength
+        - system: string           # FHIR system URI
+          code: string
+          display: string
+          decision: string         # accept | replace
+      value_set:                   # null OR authored object (US2)
+        # null
+        # OR:
+        #   strength: example | preferred | extensible | required
+        #   concepts:
+        #     - system: string
+        #       code: string
+        #       display: string
       reason: string               # required if unbound
 
 key: path
 
+notes:
+  - status mapped ⇒ ≥1 mapping and/or authored value_set
+  - status unbound ⇒ empty mappings, value_set null, non-empty reason
+  - strength lives only on value_set, never on mapping rows
+
 forbidden:
+  - root-level system/code/strength/display_term as the binding coding (1.0 shape)
   - invented codes without ReasonHub or reviewer chosen
   - StructureDefinition
